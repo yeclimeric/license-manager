@@ -42,6 +42,7 @@ func SetupRouter() *gin.Engine {
 	licenseRepo := repository.NewLicenseRepository(db)
 	dashboardRepo := repository.NewDashboardRepository(db)
 	productOfferingRepo := repository.NewProductOfferingRepository(db)
+	featureTemplateRepo := repository.NewFeatureTemplateRepository(db)
 
 	// 获取logger实例
 	log := logger.GetLogger()
@@ -55,6 +56,7 @@ func SetupRouter() *gin.Engine {
 	licenseService := service.NewLicenseService(licenseRepo, db, log)
 	dashboardService := service.NewDashboardService(dashboardRepo)
 	productOfferingService := service.NewProductOfferingService(productOfferingRepo)
+	featureTemplateService := service.NewFeatureTemplateService(featureTemplateRepo)
 
 	// 初始化处理器层
 	authHandler := handlers.NewAuthHandler(authService)
@@ -65,6 +67,7 @@ func SetupRouter() *gin.Engine {
 	licenseHandler := handlers.NewLicenseHandler(licenseService)
 	dashboardHandler := handlers.NewDashboardHandler(dashboardService)
 	productOfferingHandler := handlers.NewProductOfferingHandler(productOfferingService)
+	featureTemplateHandler := handlers.NewFeatureTemplateHandler(featureTemplateService)
 
 	// 健康检测接口（无需认证）
 	router.GET("/health", systemHandler.HealthCheck)
@@ -112,6 +115,17 @@ func SetupRouter() *gin.Engine {
 			auth.PUT("/v1/product-offerings/:id", productOfferingHandler.UpdateProductOffering)
 			auth.DELETE("/v1/product-offerings/:id", productOfferingHandler.DeleteProductOffering)
 			auth.PATCH("/v1/product-offerings/:id/status", productOfferingHandler.UpdateProductOfferingStatus)
+
+			// 功能模板管理
+			auth.GET("/v1/feature-templates", featureTemplateHandler.GetFeatureTemplateList)
+			auth.POST("/v1/feature-templates", featureTemplateHandler.CreateFeatureTemplate)
+			auth.GET("/v1/feature-templates/categories", featureTemplateHandler.GetCategoryList)
+			auth.GET("/v1/feature-templates/:id", featureTemplateHandler.GetFeatureTemplate)
+			auth.PUT("/v1/feature-templates/:id", featureTemplateHandler.UpdateFeatureTemplate)
+			auth.DELETE("/v1/feature-templates/:id", featureTemplateHandler.DeleteFeatureTemplate)
+			auth.POST("/v1/feature-template-categories", featureTemplateHandler.CreateCategory)
+			auth.PUT("/v1/feature-template-categories/:id", featureTemplateHandler.UpdateCategory)
+			auth.DELETE("/v1/feature-template-categories/:id", featureTemplateHandler.DeleteCategory)
 
 			// 授权码管理
 			auth.GET("/v1/authorization-codes", authCodeHandler.GetAuthorizationCodeList)
