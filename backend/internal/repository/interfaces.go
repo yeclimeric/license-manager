@@ -141,6 +141,30 @@ type UserRepository interface {
 	// UpdateUser 更新用户信息
 	UpdateUser(ctx context.Context, user *models.User) error
 
+	// DeleteUser 删除用户
+	DeleteUser(ctx context.Context, id string) error
+
+	// GetUserList 查询用户列表
+	GetUserList(ctx context.Context, req *models.UserListRequest) ([]models.UserListItem, int64, error)
+
+	// GetUserDetail 查询用户详情（含登录安全信息与角色）
+	GetUserDetail(ctx context.Context, id string) (*models.UserDetailResponse, error)
+
+	// GetUserRoles 查询用户绑定的角色
+	GetUserRoles(ctx context.Context, userID string) ([]models.UserRoleItem, error)
+
+	// CreateUser 创建用户并绑定角色
+	CreateUser(ctx context.Context, user *models.User, roleNames []string) error
+
+	// ReplaceUserRoles 覆盖式设置用户角色
+	ReplaceUserRoles(ctx context.Context, userID string, roleNames []string) error
+
+	// CountUsersByStatus 统计各状态用户数
+	CountUsersByStatus(ctx context.Context) (map[string]int64, error)
+
+	// IsLastSuperAdmin 判断是否为最后一个超级管理员
+	IsLastSuperAdmin(ctx context.Context, userID string) (bool, error)
+
 	// IncrementLoginAttempts 增加登录失败次数
 	IncrementLoginAttempts(ctx context.Context, id string) error
 

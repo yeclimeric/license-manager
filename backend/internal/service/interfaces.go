@@ -34,6 +34,24 @@ type EnumService interface {
 	GetEnumsByType(ctx context.Context, enumType string) (*models.EnumTypeResponse, error)
 }
 
+// UserManagementService 用户管理服务接口
+type UserManagementService interface {
+	// GetUserList 查询用户列表
+	GetUserList(ctx context.Context, req *models.UserListRequest) (*models.UserListResponse, error)
+	// GetUserDetail 查询用户详情
+	GetUserDetail(ctx context.Context, id string) (*models.UserDetailResponse, error)
+	// CreateUser 创建用户
+	CreateUser(ctx context.Context, req *models.UserCreateRequest) (*models.UserDetailResponse, error)
+	// UpdateUser 更新用户
+	UpdateUser(ctx context.Context, id string, req *models.UserUpdateRequest) (*models.UserDetailResponse, error)
+	// DeleteUser 删除用户
+	DeleteUser(ctx context.Context, id string) error
+	// ResetPassword 重置用户密码
+	ResetPassword(ctx context.Context, id string, newPassword string) error
+	// GetUserRoles 查询用户角色
+	GetUserRoles(ctx context.Context, userID string) ([]models.UserRoleItem, error)
+}
+
 // RBACService 菜单权限角色服务接口
 type RBACService interface {
 	// GetUserMenuTree 获取当前用户可见菜单树
