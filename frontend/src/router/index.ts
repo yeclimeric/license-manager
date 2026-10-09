@@ -74,6 +74,12 @@ const routes: Array<RouteRecordRaw> = [
     meta: { title: "产品项管理", requiresAuth: true }
   },
   {
+    path: "/feature-templates",
+    name: "feature-templates",
+    component: () => import("@/views/FeatureTemplates/index.vue"),
+    meta: { title: "功能模板", requiresAuth: true }
+  },
+  {
     path: "/:pathMatch(.*)*",
     redirect: "/dashboard"
   }

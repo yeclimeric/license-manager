@@ -34,6 +34,28 @@ type EnumService interface {
 	GetEnumsByType(ctx context.Context, enumType string) (*models.EnumTypeResponse, error)
 }
 
+// FeatureTemplateService 功能模板服务接口
+type FeatureTemplateService interface {
+	// GetFeatureTemplateList 查询功能模板列表
+	GetFeatureTemplateList(ctx context.Context, req *models.FeatureTemplateListRequest) (*models.FeatureTemplateListResponse, error)
+	// GetFeatureTemplate 获取功能模板详情
+	GetFeatureTemplate(ctx context.Context, id string) (*models.FeatureTemplate, error)
+	// CreateFeatureTemplate 创建功能模板，标识符可自动生成
+	CreateFeatureTemplate(ctx context.Context, req *models.FeatureTemplateCreateRequest) (*models.FeatureTemplate, error)
+	// UpdateFeatureTemplate 更新功能模板，标识符不可更改
+	UpdateFeatureTemplate(ctx context.Context, id string, req *models.FeatureTemplateUpdateRequest) (*models.FeatureTemplate, error)
+	// DeleteFeatureTemplate 删除功能模板
+	DeleteFeatureTemplate(ctx context.Context, id string) error
+	// GetCategoryList 查询分类列表
+	GetCategoryList(ctx context.Context) (*models.FeatureTemplateCategoryListResponse, error)
+	// CreateCategory 新建自定义分类
+	CreateCategory(ctx context.Context, category *models.FeatureTemplateCategory) (*models.FeatureTemplateCategory, error)
+	// UpdateCategory 更新自定义分类
+	UpdateCategory(ctx context.Context, id string, label string, sortOrder *int) (*models.FeatureTemplateCategory, error)
+	// DeleteCategory 删除自定义分类
+	DeleteCategory(ctx context.Context, id string) error
+}
+
 // ProductOfferingService 产品项服务接口
 type ProductOfferingService interface {
 	// GetProductOfferingList 查询产品项列表

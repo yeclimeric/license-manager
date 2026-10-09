@@ -135,7 +135,8 @@
       "dashboard": "ダッシュボード",
       "customers": "顧客管理",
       "licenses": "ライセンス管理",
-      "productOfferings": "製品項目管理"
+      "productOfferings": "製品項目管理",
+      "featureTemplates": "機能テンプレート"
     },
     "toggleSidebar": "サイドバー切り替え",
     "mainNavigation": "メインナビゲーション",
@@ -166,7 +167,8 @@
       "profile": "プロフィール",
       "workspace": "ワークスペース",
       "unknown": "未知ページ",
-      "products": "製品項目管理"
+      "products": "製品項目管理",
+      "featureTemplates": "機能テンプレート"
     }
   },
   "common": {
@@ -1030,6 +1032,144 @@
       "trialEnabled": "試用提供あり",
       "trialDisabled": "試用提供なし",
       "codeReadonlyHint": "製品コードはサーバーにより自動生成され、変更できません"
+    }
+  },
+  "featureTemplates": {
+    "title": "機能テンプレート",
+    "description": "利用可能な機能設定を一元で管理し、製品項目の作成時に選択・組み合わせできます。",
+    "addTemplate": "テンプレートを作成",
+    "editTemplate": "テンプレートを編集",
+    "breadcrumb": {
+      "list": "機能テンプレート",
+      "create": "テンプレートを作成"
+    },
+    "table": {
+      "name": "テンプレート名",
+      "identifier": "識別子",
+      "category": "カテゴリ",
+      "status": "ステータス",
+      "createdAt": "作成日時",
+      "actions": "操作",
+      "empty": "機能テンプレートがありません",
+      "featureCount": "{count} 個の機能項目"
+    },
+    "filter": {
+      "category": "すべてのカテゴリ",
+      "status": "すべてのステータス",
+      "statusActive": "有効",
+      "statusInactive": "無効",
+      "search": "名称・識別子で検索",
+      "reset": "リセット"
+    },
+    "actions": {
+      "create": "テンプレートを作成",
+      "manageCategories": "カテゴリ管理",
+      "edit": "編集",
+      "view": "表示",
+      "enable": "有効化",
+      "disable": "無効化",
+      "delete": "削除",
+      "cancel": "キャンセル",
+      "save": "保存",
+      "confirm": "確定",
+      "addFeature": "機能項目を追加",
+      "removeFeature": "削除",
+      "moveUp": "上へ",
+      "moveDown": "下へ"
+    },
+    "form": {
+      "basicInfo": "基本情報",
+      "name": "テンプレート名",
+      "namePlaceholder": "テンプレート名を入力",
+      "identifier": "識別子",
+      "identifierPlaceholder": "空欄の場合は名称から自動生成されます",
+      "identifierHint": "識別子はクライアントSDKが読み取り、ライセンスに埋め込まれます。作成後は変更できません。小文字・数字・アンダースコアのみ使用でき、先頭は英字である必要があります。",
+      "description": "説明",
+      "descriptionPlaceholder": "説明を入力",
+      "category": "カテゴリ",
+      "sortOrder": "並び順",
+      "sortOrderHint": "値が小さいほど前に表示されます",
+      "featureItems": "機能項目",
+      "featureItemsHint": "このテンプレートが持つ機能スイッチを定義します。順序がそのままクライアントの読み取り順になります",
+      "featureKey": "機能キー",
+      "featureKeyPlaceholder": "例: core",
+      "featureName": "機能名",
+      "featureNamePlaceholder": "例: コア機能",
+      "featureDescription": "機能の説明",
+      "featureDescriptionPlaceholder": "任意",
+      "advancedConfig": "詳細設定",
+      "usageLimits": "使用量制限",
+      "usageLimitsHint": "使用量の上限をJSONで記述します",
+      "customParameters": "カスタムパラメータ",
+      "customParametersHint": "個別のパラメータをJSONで記述します"
+    },
+    "category": {
+      "title": "カテゴリ管理",
+      "value": "カテゴリキー",
+      "valuePlaceholder": "例: imaging",
+      "label": "カテゴリ名",
+      "labelPlaceholder": "例: 脳イメージング",
+      "sortOrder": "並び順",
+      "templateCount": "テンプレート数",
+      "isSystem": "組み込み",
+      "add": "カテゴリを作成",
+      "edit": "編集",
+      "delete": "削除",
+      "empty": "カテゴリがありません",
+      "valueHint": "キーは小文字・数字・アンダースコアのみ使用でき、先頭は英字である必要があります",
+      "deleteBlocked": "このカテゴリにはテンプレートが{count}件あるため削除できません"
+    },
+    "confirm": {
+      "deleteTitle": "テンプレートを削除",
+      "deleteMessage": "テンプレート「{name}」を削除しますか？この操作は取り消せません。",
+      "disableTitle": "テンプレートを無効化",
+      "disableMessage": "無効化すると製品項目での選択候補に表示されなくなりますが、既存のライセンスには影響しません。続行しますか？",
+      "enableTitle": "テンプレートを有効化",
+      "enableMessage": "テンプレート「{name}」を有効にしますか？",
+      "deleteCategoryTitle": "カテゴリを削除",
+      "deleteCategoryMessage": "カテゴリ「{label}」を削除しますか？",
+      "removeFeatureTitle": "機能項目を削除",
+      "removeFeatureMessage": "機能項目「{name}」を削除しますか？"
+    },
+    "message": {
+      "created": "テンプレートを作成しました",
+      "updated": "テンプレートを更新しました",
+      "deleted": "テンプレートを削除しました",
+      "categoryCreated": "カテゴリを作成しました",
+      "categoryUpdated": "カテゴリを更新しました",
+      "categoryDeleted": "カテゴリを削除しました",
+      "loadFailed": "テンプレート一覧の読み込みに失敗しました",
+      "detailFailed": "テンプレート詳細の読み込みに失敗しました",
+      "categoryLoadFailed": "カテゴリ一覧の読み込みに失敗しました",
+      "createFailed": "テンプレートの作成に失敗しました",
+      "updateFailed": "テンプレートの更新に失敗しました",
+      "deleteFailed": "テンプレートの削除に失敗しました",
+      "categoryCreateFailed": "カテゴリの作成に失敗しました",
+      "categoryUpdateFailed": "カテゴリの更新に失敗しました",
+      "categoryDeleteFailed": "カテゴリの削除に失敗しました"
+    },
+    "validation": {
+      "nameRequired": "テンプレート名を入力してください",
+      "nameTooLong": "テンプレート名は200文字以内を入力してください",
+      "identifierInvalid": "識別子は小文字・数字・アンダースコアのみ使用でき、先頭は英字である必要があります",
+      "identifierTooLong": "識別子は100文字以内を入力してください",
+      "categoryRequired": "カテゴリを選択してください",
+      "categoryValueRequired": "カテゴリキーを入力してください",
+      "categoryValueInvalid": "カテゴリキーは小文字・数字・アンダースコアのみ使用でき、先頭は英字である必要があります",
+      "categoryLabelRequired": "カテゴリ名を入力してください",
+      "featureKeyRequired": "機能キーを入力してください",
+      "featureKeyInvalid": "機能キーは英字・数字・アンダースコア・ハイフンのみ使用できます",
+      "featureNameRequired": "機能名を入力してください",
+      "featureKeyDuplicate": "機能キーが重複しています: {key}",
+      "jsonInvalid": "JSONの形式が正しくありません"
+    },
+    "view": {
+      "basicInfo": "基本情報",
+      "featureItems": "機能項目",
+      "advancedConfig": "詳細設定",
+      "noFeatures": "このテンプレートには機能が定義されていません",
+      "identifierReadonly": "識別子は作成後に変更できません",
+      "systemTemplate": "組み込みテンプレートは変更または削除できません"
     }
   }
 }
