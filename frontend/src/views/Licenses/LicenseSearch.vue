@@ -278,7 +278,7 @@ onMounted(() => {
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  border-radius: 0;
+  border-radius: $border-radius-base;
   background: color-mix(in srgb, var(--el-color-primary) 12%, transparent);
   color: var(--el-color-primary);
   font-size: 20px;

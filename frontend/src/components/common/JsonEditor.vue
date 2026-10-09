@@ -475,7 +475,7 @@ const emitUpdate = () => {
 
 .json-tree {
   border: 1px solid var(--app-border-color);
-  border-radius: 0;
+  border-radius: $border-radius-base;
   padding: 12px;
   margin-bottom: 16px;
   min-height: 100px;

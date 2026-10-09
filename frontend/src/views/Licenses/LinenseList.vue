@@ -428,7 +428,7 @@ onMounted(async () => {
   justify-content: space-between;
   gap: 16px;
   padding: 10px 12px;
-  border-radius: 0;
+  border-radius: $border-radius-base;
   background: var(--el-color-danger-light-9);
   color: var(--el-color-danger);
 }
