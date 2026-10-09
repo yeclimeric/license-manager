@@ -136,7 +136,8 @@
       "customers": "Customer Management",
       "licenses": "License Management",
       "productOfferings": "Product Offerings",
-      "featureTemplates": "Feature Templates"
+      "featureTemplates": "Feature Templates",
+      "auditLogs": "Operation Logs"
     },
     "toggleSidebar": "Toggle Sidebar",
     "mainNavigation": "Main navigation",
@@ -168,7 +169,8 @@
       "workspace": "Workspace",
       "unknown": "Unknown Page",
       "products": "Product Offerings",
-      "featureTemplates": "Feature Templates"
+      "featureTemplates": "Feature Templates",
+      "auditLogs": "Operation Logs"
     }
   },
   "common": {
@@ -1205,6 +1207,46 @@
       "noFeatures": "This template defines no features",
       "identifierReadonly": "The identifier cannot be changed after creation",
       "systemTemplate": "Built-in templates cannot be modified or deleted"
+    }
+  },
+  "auditLogs": {
+    "title": "Operation Logs",
+    "description": "A complete trail of every write operation, for tracing changes and investigating anomalies.",
+    "table": {
+      "action": "Action",
+      "resource": "Resource",
+      "resourceId": "Resource ID",
+      "status": "Result",
+      "operator": "Operator",
+      "ip": "Source IP",
+      "time": "Time"
+    },
+    "filter": {
+      "allTypes": "All Resources",
+      "allStatus": "All Results",
+      "allOperators": "All Operators",
+      "success": "Success",
+      "failure": "Failed"
+    },
+    "detail": {
+      "title": "Request Detail",
+      "reqBody": "Request",
+      "respBody": "Response",
+      "respId": "Resource ID",
+      "method": "Method",
+      "jsonFormat": "Not valid JSON, shown as-is"
+    },
+    "stats": {
+      "title": "Statistics",
+      "total": "Total"
+    },
+    "empty": "No operation logs yet",
+    "none": "(empty)",
+    "close": "Close",
+    "actions": {
+      "query": "Query",
+      "reset": "Reset",
+      "retry": "Retry"
     }
   }
 }
