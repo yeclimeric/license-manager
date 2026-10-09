@@ -57,7 +57,7 @@ func SetupRouter() *gin.Engine {
 	customerService := service.NewCustomerService(customerRepo)
 	authCodeService := service.NewAuthorizationCodeService(authCodeRepo, customerRepo, licenseRepo, productOfferingRepo, featureTemplateRepo)
 	enumService := service.NewEnumService()
-	licenseService := service.NewLicenseService(licenseRepo, db, log)
+	licenseService := service.NewLicenseService(licenseRepo, productOfferingRepo, db, log)
 	dashboardService := service.NewDashboardService(dashboardRepo)
 	productOfferingService := service.NewProductOfferingService(productOfferingRepo)
 	featureTemplateService := service.NewFeatureTemplateService(featureTemplateRepo)

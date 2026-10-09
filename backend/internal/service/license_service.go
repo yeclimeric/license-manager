@@ -24,15 +24,22 @@ import (
 
 type licenseService struct {
 	licenseRepo   repository.LicenseRepository
+	productRepo   repository.ProductOfferingRepository
 	db            *gorm.DB
 	logger        *logrus.Logger
-	rsaPrivateKey *utils.RSAPrivateKey // RSA私钥（缓存）
+	rsaPrivateKey *utils.RSAPrivateKey // 全局RSA私钥（授权码未关联产品项时的兜底）
 }
 
 // NewLicenseService 创建许可证服务实例
-func NewLicenseService(licenseRepo repository.LicenseRepository, db *gorm.DB, logger *logrus.Logger) LicenseService {
+func NewLicenseService(
+	licenseRepo repository.LicenseRepository,
+	productRepo repository.ProductOfferingRepository,
+	db *gorm.DB,
+	logger *logrus.Logger,
+) LicenseService {
 	return &licenseService{
 		licenseRepo: licenseRepo,
+		productRepo: productRepo,
 		db:          db,
 		logger:      logger,
 	}
@@ -354,6 +361,7 @@ func (s *licenseService) GenerateLicenseFile(ctx context.Context, id string) ([]
 		licenseFileData["start_date"] = license.AuthorizationCode.StartDate
 		licenseFileData["end_date"] = license.AuthorizationCode.EndDate
 		licenseFileData["max_activations"] = license.AuthorizationCode.MaxActivations
+		licenseFileData["deployment_type"] = license.AuthorizationCode.DeploymentType
 
 		// 包含功能配置
 		if featureConfig := parseJSONField(license.AuthorizationCode.FeatureConfig); len(featureConfig) > 0 {
@@ -376,7 +384,7 @@ func (s *licenseService) GenerateLicenseFile(ctx context.Context, id string) ([]
 	}
 
 	// 使用RSA数字签名
-	encryptedData, err := s.signLicenseFile(licenseJSON)
+	encryptedData, err := s.signLicenseFile(licenseJSON, license.AuthorizationCode)
 	if err != nil {
 		return nil, "", "", i18n.NewI18nError("300009", lang) // 许可证文件生成失败
 	}
@@ -475,6 +483,7 @@ func (s *licenseService) ActivateLicense(ctx context.Context, req *models.Activa
 				LicenseKey:        existingLicense.LicenseKey,
 				LicenseFile:       licenseFile,
 				HeartbeatInterval: 300, // 5分钟
+				PublicKey:         s.productPublicKey(authCode),
 			}
 			return nil
 		} else if err != gorm.ErrRecordNotFound {
@@ -526,6 +535,7 @@ func (s *licenseService) ActivateLicense(ctx context.Context, req *models.Activa
 			LicenseKey:        license.LicenseKey,
 			LicenseFile:       licenseFile,
 			HeartbeatInterval: 300,
+			PublicKey:         s.productPublicKey(authCode),
 		}
 		return nil
 	})
@@ -626,6 +636,8 @@ func (s *licenseService) generateLicenseFileContent(license *models.License, aut
 		licenseFileData["start_date"] = authCode.StartDate
 		licenseFileData["end_date"] = authCode.EndDate
 		licenseFileData["max_activations"] = authCode.MaxActivations
+		// 部署类型随许可证下发：客户端据此决定校验单机型还是云端型
+		licenseFileData["deployment_type"] = authCode.DeploymentType
 
 		// 包含功能配置等
 		if featureConfig := parseJSONField(authCode.FeatureConfig); len(featureConfig) > 0 {
@@ -648,7 +660,7 @@ func (s *licenseService) generateLicenseFileContent(license *models.License, aut
 	}
 
 	// 使用RSA数字签名
-	encryptedData, err := s.signLicenseFile(licenseJSON)
+	encryptedData, err := s.signLicenseFile(licenseJSON, authCode)
 	if err != nil {
 		return "", err
 	}
@@ -682,17 +694,13 @@ func (s *licenseService) loadRSAPrivateKey() (*utils.RSAPrivateKey, error) {
 }
 
 // signLicenseFile 使用RSA数字签名许可证文件
-func (s *licenseService) signLicenseFile(data []byte) ([]byte, error) {
-	// 加载RSA私钥
-	privateKey, err := s.loadRSAPrivateKey()
+//
+// 优先使用授权码所关联产品项的私钥：客户端只需内嵌对应产品的公钥，
+// 无法伪造其他产品的许可证。未关联产品项时回退到全局密钥。
+func (s *licenseService) signLicenseFile(data []byte, authCode *models.AuthorizationCode) ([]byte, error) {
+	signature, err := s.signWithProductKey(data, authCode)
 	if err != nil {
-		return nil, fmt.Errorf("加载RSA私钥失败: %w", err)
-	}
-
-	// 对数据进行数字签名
-	signature, err := privateKey.SignData(data)
-	if err != nil {
-		return nil, fmt.Errorf("签名失败: %w", err)
+		return nil, err
 	}
 
 	// 构建签名后的许可证文件结构
@@ -712,6 +720,37 @@ func (s *licenseService) signLicenseFile(data []byte) ([]byte, error) {
 	encoded := base64.StdEncoding.EncodeToString(licenseJSON)
 
 	return []byte(encoded), nil
+}
+
+// signWithProductKey 使用产品项私钥签名，缺失时回退全局密钥
+func (s *licenseService) signWithProductKey(data []byte, authCode *models.AuthorizationCode) (string, error) {
+	if s.productRepo != nil && authCode != nil && authCode.ProductOfferingID != nil && *authCode.ProductOfferingID != "" {
+		offering, err := s.productRepo.GetProductOfferingByID(context.Background(), *authCode.ProductOfferingID)
+		if err == nil && offering.SigningPrivateKey != "" {
+			return utils.SignWithPrivateKeyPEM(offering.SigningPrivateKey, data)
+		}
+		// 产品项存在但无密钥（升级前创建）时回退，不阻断激活
+	}
+
+	// 兜底：全局文件密钥
+	privateKey, err := s.loadRSAPrivateKey()
+	if err != nil {
+		return "", fmt.Errorf("加载RSA私钥失败: %w", err)
+	}
+	return privateKey.SignData(data)
+}
+
+// productPublicKey 返回授权码所属产品项的公钥，无关联时返回空串
+func (s *licenseService) productPublicKey(authCode *models.AuthorizationCode) string {
+	if s.productRepo == nil || authCode == nil ||
+		authCode.ProductOfferingID == nil || *authCode.ProductOfferingID == "" {
+		return ""
+	}
+	offering, err := s.productRepo.GetProductOfferingByID(context.Background(), *authCode.ProductOfferingID)
+	if err != nil {
+		return ""
+	}
+	return offering.SigningPublicKey
 }
 
 // parseJSONField 将数据库中的 JSON 字段解析为 map，兼容被字符串包裹的情况
