@@ -34,6 +34,14 @@ type EnumService interface {
 	GetEnumsByType(ctx context.Context, enumType string) (*models.EnumTypeResponse, error)
 }
 
+// AuditLogService 审计日志服务接口
+type AuditLogService interface {
+	// GetAuditLogList 查询审计日志列表
+	GetAuditLogList(ctx context.Context, req *models.AuditLogListRequest) (*models.AuditLogListResponse, error)
+	// GetStatistics 查询审计日志统计
+	GetStatistics(ctx context.Context) (*models.AuditLogStatisticsResponse, error)
+}
+
 // FeatureTemplateService 功能模板服务接口
 type FeatureTemplateService interface {
 	// GetFeatureTemplateList 查询功能模板列表

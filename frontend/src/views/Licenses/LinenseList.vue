@@ -53,6 +53,37 @@
               :value="option.key"
             />
           </el-select>
+          <el-select
+            v-model="filters.productOfferingId"
+            class="filter-control product-filter"
+            :placeholder="t('pages.licenses.filter.productOffering')"
+            :loading="productLoading"
+            clearable
+          >
+            <el-option
+              :label="t('pages.licenses.filter.noProductOffering')"
+              value="none"
+            />
+            <el-option
+              v-for="item in productOptions"
+              :key="item.id"
+              :label="item.alias || item.name"
+              :value="item.id"
+            />
+          </el-select>
+          <el-select
+            v-model="filters.deploymentType"
+            class="filter-control deployment-filter"
+            :placeholder="t('pages.licenses.filter.deploymentType')"
+            clearable
+          >
+            <el-option
+              v-for="option in deploymentTypeOptions"
+              :key="option.value"
+              :label="option.label"
+              :value="option.value"
+            />
+          </el-select>
           <div class="filter-actions data-list-filter__actions">
             <el-button plain type="primary" :loading="isUpdating" @click="queryLicenses">
               {{ t('pages.licenses.list.filter.query') }}
@@ -98,6 +129,28 @@
                 />
               </el-tooltip>
             </div>
+          </template>
+        </el-table-column>
+        <el-table-column
+          :label="t('pages.licenses.table.productOffering')"
+          min-width="140"
+          show-overflow-tooltip
+        >
+          <template #default="{ row }">
+            <span v-if="row.product_offering_name">{{ row.product_offering_name }}</span>
+            <span v-else class="list-empty-cell">{{ t('pages.licenses.table.noProductOffering') }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column
+          :label="t('pages.licenses.table.deploymentType')"
+          width="110"
+          align="center"
+        >
+          <template #default="{ row }">
+            <el-tag v-if="row.deployment_type" size="small" effect="plain" :type="row.deployment_type === 'standalone' ? 'warning' : 'primary'">
+              {{ row.deployment_type_display || row.deployment_type }}
+            </el-tag>
+            <span v-else class="list-empty-cell">{{ t('pages.licenses.table.noProductOffering') }}</span>
           </template>
         </el-table-column>
         <el-table-column :label="t('pages.licenses.list.table.status')" width="96" align="center">
@@ -179,6 +232,7 @@ import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { ArrowLeft, CopyDocument, Plus } from '@element-plus/icons-vue'
 import { getCustomers } from '@/api/customer'
+import { getProductOfferings, type ProductOffering } from '@/api/productOffering'
 import { getAuthorizationStatusEnums, type RawEnumItem } from '@/api/enum'
 import {
   deleteLicense,
@@ -204,7 +258,19 @@ const { t } = useI18n()
 const routeCustomerId = String(route.query.customerId || '')
 const routeCustomerName = String(route.query.customerName || '')
 const hasCustomerContext = Boolean(routeCustomerId)
-const filters = reactive({ customerId: routeCustomerId, code: '', status: '' })
+const filters = reactive({
+  customerId: routeCustomerId,
+  code: '',
+  status: '',
+  productOfferingId: '',
+  deploymentType: ''
+})
+const productOptions = ref<ProductOffering[]>([])
+const productLoading = ref(false)
+const deploymentTypeOptions = computed(() => [
+  { value: 'standalone', label: t('pages.licenses.form.fields.deploymentTypes.standalone') },
+  { value: 'cloud', label: t('pages.licenses.form.fields.deploymentTypes.cloud') }
+])
 const pagination = reactive({ page: 1, pageSize: 10, total: 0 })
 const licenses = ref<AuthorizationCode[]>([])
 const customerOptions = ref<CustomerOption[]>([])
@@ -284,12 +350,26 @@ const resetFilters = async () => {
   filters.customerId = ''
   filters.code = ''
   filters.status = ''
+  filters.productOfferingId = ''
+  filters.deploymentType = ''
   await queryLicenses()
 }
 
 const changePageSize = () => {
   pagination.page = 1
   loadLicenses()
+}
+
+const loadProductOptions = async () => {
+  productLoading.value = true
+  try {
+    const res = await getProductOfferings({ page: 1, page_size: 100 })
+    productOptions.value = res.data.list
+  } catch {
+    productOptions.value = []
+  } finally {
+    productLoading.value = false
+  }
 }
 
 const loadCustomers = async () => {
@@ -332,6 +412,10 @@ const loadLicenses = async () => {
     if (filters.customerId) params.customer_id = filters.customerId
     if (filters.code.trim()) params.code = filters.code.trim()
     if (filters.status) params.status = filters.status as LicenseQueryRequest['status']
+    if (filters.productOfferingId) params.product_offering_id = filters.productOfferingId
+    if (filters.deploymentType) {
+      params.deployment_type = filters.deploymentType as LicenseQueryRequest['deployment_type']
+    }
 
     const response = await getLicenses(params)
     licenses.value = response.data.list
@@ -409,7 +493,7 @@ const copyAuthorizationCode = async (code: string) => {
 }
 
 onMounted(async () => {
-  await Promise.all([loadCustomers(), loadStatuses()])
+  await Promise.all([loadCustomers(), loadStatuses(), loadProductOptions()])
   await loadLicenses()
 })
 </script>
@@ -482,5 +566,16 @@ onMounted(async () => {
 
 @media (max-width: 768px) {
   .filter-grid { grid-template-columns:1fr; }
+}
+.list-empty-cell {
+  color: var(--app-text-secondary);
+}
+
+.filter-control.product-filter {
+  min-width: 160px;
+}
+
+.filter-control.deployment-filter {
+  min-width: 140px;
 }
 </style>

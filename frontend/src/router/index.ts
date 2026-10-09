@@ -80,6 +80,12 @@ const routes: Array<RouteRecordRaw> = [
     meta: { title: "功能模板", requiresAuth: true }
   },
   {
+    path: "/audit-logs",
+    name: "audit-logs",
+    component: () => import("@/views/AuditLogs/index.vue"),
+    meta: { title: "操作日志", requiresAuth: true }
+  },
+  {
     path: "/:pathMatch(.*)*",
     redirect: "/dashboard"
   }

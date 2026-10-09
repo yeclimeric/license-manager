@@ -31,6 +31,7 @@ func AutoMigrate() error {
 		&models.ProductOffering{},
 		&models.FeatureTemplateCategory{},
 		&models.FeatureTemplate{},
+		&models.AuditLog{},
 		&models.AuthorizationCode{},
 		&models.License{},
 		&models.AuthorizationChange{},

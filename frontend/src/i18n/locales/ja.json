@@ -136,7 +136,8 @@
       "customers": "顧客管理",
       "licenses": "ライセンス管理",
       "productOfferings": "製品項目管理",
-      "featureTemplates": "機能テンプレート"
+      "featureTemplates": "機能テンプレート",
+      "auditLogs": "操作ログ"
     },
     "toggleSidebar": "サイドバー切り替え",
     "mainNavigation": "メインナビゲーション",
@@ -168,7 +169,8 @@
       "workspace": "ワークスペース",
       "unknown": "未知ページ",
       "products": "製品項目管理",
-      "featureTemplates": "機能テンプレート"
+      "featureTemplates": "機能テンプレート",
+      "auditLogs": "操作ログ"
     }
   },
   "common": {
@@ -1205,6 +1207,46 @@
       "noFeatures": "このテンプレートには機能が定義されていません",
       "identifierReadonly": "識別子は作成後に変更できません",
       "systemTemplate": "組み込みテンプレートは変更または削除できません"
+    }
+  },
+  "auditLogs": {
+    "title": "操作ログ",
+    "description": "すべての書き込み操作の完全な履歴。変更の追跡と異常の調査に利用できます。",
+    "table": {
+      "action": "操作",
+      "resource": "リソース種別",
+      "resourceId": "リソースID",
+      "status": "結果",
+      "operator": "操作者",
+      "ip": "送信元IP",
+      "time": "日時"
+    },
+    "filter": {
+      "allTypes": "すべてのリソース",
+      "allStatus": "すべての結果",
+      "allOperators": "すべての操作者",
+      "success": "成功",
+      "failure": "失敗"
+    },
+    "detail": {
+      "title": "リクエスト詳細",
+      "reqBody": "リクエスト",
+      "respBody": "レスポンス",
+      "respId": "リソースID",
+      "method": "メソッド",
+      "jsonFormat": "JSON ではないため原文のまま表示します"
+    },
+    "stats": {
+      "title": "統計",
+      "total": "合計"
+    },
+    "empty": "操作ログがありません",
+    "none": "（空）",
+    "close": "閉じる",
+    "actions": {
+      "query": "検索",
+      "reset": "リセット",
+      "retry": "再試行"
     }
   }
 }

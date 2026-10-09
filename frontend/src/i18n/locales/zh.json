@@ -136,7 +136,8 @@
       "customers": "客户管理",
       "licenses": "授权管理",
       "productOfferings": "产品项管理",
-      "featureTemplates": "功能模板"
+      "featureTemplates": "功能模板",
+      "auditLogs": "操作日志"
     },
     "toggleSidebar": "切换侧边栏",
     "mainNavigation": "主导航",
@@ -168,7 +169,8 @@
       "workspace": "工作台",
       "unknown": "未知页面",
       "products": "产品项管理",
-      "featureTemplates": "功能模板"
+      "featureTemplates": "功能模板",
+      "auditLogs": "操作日志"
     }
   },
   "common": {
@@ -1205,6 +1207,46 @@
       "noFeatures": "该模板未定义功能项",
       "identifierReadonly": "标识符创建后不可修改",
       "systemTemplate": "内置模板不可修改或删除"
+    }
+  },
+  "auditLogs": {
+    "title": "操作日志",
+    "description": "记录所有写操作的完整轨迹，便于追溯变更与排查异常。",
+    "table": {
+      "action": "操作",
+      "resource": "资源类型",
+      "resourceId": "资源ID",
+      "status": "结果",
+      "operator": "操作人",
+      "ip": "来源IP",
+      "time": "操作时间"
+    },
+    "filter": {
+      "allTypes": "全部资源",
+      "allStatus": "全部结果",
+      "allOperators": "全部操作人",
+      "success": "成功",
+      "failure": "失败"
+    },
+    "detail": {
+      "title": "请求详情",
+      "reqBody": "请求体",
+      "respBody": "响应体",
+      "respId": "资源ID",
+      "method": "方法",
+      "jsonFormat": "内容不是合法 JSON，按原文展示"
+    },
+    "stats": {
+      "title": "统计",
+      "total": "总数"
+    },
+    "empty": "暂无操作日志",
+    "none": "（空）",
+    "close": "关闭",
+    "actions": {
+      "query": "查询",
+      "reset": "重置",
+      "retry": "重试"
     }
   }
 }

@@ -43,6 +43,7 @@ func SetupRouter() *gin.Engine {
 	dashboardRepo := repository.NewDashboardRepository(db)
 	productOfferingRepo := repository.NewProductOfferingRepository(db)
 	featureTemplateRepo := repository.NewFeatureTemplateRepository(db)
+	auditLogRepo := repository.NewAuditLogRepository(db)
 
 	// 获取logger实例
 	log := logger.GetLogger()
@@ -57,6 +58,7 @@ func SetupRouter() *gin.Engine {
 	dashboardService := service.NewDashboardService(dashboardRepo)
 	productOfferingService := service.NewProductOfferingService(productOfferingRepo)
 	featureTemplateService := service.NewFeatureTemplateService(featureTemplateRepo)
+	auditLogService := service.NewAuditLogService(auditLogRepo)
 
 	// 初始化处理器层
 	authHandler := handlers.NewAuthHandler(authService)
@@ -68,6 +70,7 @@ func SetupRouter() *gin.Engine {
 	dashboardHandler := handlers.NewDashboardHandler(dashboardService)
 	productOfferingHandler := handlers.NewProductOfferingHandler(productOfferingService)
 	featureTemplateHandler := handlers.NewFeatureTemplateHandler(featureTemplateService)
+	auditLogHandler := handlers.NewAuditLogHandler(auditLogService)
 
 	// 健康检测接口（无需认证）
 	router.GET("/health", systemHandler.HealthCheck)
@@ -91,6 +94,9 @@ func SetupRouter() *gin.Engine {
 		// 需要认证的接口
 		auth := api.Group("")
 		auth.Use(middleware.AuthMiddleware())
+		// 审计只关注写操作，挂在鉴权之后以便记录操作人
+		auth.Use(middleware.AuditResponseCapture())
+		auth.Use(middleware.AuditMiddleware(middleware.AuditConfig{DB: db}))
 		{
 			// 认证相关
 			auth.POST("/v1/logout", authHandler.Logout)
@@ -127,6 +133,10 @@ func SetupRouter() *gin.Engine {
 			auth.POST("/v1/feature-template-categories", featureTemplateHandler.CreateCategory)
 			auth.PUT("/v1/feature-template-categories/:id", featureTemplateHandler.UpdateCategory)
 			auth.DELETE("/v1/feature-template-categories/:id", featureTemplateHandler.DeleteCategory)
+
+			// 审计日志
+			auth.GET("/v1/audit-logs", auditLogHandler.GetAuditLogList)
+			auth.GET("/v1/audit-logs/statistics", auditLogHandler.GetStatistics)
 
 			// 授权码管理
 			auth.GET("/v1/authorization-codes", authCodeHandler.GetAuthorizationCodeList)
