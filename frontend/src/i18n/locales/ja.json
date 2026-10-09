@@ -100,8 +100,12 @@
     "noCustomer": "顧客未設定",
     "noRecentAuthorizations": "最近の認可はありません",
     "noRecentActivations": "最近の有効化はありません",
-    "recentAuthorizations": { "title": "最近の認可" },
-    "recentActivations": { "title": "最近の有効化" },
+    "recentAuthorizations": {
+      "title": "最近の認可"
+    },
+    "recentActivations": {
+      "title": "最近の有効化"
+    },
     "columns": {
       "customerName": "顧客名",
       "description": "説明",
@@ -130,7 +134,8 @@
     "menu": {
       "dashboard": "ダッシュボード",
       "customers": "顧客管理",
-      "licenses": "ライセンス管理"
+      "licenses": "ライセンス管理",
+      "productOfferings": "製品項目管理"
     },
     "toggleSidebar": "サイドバー切り替え",
     "mainNavigation": "メインナビゲーション",
@@ -160,7 +165,8 @@
       "settings": "設定",
       "profile": "プロフィール",
       "workspace": "ワークスペース",
-      "unknown": "未知ページ"
+      "unknown": "未知ページ",
+      "products": "製品項目管理"
     }
   },
   "common": {
@@ -498,10 +504,10 @@
         "actions": {
           "copyCode": "ライセンスコードをコピー",
           "updateLicense": "ライセンス更新",
-      "changeValidity": "有効期限を変更",
-      "revokeLicense": "ライセンス取り消し",
-      "deleteLicense": "ライセンスを削除",
-      "downloadCertificate": "認証ファイルをダウンロード",
+          "changeValidity": "有効期限を変更",
+          "revokeLicense": "ライセンス取り消し",
+          "deleteLicense": "ライセンスを削除",
+          "downloadCertificate": "認証ファイルをダウンロード",
           "backToList": "ライセンス一覧に戻る"
         },
         "updateDialog": {
@@ -554,14 +560,14 @@
           "revokeReasonPlaceholder": "取り消し理由を入力してください",
           "revokeReasonRequired": "取り消し理由は必須です",
           "revokeReasonMax": "取り消し理由は500文字以内で入力してください",
-      "revokeSuccess": "ライセンスを正常に取り消しました",
-      "revokeError": "ライセンスの取り消しに失敗しました。後でもう一度お試しください",
-      "deleteLicenseTitle": "ライセンスを削除",
-      "deleteLicenseConfirm": "この取り消し済みライセンスを完全に削除しますか？削除後は同じデバイスを再登録できます。この操作は元に戻せません。",
-      "deleteLicenseConfirmButton": "削除する",
-      "deleteLicenseSuccess": "ライセンスを削除しました",
-      "deleteLicenseError": "ライセンスの削除に失敗しました。後でもう一度お試しください",
-      "loadError": "ライセンス詳細の読み込みに失敗しました",
+          "revokeSuccess": "ライセンスを正常に取り消しました",
+          "revokeError": "ライセンスの取り消しに失敗しました。後でもう一度お試しください",
+          "deleteLicenseTitle": "ライセンスを削除",
+          "deleteLicenseConfirm": "この取り消し済みライセンスを完全に削除しますか？削除後は同じデバイスを再登録できます。この操作は元に戻せません。",
+          "deleteLicenseConfirmButton": "削除する",
+          "deleteLicenseSuccess": "ライセンスを削除しました",
+          "deleteLicenseError": "ライセンスの削除に失敗しました。後でもう一度お試しください",
+          "loadError": "ライセンス詳細の読み込みに失敗しました",
           "missingId": "ライセンスIDが不足しています"
         }
       },
@@ -893,6 +899,137 @@
       "boolean": "真偽値",
       "object": "オブジェクト",
       "array": "配列"
+    }
+  },
+  "products": {
+    "title": "製品項目管理",
+    "description": "ライセンス付与が必要なソフトウェア製品と、デフォルト機能および使用制限を定義します。",
+    "addProduct": "製品項目を作成",
+    "editProduct": "製品項目を編集",
+    "viewProduct": "製品項目を表示",
+    "breadcrumb": {
+      "list": "製品項目管理",
+      "create": "製品項目を作成",
+      "edit": "製品項目を編集"
+    },
+    "table": {
+      "name": "製品項目名",
+      "code": "製品コード",
+      "status": "ステータス",
+      "trial": "試用",
+      "userCount": "ユーザー数",
+      "authCodeCount": "認可コード数",
+      "createdAt": "作成日時",
+      "actions": "操作",
+      "noTrial": "-",
+      "empty": "製品項目がありません"
+    },
+    "filter": {
+      "status": "すべてのステータス",
+      "statusActive": "有効",
+      "statusInactive": "無効",
+      "search": "名称・別名・コードで検索",
+      "reset": "リセット",
+      "refresh": "更新"
+    },
+    "form": {
+      "stepBasic": "基本情報",
+      "stepBasicDesc": "画面表示用の名称と別名を入力します。製品コードは自動生成されます。",
+      "stepDefault": "デフォルト認可ポリシー",
+      "stepDefaultDesc": "新しい認可コードはここで設定した値を継承し、個別の認可コードで上書きできます。",
+      "stepAdvanced": "詳細設定（任意）",
+      "stepAdvancedDesc": "機能スイッチ、使用量制限、カスタムパラメータ。",
+      "basicInfo": "基本情報",
+      "name": "製品項目名",
+      "namePlaceholder": "製品項目名を入力",
+      "nameRequired": "製品項目名を入力してください",
+      "alias": "別名",
+      "aliasPlaceholder": "画面表示用（任意）",
+      "aliasHint": "未入力の場合はコードを表示します。名称とコードはAPI呼び出しに使用され、別名は表示のみに影響します。",
+      "code": "製品コード",
+      "codePlaceholder": "保存時に自動生成",
+      "codeHint": "コードはサーバーにより自動生成され、作成後は変更できません。",
+      "codeReadonly": "コードは作成後に変更できません",
+      "description": "説明",
+      "descriptionPlaceholder": "説明を入力",
+      "defaultConfig": "デフォルト認可ポリシー",
+      "maxActivations": "最大アクティベーション数",
+      "maxActivationsPlaceholder": "最大アクティベーション数を入力",
+      "durationDays": "ライセンス期間（日）",
+      "durationDaysPlaceholder": "日数を入力",
+      "deploymentMode": "展開モード",
+      "deploymentOnline": "オンライン",
+      "deploymentOffline": "オフライン",
+      "deploymentHybrid": "ハイブリッド",
+      "enableTrial": "試用を提供する",
+      "enableTrialDesc": "有効にすると、この製品で試用版ライセンスを発行できます",
+      "trialDays": "試用日数",
+      "trialDaysPlaceholder": "試用日数を入力",
+      "trialDaysRequired": "試用を有効にする場合は試用日数を設定してください",
+      "trialDaysInvalid": "試用日数は正の整数である必要があります",
+      "trialDaysMax": "試用日数は3650日以内である必要があります",
+      "advancedConfig": "詳細設定",
+      "featureConfig": "機能設定",
+      "featureConfigHint": "利用可能な機能スイッチをJSONで記述します",
+      "usageLimits": "使用量制限",
+      "usageLimitsHint": "ユーザー数や呼び出し回数などの上限をJSONで記述します",
+      "customParameters": "カスタムパラメータ",
+      "customParametersHint": "個別のパラメータをJSONで記述します"
+    },
+    "actions": {
+      "create": "製品項目を作成",
+      "edit": "編集",
+      "view": "表示",
+      "viewPublicKey": "公開鍵を表示",
+      "createAuthCode": "認可を作成",
+      "enable": "有効化",
+      "disable": "無効化",
+      "delete": "削除",
+      "cancel": "キャンセル",
+      "save": "保存",
+      "confirm": "確定",
+      "previous": "前へ",
+      "next": "次へ"
+    },
+    "confirm": {
+      "deleteTitle": "製品項目を削除",
+      "deleteMessage": "製品項目「{name}」を削除しますか？この操作は取り消せません。",
+      "deleteWithAuthCodes": "この製品項目には認可コードが{count}件あるため削除できません。先に削除してください。",
+      "disableTitle": "製品項目を無効化",
+      "disableMessage": "無効化すると新しい認可では使用できなくなりますが、既存のライセンスには影響しません。続行しますか？",
+      "enableTitle": "製品項目を有効化",
+      "enableMessage": "製品項目「{name}」を有効にしますか？"
+    },
+    "message": {
+      "created": "製品項目を作成しました",
+      "updated": "製品項目を更新しました",
+      "deleted": "製品項目を削除しました",
+      "statusUpdated": "製品項目のステータスを更新しました",
+      "loadFailed": "製品項目の一覧の読み込みに失敗しました",
+      "detailFailed": "製品項目の詳細の読み込みに失敗しました",
+      "createFailed": "製品項目の作成に失敗しました",
+      "updateFailed": "製品項目の更新に失敗しました",
+      "deleteFailed": "製品項目の削除に失敗しました",
+      "publicKeyUnavailable": "公開鍵は今後の段階で提供されます"
+    },
+    "validation": {
+      "nameRequired": "製品項目名を入力してください",
+      "nameTooLong": "製品項目名は200文字以内を入力してください",
+      "aliasTooLong": "別名は200文字以内を入力してください",
+      "trialDaysRequired": "試用を有効にする場合は試用日数を設定してください",
+      "trialDaysInvalid": "試用日数は正の整数である必要があります",
+      "trialDaysMax": "試用日数は3650日以内である必要があります",
+      "maxActivationsInvalid": "最大アクティベーション数は1から999999までの整数である必要があります",
+      "durationDaysInvalid": "ライセンス期間は正の整数である必要があります",
+      "jsonInvalid": "JSONの形式が正しくありません"
+    },
+    "view": {
+      "basicInfo": "基本情報",
+      "defaultConfig": "デフォルト認可ポリシー",
+      "advancedConfig": "詳細設定",
+      "trialEnabled": "試用提供あり",
+      "trialDisabled": "試用提供なし",
+      "codeReadonlyHint": "製品コードはサーバーにより自動生成され、変更できません"
     }
   }
 }
