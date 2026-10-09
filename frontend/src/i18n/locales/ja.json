@@ -146,7 +146,8 @@
       "productOfferings": "製品項目管理",
       "featureTemplates": "機能テンプレート",
       "auditLogs": "操作ログ",
-      "menus": "メニューと権限"
+      "menus": "メニューと権限",
+      "users": "ユーザー管理"
     },
     "toggleSidebar": "サイドバー切り替え",
     "mainNavigation": "メインナビゲーション",
@@ -180,7 +181,8 @@
       "products": "製品項目管理",
       "featureTemplates": "機能テンプレート",
       "auditLogs": "操作ログ",
-      "menus": "メニューと権限"
+      "menus": "メニューと権限",
+      "users": "ユーザー管理"
     }
   },
   "common": {
@@ -1360,5 +1362,81 @@
       "menuTitle": "メニュー管理",
       "create": "ロールを作成"
     }
+  },
+  "users": {
+    "title": "ユーザー管理",
+    "description": "コンソールアカウントを管理し、_roles を割り当てて可視メニューと操作を制御します。",
+    "table": {
+      "username": "ユーザー名",
+      "email": "メール",
+      "fullName": "氏名",
+      "phone": "電話番号",
+      "roles": "ロール",
+      "status": "状態",
+      "lastLogin": "最終ログイン",
+      "createdAt": "作成日時",
+      "actions": "操作"
+    },
+    "form": {
+      "create": "新規ユーザー",
+      "edit": "ユーザー編集",
+      "username": "ユーザー名",
+      "email": "メール",
+      "fullName": "氏名",
+      "phone": "電話番号",
+      "roles": "ロール",
+      "status": "状態",
+      "newPassword": "新しいパスワード",
+      "passwordHint": "8文字以上"
+    },
+    "filter": {
+      "search": "ユーザー名・メール・氏名で検索",
+      "allStatus": "すべての状態",
+      "query": "検索",
+      "reset": "リセット"
+    },
+    "status": {
+      "active": "有効",
+      "locked": "ロック中",
+      "inactive": "無効"
+    },
+    "actions": {
+      "create": "新規ユーザー",
+      "edit": "ユーザー編集",
+      "resetPassword": "パスワード再設定",
+      "deleteUser": "ユーザー削除"
+    },
+    "message": {
+      "empty": "ユーザーがいません",
+      "loadFailed": "ユーザー一覧の読み込みに失敗しました",
+      "userCreated": "ユーザーを作成しました",
+      "userUpdated": "ユーザーを更新しました",
+      "userDeleted": "ユーザーを削除しました",
+      "passwordReset": "パスワードを再設定しました"
+    },
+    "confirm": {
+      "deleteUser": "ユーザーを削除",
+      "deleteUserMsg": "ユーザー「{name}」を削除しますか？",
+      "resetPassword": "パスワード再設定",
+      "resetPasswordMsg": "ユーザー「{name}」に新しいパスワードを設定します。古いパスワードは直ちに無効になります。"
+    },
+    "validation": {
+      "newPassword": "新しいパスワードを入力してください",
+      "passwordRequired": "新しいパスワードを入力してください",
+      "usernameRequired": "ユーザー名を入力してください",
+      "emailRequired": "メールを入力してください",
+      "emailInvalid": "メールの形式が正しくありません",
+      "fullNameRequired": "氏名を入力してください",
+      "rolesRequired": "ロールを1つ以上割り当ててください",
+      "passwordLength": "パスワードは8文字以上必要です"
+    },
+    "empty": {
+      "roles": "ロール未割当",
+      "user": "—",
+      "neverLogin": "ログインなし"
+    },
+    "createSuccess": "作成",
+    "cancel": "キャンセル",
+    "save": "保存"
   }
 }

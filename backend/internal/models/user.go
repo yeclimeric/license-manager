@@ -9,20 +9,20 @@ import (
 
 // User 用户模型
 type User struct {
-	ID            string    `gorm:"type:varchar(36);primaryKey" json:"id"`
-	Username      string    `gorm:"type:varchar(50);uniqueIndex;not null" json:"username"`
-	Email         string    `gorm:"type:varchar(255);uniqueIndex;not null" json:"email"`
-	PasswordHash  string    `gorm:"type:varchar(255);not null" json:"-"` // 不在JSON中显示密码哈希
-	FullName      string    `gorm:"type:varchar(100);not null" json:"full_name"`
-	Phone         *string   `gorm:"type:varchar(20)" json:"phone"`
-	Role          string    `gorm:"type:varchar(20);not null;default:'viewer';index" json:"role"`
-	Status        string    `gorm:"type:varchar(20);not null;default:'active';index" json:"status"`
+	ID            string     `gorm:"type:varchar(36);primaryKey" json:"id"`
+	Username      string     `gorm:"type:varchar(50);uniqueIndex;not null" json:"username"`
+	Email         string     `gorm:"type:varchar(255);uniqueIndex;not null" json:"email"`
+	PasswordHash  string     `gorm:"type:varchar(255);not null" json:"-"` // 不在JSON中显示密码哈希
+	FullName      string     `gorm:"type:varchar(100);not null" json:"full_name"`
+	Phone         *string    `gorm:"type:varchar(20)" json:"phone"`
+	Role          string     `gorm:"type:varchar(20);not null;default:'viewer';index" json:"role"`
+	Status        string     `gorm:"type:varchar(20);not null;default:'active';index" json:"status"`
 	LastLoginAt   *time.Time `gorm:"index" json:"last_login_at"`
-	LastLoginIP   *string   `gorm:"type:varchar(45)" json:"last_login_ip"`
-	LoginAttempts int       `gorm:"not null;default:0" json:"login_attempts"`
+	LastLoginIP   *string    `gorm:"type:varchar(45)" json:"last_login_ip"`
+	LoginAttempts int        `gorm:"not null;default:0" json:"login_attempts"`
 	LockedUntil   *time.Time `gorm:"index" json:"locked_until"`
-	CreatedAt     time.Time `gorm:"not null;index" json:"created_at"`
-	UpdatedAt     time.Time `gorm:"not null" json:"updated_at"`
+	CreatedAt     time.Time  `gorm:"not null;index" json:"created_at"`
+	UpdatedAt     time.Time  `gorm:"not null" json:"updated_at"`
 }
 
 // TableName 指定表名
@@ -36,7 +36,7 @@ func (u *User) BeforeCreate(tx *gorm.DB) error {
 	if u.ID == "" {
 		u.ID = uuid.New().String()
 	}
-	
+
 	// 设置时间戳
 	now := time.Now()
 	if u.CreatedAt.IsZero() {
@@ -69,11 +69,18 @@ func (u *User) IsAccountLocked() bool {
 type UserCreateRequest struct {
 	Username string  `json:"username" binding:"required,min=3,max=50"`
 	Email    string  `json:"email" binding:"required,email,max=255"`
-	Password string  `json:"password" binding:"required,min=8,max=50"`
+	Password string  `json:"password" binding:"required,min=8,max=64"`
 	FullName string  `json:"full_name" binding:"required,max=100"`
 	Phone    *string `json:"phone" binding:"omitempty,max=20"`
-	Role     string  `json:"role" binding:"required,oneof=admin operator viewer"`
-	Status   string  `json:"status" binding:"required,oneof=active disabled"`
+	// Role 保留单角色字段：v1 接口的既有行为不变
+	Role   string  `json:"role" binding:"omitempty,oneof=admin operator viewer"`
+	Status string  `json:"status" binding:"required,oneof=active locked inactive"`
+	Remark *string `json:"remark" binding:"omitempty,max=255"`
+	// RoleAssignments 角色分配列表。
+	//
+	// 与 Role 二选一即可：传 RoleAssignments 时以它为准，
+	// 未传时回退到 Role 映射的等价角色。
+	RoleAssignments []UserRoleAssignmentInput `json:"role_assignments" binding:"omitempty,dive"`
 }
 
 // UserUpdateRequest 更新用户请求结构
@@ -82,7 +89,12 @@ type UserUpdateRequest struct {
 	FullName *string `json:"full_name" binding:"omitempty,max=100"`
 	Phone    *string `json:"phone" binding:"omitempty,max=20"`
 	Role     *string `json:"role" binding:"omitempty,oneof=admin operator viewer"`
-	Status   *string `json:"status" binding:"omitempty,oneof=active disabled locked"`
+	Remark   *string `json:"remark" binding:"omitempty,max=255"`
+	Status   *string `json:"status" binding:"omitempty,oneof=active locked inactive"`
+	// Password 管理员重设密码时使用，留空表示不改动
+	Password *string `json:"password" binding:"omitempty,min=8,max=64"`
+	// RoleAssignments 为 nil 时不改动角色
+	RoleAssignments []UserRoleAssignmentInput `json:"role_assignments" binding:"omitempty,dive"`
 }
 
 // ChangePasswordRequest 修改密码请求结构
@@ -104,15 +116,29 @@ type UserListRequest struct {
 
 // UserListItem 用户列表项结构
 type UserListItem struct {
-	ID          string     `json:"id"`
-	Username    string     `json:"username"`
-	Email       string     `json:"email"`
-	FullName    string     `json:"full_name"`
-	Phone       *string    `json:"phone"`
+	ID       string  `json:"id"`
+	Username string  `json:"username"`
+	Email    string  `json:"email"`
+	FullName string  `json:"full_name"`
+	Phone    *string `json:"phone"`
+	// Role 保留原字段：v1 接口的既有行为不变
 	Role        string     `json:"role"`
 	Status      string     `json:"status"`
+	Remark      *string    `json:"remark"`
 	LastLoginAt *time.Time `json:"last_login_at"`
 	CreatedAt   time.Time  `json:"created_at"`
+	// Roles 该用户实际绑定的角色。一个用户可持有多个角色，
+	// 因此角色不再由 Role 字段单独决定。
+	Roles []UserRoleItem `json:"roles"`
+}
+
+// UserDetailResponse 用户详情响应
+type UserDetailResponse struct {
+	UserListItem
+	LoginAttempts int        `json:"login_attempts"`
+	LockedUntil   *time.Time `json:"locked_until"`
+	LastOnlineIP  *string    `json:"last_online_ip"`
+	UpdatedAt     time.Time  `json:"updated_at"`
 }
 
 // UserListResponse 用户列表响应结构

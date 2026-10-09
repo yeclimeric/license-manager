@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"license-manager/internal/models"
@@ -77,4 +78,24 @@ func (r *userRepository) LockUser(ctx context.Context, id string, lockDuration i
 			"status":       "locked",
 			"locked_until": &lockUntil,
 		}).Error
+}
+
+// DeleteUser 删除用户
+//
+// 角色关联由数据库外键级联或显式清理：关联行已无意义，
+// 保留会让"用户还有角色"的判断出现幽灵数据。
+func (r *userRepository) DeleteUser(ctx context.Context, id string) error {
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		if err := tx.Where("user_id = ?", id).Delete(&models.UserRole{}).Error; err != nil {
+			return fmt.Errorf("failed to clear user roles: %w", err)
+		}
+		result := tx.Delete(&models.User{}, "id = ?", id)
+		if result.Error != nil {
+			return fmt.Errorf("failed to delete user: %w", result.Error)
+		}
+		if result.RowsAffected == 0 {
+			return ErrUserNotFound
+		}
+		return nil
+	})
 }

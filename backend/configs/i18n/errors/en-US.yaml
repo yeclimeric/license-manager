@@ -24,6 +24,7 @@ errors:
     "200007": "Failed to query customer list"
     "200008": "Customer has authorization codes, cannot delete. Please delete authorizations first"
     "200009": "Customer is disabled, cannot create authorization"
+    "200011": "The username or email already exists"
   
   # Authorization module (30xxxx)
   authorization:
@@ -91,6 +92,7 @@ errors:
     "600013": "User not found"
     "600014": "Assign at least one role"
     "600015": "Unknown permission code"
+    "600017": "The last super administrator cannot be disabled or deleted"
 
   # Dashboard module (40xxxx)
   dashboard:

@@ -146,7 +146,8 @@
       "productOfferings": "Product Offerings",
       "featureTemplates": "Feature Templates",
       "auditLogs": "Operation Logs",
-      "menus": "Menus & Roles"
+      "menus": "Menus & Roles",
+      "users": "Users"
     },
     "toggleSidebar": "Toggle Sidebar",
     "mainNavigation": "Main navigation",
@@ -180,7 +181,8 @@
       "products": "Product Offerings",
       "featureTemplates": "Feature Templates",
       "auditLogs": "Operation Logs",
-      "menus": "Menus & Roles"
+      "menus": "Menus & Roles",
+      "users": "Users"
     }
   },
   "common": {
@@ -1360,5 +1362,81 @@
       "menuTitle": "Menus",
       "create": "New Role"
     }
+  },
+  "users": {
+    "title": "Users",
+    "description": "Manage console accounts and assign roles that decide which menus and actions they reach.",
+    "table": {
+      "username": "Username",
+      "email": "Email",
+      "fullName": "Name",
+      "phone": "Phone",
+      "roles": "Roles",
+      "status": "Status",
+      "lastLogin": "Last Login",
+      "createdAt": "Created",
+      "actions": "Actions"
+    },
+    "form": {
+      "create": "New User",
+      "edit": "Edit User",
+      "username": "Username",
+      "email": "Email",
+      "fullName": "Name",
+      "phone": "Phone",
+      "roles": "Roles",
+      "status": "Status",
+      "newPassword": "New Password",
+      "passwordHint": "At least 8 characters"
+    },
+    "filter": {
+      "search": "Search by username, email or name",
+      "allStatus": "All Statuses",
+      "query": "Query",
+      "reset": "Reset"
+    },
+    "status": {
+      "active": "Active",
+      "locked": "Locked",
+      "inactive": "Disabled"
+    },
+    "actions": {
+      "create": "New User",
+      "edit": "Edit User",
+      "resetPassword": "Reset Password",
+      "deleteUser": "Delete User"
+    },
+    "message": {
+      "empty": "No users yet",
+      "loadFailed": "Failed to load users",
+      "userCreated": "User created",
+      "userUpdated": "User updated",
+      "userDeleted": "User deleted",
+      "passwordReset": "Password reset"
+    },
+    "confirm": {
+      "deleteUser": "Delete User",
+      "deleteUserMsg": "Delete the user \"{name}\"?",
+      "resetPassword": "Reset Password",
+      "resetPasswordMsg": "Set a new password for \"{name}\". The old one stops working immediately."
+    },
+    "validation": {
+      "newPassword": "Enter a new password",
+      "passwordRequired": "Enter a new password",
+      "usernameRequired": "Enter a username",
+      "emailRequired": "Enter an email",
+      "emailInvalid": "That email address is not valid",
+      "fullNameRequired": "Enter a name",
+      "rolesRequired": "Assign at least one role",
+      "passwordLength": "The password needs at least 8 characters"
+    },
+    "empty": {
+      "roles": "No roles",
+      "user": "—",
+      "neverLogin": "Never"
+    },
+    "createSuccess": "Created",
+    "cancel": "Cancel",
+    "save": "Save"
   }
 }

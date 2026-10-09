@@ -35,6 +35,12 @@ var (
 	ErrUserNotFound = errors.New("user not found")
 )
 
+// 用户管理领域的业务错误
+var (
+	ErrUserDuplicate       = errors.New("username or email already exists")
+	ErrUserAssignmentEmpty = errors.New("at least one role must be assigned")
+)
+
 // RBAC 领域的业务错误
 var (
 	ErrRoleNotFound        = errors.New("role not found")
