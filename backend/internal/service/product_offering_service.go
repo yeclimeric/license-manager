@@ -11,6 +11,7 @@ import (
 	"license-manager/internal/repository"
 	pkgcontext "license-manager/pkg/context"
 	"license-manager/pkg/i18n"
+	"license-manager/pkg/utils"
 )
 
 // maxTrialDays 体验天数上限，防止误填导致授权永不过期
@@ -102,19 +103,28 @@ func (s *productOfferingService) CreateProductOffering(ctx context.Context, req 
 		return nil, i18n.NewI18nError("500009", lang)
 	}
 
+	// 创建时生成产品专属签名密钥对：客户端用公钥验签，私钥仅服务端持有。
+	// 密钥不提供轮换入口——轮换会使已发放的许可证全部失效。
+	signingKey, err := utils.GenerateProductSigningKey()
+	if err != nil {
+		return nil, i18n.NewI18nError("900005", lang)
+	}
+
 	offering := &models.ProductOffering{
-		Name:             name,
-		Alias:            strings.TrimSpace(req.Alias),
-		Description:      strings.TrimSpace(req.Description),
-		IsTrialProduct:   req.IsTrialProduct,
-		TrialDays:        req.TrialDays,
-		MaxActivations:   req.MaxActivations,
-		DurationDays:     req.DurationDays,
-		DeploymentMode:   mode,
-		Status:           "active",
-		FeatureConfig:    buildJSONObject(req.FeatureConfig),
-		UsageLimits:      buildJSONObject(req.UsageLimits),
-		CustomParameters: buildJSONObject(req.CustomParameters),
+		Name:              name,
+		Alias:             strings.TrimSpace(req.Alias),
+		Description:       strings.TrimSpace(req.Description),
+		IsTrialProduct:    req.IsTrialProduct,
+		TrialDays:         req.TrialDays,
+		MaxActivations:    req.MaxActivations,
+		DurationDays:      req.DurationDays,
+		DeploymentMode:    mode,
+		Status:            "active",
+		FeatureConfig:     buildJSONObject(req.FeatureConfig),
+		UsageLimits:       buildJSONObject(req.UsageLimits),
+		CustomParameters:  buildJSONObject(req.CustomParameters),
+		SigningPrivateKey: signingKey.PrivateKeyPEM,
+		SigningPublicKey:  signingKey.PublicKeyPEM,
 	}
 
 	if err := s.repo.CreateProductOffering(ctx, offering); err != nil {
@@ -270,8 +280,31 @@ func (s *productOfferingService) toResponse(offering models.ProductOffering, lan
 	// 有授权码时不可删除
 	resp.CanDelete = offering.AuthCodeCount == 0
 	resp.CanEdit = true
+	resp.HasSigningKey = offering.SigningPublicKey != ""
 
 	return resp
+}
+
+// GetProductOfferingPublicKey 获取产品项公钥
+//
+// 仅返回公钥。历史产品项可能未生成密钥（升级前创建），此时返回空公钥
+// 而非报错，让调用方能区分"无密钥"与"无此产品"。
+func (s *productOfferingService) GetProductOfferingPublicKey(ctx context.Context, id string) (*models.ProductOfferingPublicKeyResponse, error) {
+	lang := pkgcontext.GetLanguageFromContext(ctx)
+
+	offering, err := s.repo.GetProductOfferingByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, repository.ErrProductOfferingNotFound) {
+			return nil, i18n.NewI18nError("500001", lang)
+		}
+		return nil, i18n.NewI18nError("900005", lang)
+	}
+
+	return &models.ProductOfferingPublicKeyResponse{
+		ProductID:   offering.ID,
+		ProductCode: offering.Code,
+		PublicKey:   offering.SigningPublicKey,
+	}, nil
 }
 
 // validateTrial 校验体验配置

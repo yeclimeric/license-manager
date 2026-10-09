@@ -1009,7 +1009,7 @@
       "create": "製品項目を作成",
       "edit": "編集",
       "view": "表示",
-      "viewPublicKey": "公開鍵を表示",
+      "viewPublicKey": "公開鍵",
       "createAuthCode": "認可を作成",
       "enable": "有効化",
       "disable": "無効化",
@@ -1059,6 +1059,14 @@
       "trialEnabled": "試用提供あり",
       "trialDisabled": "試用提供なし",
       "codeReadonlyHint": "製品コードはサーバーにより自動生成され、変更できません"
+    },
+    "publicKey": {
+      "title": "製品公開鍵",
+      "productCode": "製品コード",
+      "empty": "この製品項目にはまだ署名鍵がありません",
+      "copy": "コピー",
+      "copied": "コピーしました",
+      "notice": "クライアントはこの公開鍵でライセンス署名を検証します。"
     }
   },
   "featureTemplates": {

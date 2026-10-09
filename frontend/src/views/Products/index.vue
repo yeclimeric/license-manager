@@ -189,8 +189,13 @@
       </section>
     </div>
 
+    <PublicKeyDialog
+      v-model:visible="publicKeyVisible"
+      :product-id="publicKeyProductId"
+    />
+
     <ProductForm
-      v-else-if="viewMode === 'form'"
+      v-if="viewMode === 'form'"
       :product-id="isEditMode ? currentProductId : undefined"
       :is-edit="isEditMode"
       @save="handleFormSaved"
@@ -206,6 +211,7 @@ import { useI18n } from 'vue-i18n'
 import { Plus, Refresh } from '@element-plus/icons-vue'
 import Layout from '@/components/common/layout/Layout.vue'
 import ProductForm from './ProductForm.vue'
+import PublicKeyDialog from './PublicKeyDialog.vue'
 import {
   deleteProductOffering,
   getProductOfferings,
@@ -225,6 +231,8 @@ const { t } = useI18n()
 const viewMode = ref<ViewMode>('list')
 const isEditMode = ref(false)
 const currentProductId = ref('')
+const publicKeyVisible = ref(false)
+const publicKeyProductId = ref('')
 const products = ref<ProductOffering[]>([])
 const loading = ref(false)
 const listError = ref('')
@@ -317,8 +325,9 @@ const openCreateAuthCode = (_row: ProductOffering) => {
   ElMessage.info(t('products.actions.createAuthCode'))
 }
 
-const viewPublicKey = (_row: ProductOffering) => {
-  ElMessage.info(t('products.message.publicKeyUnavailable'))
+const viewPublicKey = (row: ProductOffering) => {
+  publicKeyProductId.value = row.id
+  publicKeyVisible.value = true
 }
 
 const toggleStatus = async (row: ProductOffering) => {
