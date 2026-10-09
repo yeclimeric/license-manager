@@ -1,6 +1,7 @@
 package database
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
@@ -8,6 +9,7 @@ import (
 
 	"license-manager/internal/config"
 	"license-manager/internal/models"
+	"license-manager/internal/repository"
 	"license-manager/pkg/utils"
 
 	"gorm.io/gorm"
@@ -27,6 +29,8 @@ func AutoMigrate() error {
 		&models.CustomerCodeSequence{},
 		&models.User{},
 		&models.ProductOffering{},
+		&models.FeatureTemplateCategory{},
+		&models.FeatureTemplate{},
 		&models.AuthorizationCode{},
 		&models.License{},
 		&models.AuthorizationChange{},
@@ -49,7 +53,24 @@ func AutoMigrate() error {
 		return fmt.Errorf("failed to initialize default admin user: %w", err)
 	}
 
+	// 初始化功能模板内置分类
+	if err := initFeatureTemplateCategories(); err != nil {
+		return fmt.Errorf("failed to initialize feature template categories: %w", err)
+	}
+
 	log.Println("Database auto migration completed successfully")
+	return nil
+}
+
+// initFeatureTemplateCategories 初始化功能模板内置分类。
+// 分类为固定四条，重复执行不会重复插入。
+func initFeatureTemplateCategories() error {
+	repo := repository.NewFeatureTemplateRepository(DB)
+	ctx := context.Background()
+	if err := repo.SeedSystemCategories(ctx); err != nil {
+		return err
+	}
+	log.Println("Feature template categories initialized")
 	return nil
 }
 
