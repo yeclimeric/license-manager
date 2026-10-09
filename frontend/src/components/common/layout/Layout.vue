@@ -41,7 +41,8 @@ const defaultNavItems = computed<NavItem[]>(() => [
   { id: 'dashboard', label: t('navigation.menu.dashboard'), href: '/dashboard', icon: 'dashboard' },
   { id: 'licenses', label: t('navigation.menu.licenses'), href: '/licenses', icon: 'licenses' },
   { id: 'customers', label: t('navigation.menu.customers'), href: '/customers', icon: 'customers' },
-  { id: 'products', label: t('navigation.menu.productOfferings'), href: '/products', icon: 'products' }
+  { id: 'products', label: t('navigation.menu.productOfferings'), href: '/products', icon: 'products' },
+  { id: 'feature-templates', label: t('navigation.menu.featureTemplates'), href: '/feature-templates', icon: 'licenses' }
 ])
 
 const navItems = computed(() => defaultNavItems.value.map(item => ({
