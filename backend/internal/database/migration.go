@@ -75,6 +75,9 @@ func initFeatureTemplateCategories() error {
 }
 
 // removeLegacyAuthorizationCodeTypeFields 清理社区版不再使用的历史字段。
+//
+// deployment_type 已于 S3 重新启用（单机版/云端版），不再属于待清理字段；
+// 此处仅清理加密类型及其配套索引。
 func removeLegacyAuthorizationCodeTypeFields() error {
 	migrator := DB.Migrator()
 	for _, indexName := range []string{
@@ -88,7 +91,7 @@ func removeLegacyAuthorizationCodeTypeFields() error {
 		}
 	}
 
-	for _, columnName := range []string{"deployment_type", "encryption_type"} {
+	for _, columnName := range []string{"encryption_type"} {
 		if migrator.HasColumn(&models.AuthorizationCode{}, columnName) {
 			if err := migrator.DropColumn(&models.AuthorizationCode{}, columnName); err != nil {
 				return err

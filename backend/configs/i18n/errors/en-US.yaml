@@ -38,6 +38,9 @@ errors:
     "300010": "Invalid configuration parameters"
     "300011": "Authorization code has associated licenses and cannot be deleted"
     "300012": "Only revoked licenses can be deleted"
+    "300013": "The product offering is inactive and cannot be authorized"
+    "300014": "The validity period cannot exceed the product trial length"
+    "300015": "A single batch cannot exceed 100 codes"
     "300101": "Authorization code not found"
     "300102": "Authorization code is locked"
   
