@@ -68,6 +68,12 @@ const routes: Array<RouteRecordRaw> = [
     ]
   },
   {
+    path: "/products",
+    name: "products",
+    component: () => import("@/views/Products/index.vue"),
+    meta: { title: "产品项管理", requiresAuth: true }
+  },
+  {
     path: "/:pathMatch(.*)*",
     redirect: "/dashboard"
   }
