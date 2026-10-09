@@ -54,6 +54,21 @@ errors:
     "500009": "Invalid deployment mode"
     "500010": "Invalid status value"
 
+# Feature template module (51xxxx)
+  feature_template:
+    "510001": "Feature template not found"
+    "510002": "Template identifier already exists"
+    "510003": "Template name is required"
+    "510004": "Template identifier is required"
+    "510005": "Identifier may only contain lower-case letters, digits and underscores, and must start with a letter"
+    "510006": "The name cannot be converted into a valid identifier; enter one manually"
+    "510007": "Built-in templates cannot be modified or deleted"
+    "510008": "Category not found"
+    "510009": "The category still contains templates and cannot be deleted"
+    "510010": "Category value already exists"
+    "510011": "Built-in categories cannot be modified or deleted"
+    "510012": "Invalid feature item list"
+
   # Dashboard module (40xxxx)
   dashboard:
     "400001": "Invalid time type parameter"
@@ -138,6 +153,10 @@ enums:
   product_offering_trial:
     "enabled": "Trial"
     "days": "days"
+
+  feature_template_status:
+    "active": "Active"
+    "inactive": "Inactive"
 
 # Default error message
 default_error: "Unknown error"
