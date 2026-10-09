@@ -1276,7 +1276,9 @@
     "role": "ロール管理",
     "user": "ユーザー管理",
     "menu": "メニュー管理",
-    "audit_log": "操作ログ"
+    "audit_log": "操作ログ",
+    "system_config": "システム設定",
+    "api_key": "API Key"
   },
   "permission": {
     "dashboard": "ダッシュボード",

@@ -1276,7 +1276,9 @@
     "role": "角色管理",
     "user": "用户管理",
     "menu": "菜单管理",
-    "audit_log": "操作日志"
+    "audit_log": "操作日志",
+    "system_config": "系统配置",
+    "api_key": "API Key"
   },
   "permission": {
     "dashboard": "仪表盘",

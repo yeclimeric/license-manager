@@ -1276,7 +1276,9 @@
     "role": "Roles",
     "user": "Users",
     "menu": "Menus",
-    "audit_log": "Operation Logs"
+    "audit_log": "Operation Logs",
+    "system_config": "System Config",
+    "api_key": "API Key"
   },
   "permission": {
     "dashboard": "Dashboard",
