@@ -30,6 +30,15 @@ var (
 	ErrProductOfferingInUse     = errors.New("product offering still has authorization codes")
 )
 
+// 功能模板领域的业务错误
+var (
+	ErrFeatureTemplateNotFound         = errors.New("feature template not found")
+	ErrFeatureTemplateIdentifierExists = errors.New("feature template identifier already exists")
+	ErrFeatureTemplateSystemProtected  = errors.New("system feature template cannot be modified or deleted")
+	ErrTemplateCategoryNotFound        = errors.New("feature template category not found")
+	ErrTemplateCategoryInUse           = errors.New("feature template category is in use")
+)
+
 // 通用的数据库/系统错误（给开发者看的）
 var (
 	ErrDatabaseConnection = errors.New("database connection failed")
