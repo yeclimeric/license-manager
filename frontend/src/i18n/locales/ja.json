@@ -147,7 +147,9 @@
       "featureTemplates": "機能テンプレート",
       "auditLogs": "操作ログ",
       "menus": "メニューと権限",
-      "users": "ユーザー管理"
+      "users": "ユーザー管理",
+      "systemConfig": "システム設定",
+      "apiKeys": "API Key"
     },
     "toggleSidebar": "サイドバー切り替え",
     "mainNavigation": "メインナビゲーション",
@@ -182,7 +184,9 @@
       "featureTemplates": "機能テンプレート",
       "auditLogs": "操作ログ",
       "menus": "メニューと権限",
-      "users": "ユーザー管理"
+      "users": "ユーザー管理",
+      "systemConfig": "システム設定",
+      "apiKeys": "API Key"
     }
   },
   "common": {
@@ -1440,5 +1444,94 @@
     "createSuccess": "作成",
     "cancel": "キャンセル",
     "save": "保存"
+  },
+  "systemConfig": {
+    "title": "システム設定",
+    "description": "サイト情報、認証ポリシー、メールサービス。サイト名とロゴはログインページへ即時反映されます。",
+    "group": {
+      "system": "システム",
+      "auth": "認証",
+      "mail": "メール"
+    },
+    "field": {
+      "value": "値",
+      "public": "公開",
+      "notPublic": "非公開"
+    },
+    "label": {
+      "siteName": "サイト名",
+      "logo": "サイトロゴ",
+      "favicon": "ファビコン",
+      "copyright": "著作権を表示",
+      "showPwdLogin": "パスワードログインを表示",
+      "sessionTimeout": "セッション有効時間（時間）",
+      "maxAttempts": "最大ログイン試行回数",
+      "lockDuration": "ロック時間（分）",
+      "mailEnabled": "メールを有効化",
+      "smtpHost": "SMTP ホスト",
+      "smtpPort": "SMTP ポート",
+      "smtpUser": "SMTP アカウント",
+      "mailFrom": "送信元アドレス"
+    },
+    "save": "保存",
+    "saving": "保存中",
+    "loadFailed": "設定の読み込みに失敗しました",
+    "saveSuccess": "設定を保存しました",
+    "saveFailed": "保存に失敗しました"
+  },
+  "apiKeys": {
+    "title": "API Key",
+    "description": "外部システムからAPIを呼ぶためのキーです。平文は作成時のみ表示され、再表示できません。",
+    "table": {
+      "name": "名称",
+      "prefix": "プレフィックス",
+      "user": "所属ユーザー",
+      "status": "状態",
+      "expires": "有効期限",
+      "ips": "IP ホワイトリスト",
+      "lastUsed": "最終利用",
+      "created": "API Key を作成しました",
+      "actions": "操作"
+    },
+    "status": {
+      "active": "有効",
+      "inactive": "無効",
+      "expired": "期限切れ"
+    },
+    "form": {
+      "create": "API Key を新規作成",
+      "edit": "API Key を編集",
+      "name": "名称",
+      "user": "所属ユーザー",
+      "expires": "有効期限",
+      "ips": "IP ホワイトリスト",
+      "ipHint": "空欄は制限なし。CIDR 形式も可（例: 203.0.113.0/24）",
+      "deleteKey": "削除",
+      "editLabel": "Edit"
+    },
+    "message": {
+      "neverUsed": "未利用",
+      "empty": "API Key がありません",
+      "loadFailed": "API Key 一覧の読み込みに失敗しました",
+      "created": "API Key を作成しました",
+      "updated": "API Key を更新しました",
+      "deleted": "API Key を削除しました"
+    },
+    "plaintext": {
+      "title": "キーの準備ができました",
+      "warning": "平文キーが表示されるのはこの一度だけです。今すぐ保存してください。",
+      "copy": "コピー",
+      "copied": "コピーしました"
+    },
+    "confirm": "確定",
+    "validation": {
+      "name": "名称を入力してください",
+      "user": "ユーザーを選択してください"
+    },
+    "noExpiry": "無期限",
+    "noIps": "制限なし",
+    "cancel": "キャンセル",
+    "statusAll": "すべての状態",
+    "keyword": "名称またはプレフィックスで検索"
   }
 }

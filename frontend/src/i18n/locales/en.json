@@ -147,7 +147,9 @@
       "featureTemplates": "Feature Templates",
       "auditLogs": "Operation Logs",
       "menus": "Menus & Roles",
-      "users": "Users"
+      "users": "Users",
+      "systemConfig": "System Config",
+      "apiKeys": "API Keys"
     },
     "toggleSidebar": "Toggle Sidebar",
     "mainNavigation": "Main navigation",
@@ -182,7 +184,9 @@
       "featureTemplates": "Feature Templates",
       "auditLogs": "Operation Logs",
       "menus": "Menus & Roles",
-      "users": "Users"
+      "users": "Users",
+      "systemConfig": "System Config",
+      "apiKeys": "API Keys"
     }
   },
   "common": {
@@ -1440,5 +1444,94 @@
     "createSuccess": "Created",
     "cancel": "Cancel",
     "save": "Save"
+  },
+  "systemConfig": {
+    "title": "System Config",
+    "description": "Site details, sign-in policy and mail service. The site name and logo reach the login page immediately.",
+    "group": {
+      "system": "System",
+      "auth": "Authentication",
+      "mail": "Mail"
+    },
+    "field": {
+      "value": "Value",
+      "public": "Public",
+      "notPublic": "Private"
+    },
+    "label": {
+      "siteName": "Site Name",
+      "logo": "Site Logo",
+      "favicon": "Favicon",
+      "copyright": "Show Copyright",
+      "showPwdLogin": "Show Password Sign-in",
+      "sessionTimeout": "Session Timeout (hours)",
+      "maxAttempts": "Max Login Attempts",
+      "lockDuration": "Lock Duration (minutes)",
+      "mailEnabled": "Enable Mail",
+      "smtpHost": "SMTP Host",
+      "smtpPort": "SMTP Port",
+      "smtpUser": "SMTP Account",
+      "mailFrom": "From Address"
+    },
+    "save": "Save",
+    "saving": "Saving",
+    "loadFailed": "Failed to load the configuration",
+    "saveSuccess": "Configuration saved",
+    "saveFailed": "Save failed"
+  },
+  "apiKeys": {
+    "title": "API Keys",
+    "description": "For calling the API from other systems. The plaintext appears once at creation and cannot be shown again.",
+    "table": {
+      "name": "Name",
+      "prefix": "Prefix",
+      "user": "User",
+      "status": "Status",
+      "expires": "Expires",
+      "ips": "IP Allow List",
+      "lastUsed": "Last Used",
+      "created": "API key created",
+      "actions": "Actions"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Disabled",
+      "expired": "Expired"
+    },
+    "form": {
+      "create": "New API Key",
+      "edit": "Edit API Key",
+      "name": "Name",
+      "user": "User",
+      "expires": "Expires",
+      "ips": "IP Allow List",
+      "ipHint": "Leave empty for no restriction. CIDR is accepted, e.g. 203.0.113.0/24",
+      "deleteKey": "Delete",
+      "editLabel": "Edit"
+    },
+    "message": {
+      "neverUsed": "Never used",
+      "empty": "No API keys yet",
+      "loadFailed": "Failed to load API keys",
+      "created": "API key created",
+      "updated": "API key updated",
+      "deleted": "API key deleted"
+    },
+    "plaintext": {
+      "title": "Your key is ready",
+      "warning": "This is the only time the key is shown. Copy it now, it cannot be retrieved later.",
+      "copy": "Copy",
+      "copied": "Copied"
+    },
+    "confirm": "OK",
+    "validation": {
+      "name": "Enter a name",
+      "user": "Choose a user"
+    },
+    "noExpiry": "Never expires",
+    "noIps": "No restriction",
+    "cancel": "Cancel",
+    "statusAll": "All Statuses",
+    "keyword": "Search name or prefix"
   }
 }

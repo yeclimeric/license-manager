@@ -147,7 +147,9 @@
       "featureTemplates": "功能模板",
       "auditLogs": "操作日志",
       "menus": "菜单权限",
-      "users": "用户管理"
+      "users": "用户管理",
+      "systemConfig": "系统配置",
+      "apiKeys": "API Key"
     },
     "toggleSidebar": "切换侧边栏",
     "mainNavigation": "主导航",
@@ -182,7 +184,9 @@
       "featureTemplates": "功能模板",
       "auditLogs": "操作日志",
       "menus": "菜单权限",
-      "users": "用户管理"
+      "users": "用户管理",
+      "systemConfig": "系统配置",
+      "apiKeys": "API Key"
     }
   },
   "common": {
@@ -1440,5 +1444,94 @@
     "createSuccess": "创建成功",
     "cancel": "取消",
     "save": "保存"
+  },
+  "systemConfig": {
+    "title": "系统配置",
+    "description": "站点信息、认证策略与邮件服务。站点名与 Logo 会即时反映到登录页。",
+    "group": {
+      "system": "系统",
+      "auth": "认证",
+      "mail": "邮件"
+    },
+    "field": {
+      "value": "值",
+      "public": "公开",
+      "notPublic": "不公开"
+    },
+    "label": {
+      "siteName": "站点名称",
+      "logo": "站点 Logo",
+      "favicon": "浏览器图标",
+      "copyright": "显示版权",
+      "showPwdLogin": "显示密码登录",
+      "sessionTimeout": "会话有效期（小时）",
+      "maxAttempts": "最大登录尝试次数",
+      "lockDuration": "锁定时长（分钟）",
+      "mailEnabled": "启用邮件",
+      "smtpHost": "SMTP 服务器",
+      "smtpPort": "SMTP 端口",
+      "smtpUser": "SMTP 账号",
+      "mailFrom": "发件人"
+    },
+    "save": "保存",
+    "saving": "保存中",
+    "loadFailed": "加载系统配置失败",
+    "saveSuccess": "系统配置已保存",
+    "saveFailed": "保存失败"
+  },
+  "apiKeys": {
+    "title": "API Key",
+    "description": "供外部系统调用接口。明文密钥仅在创建时显示一次，请立即保存。",
+    "table": {
+      "name": "名称",
+      "prefix": "前缀",
+      "user": "所属用户",
+      "status": "状态",
+      "expires": "过期时间",
+      "ips": "IP 白名单",
+      "lastUsed": "最近使用",
+      "created": "API Key 已创建",
+      "actions": "操作"
+    },
+    "status": {
+      "active": "启用",
+      "inactive": "停用",
+      "expired": "已过期"
+    },
+    "form": {
+      "create": "新建 API Key",
+      "edit": "编辑 API Key",
+      "name": "名称",
+      "user": "所属用户",
+      "expires": "过期时间",
+      "ips": "IP 白名单",
+      "ipHint": "留空表示不限制。支持 CIDR，如 203.0.113.0/24",
+      "deleteKey": "删除",
+      "editLabel": "编辑"
+    },
+    "message": {
+      "neverUsed": "从未使用",
+      "empty": "暂无 API Key",
+      "loadFailed": "加载 API Key 列表失败",
+      "created": "API Key 已创建",
+      "updated": "API Key 已更新",
+      "deleted": "API Key 已删除"
+    },
+    "plaintext": {
+      "title": "密钥创建成功",
+      "warning": "这是唯一一次显示明文密钥。关闭后无法再次查看，请立即复制保存。",
+      "copy": "复制",
+      "copied": "已复制"
+    },
+    "confirm": "确定",
+    "validation": {
+      "name": "请输入名称",
+      "user": "请选择所属用户"
+    },
+    "noExpiry": "永不过期",
+    "noIps": "不限制",
+    "cancel": "取消",
+    "statusAll": "全部状态",
+    "keyword": "搜索名称或前缀"
   }
 }
