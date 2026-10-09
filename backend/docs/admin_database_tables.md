@@ -84,7 +84,7 @@
 | `phone` | `VARCHAR(20)` | ❌ | NULL | 电话 |
 | `address` | `TEXT` | ❌ | NULL | 地址 |
 | `company_size` | `VARCHAR(20)` | ❌ | NULL | 企业规模：`small` / `medium` / `large` / `enterprise` |
-| `customer_level` | `VARCHAR(20)` | ✅ | `basic` | 客户等级：`basic` / `active` / `vip` / `strategic` |
+| `customer_level` | `VARCHAR(20)` | ✅ | `basic` | 客户等级：`basic`(1星) / `active`(2星) / `vip`(3星) / `strategic`(4星) / `other`(5星)；展示为星级 |
 | `status` | `VARCHAR(20)` | ✅ | `active` | 状态：`active` / `disabled` |
 | `description` | `TEXT` | ❌ | NULL | 备注/描述 |
 | `created_at` | `DATETIME(3)` | ✅ | — | 创建时间 |
