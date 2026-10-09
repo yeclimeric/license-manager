@@ -573,6 +573,25 @@ func (s *licenseService) Heartbeat(ctx context.Context, req *models.HeartbeatReq
 		return nil, i18n.NewI18nError("300007", lang) // 许可证已被撤销
 	}
 
+	// 校验硬件指纹：许可证密钥可被复制，若不校验指纹，
+	// 复制到另一台机器后心跳仍然通过，等于把许可证送出去。
+	if req.HardwareFingerprint != "" && license.HardwareFingerprint != "" &&
+		req.HardwareFingerprint != license.HardwareFingerprint {
+		return nil, i18n.NewI18nError("300008", lang) // 硬件指纹不匹配
+	}
+
+	// 检查许可证是否过期：企业版心跳不感知过期与锁定，此处补上。
+	// 客户端依赖心跳判定是否继续运行，不校验等于永久放行。
+	if license.AuthorizationCode != nil {
+		now := time.Now()
+		if license.AuthorizationCode.IsLocked {
+			return nil, i18n.NewI18nError("300003", lang) // 授权码已被锁定
+		}
+		if now.After(license.AuthorizationCode.EndDate) {
+			return nil, i18n.NewI18nError("300016", lang) // 许可证已过期
+		}
+	}
+
 	// 更新心跳时间和使用数据
 	now := time.Now()
 	license.LastHeartbeat = &now
