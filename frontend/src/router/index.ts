@@ -80,6 +80,18 @@ const routes: Array<RouteRecordRaw> = [
     meta: { title: "功能模板", requiresAuth: true }
   },
   {
+    path: "/roles",
+    name: "roles",
+    component: () => import("@/views/Roles/index.vue"),
+    meta: { title: "角色管理", requiresAuth: true }
+  },
+  {
+    path: "/menus",
+    name: "menus",
+    component: () => import("@/views/Menus/index.vue"),
+    meta: { title: "菜单管理", requiresAuth: true }
+  },
+  {
     path: "/audit-logs",
     name: "audit-logs",
     component: () => import("@/views/AuditLogs/index.vue"),
