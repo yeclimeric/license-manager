@@ -68,9 +68,11 @@
       "validAuthorizations": "有效授权",
       "validBreakdown": "已激活授权 {activated} · 未激活授权 {notActivated}",
       "activatedDevices": "已激活设备",
-      "activatedDevicesHelp": "当前处于激活状态的设备",
+      "activatedDevicesHelp": "手工 {manual} · 体验 {trial}",
       "remainingSlots": "剩余激活名额",
-      "remainingSlotsHelp": "有效授权下仍可使用的激活名额"
+      "remainingSlotsHelp": "有效授权下仍可使用的激活名额",
+      "manualDevices": "手工",
+      "trialDevices": "体验"
     },
     "expiry": {
       "title": "到期提醒",
@@ -112,7 +114,9 @@
       "activationUsage": "已激活 / 名额",
       "device": "设备指纹",
       "activationTime": "激活时间",
-      "expiryTime": "到期时间"
+      "expiryTime": "到期时间",
+      "productOffering": "产品项",
+      "createdAt": "创建时间"
     },
     "recentLicenses": {
       "title": "最近授权",
@@ -128,6 +132,10 @@
         "valid": "有效",
         "invalid": "失效"
       }
+    },
+    "noProductOffering": "未关联产品项",
+    "validity": {
+      "activationBasedHint": "从激活起算：该日期为授权码失效上限，各设备实际到期日以各自激活时间为准"
     }
   },
   "navigation": {
