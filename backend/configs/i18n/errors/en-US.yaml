@@ -13,6 +13,7 @@ errors:
     "100003": "Invalid username or password"
     "100004": "Authentication required"
     "100005": "Insufficient permissions"
+    "100006": "You do not have permission to access this resource"
   
   # Customer module (20xxxx)
   customer:
@@ -71,6 +72,24 @@ errors:
     "510010": "Category value already exists"
     "510011": "Built-in categories cannot be modified or deleted"
     "510012": "Invalid feature item list"
+
+# 菜单权限角色模块 (60xxxx)
+  rbac:
+    "600001": "Role not found"
+    "600002": "Role name already exists"
+    "600003": "Built-in roles cannot be modified or deleted"
+    "600004": "The role is assigned to users and cannot be deleted"
+    "600005": "The role name may only contain lower-case letters, digits and underscores"
+    "600006": "Menu not found"
+    "600007": "Menu identifier already exists"
+    "600008": "Built-in menus cannot be modified or deleted"
+    "600009": "The menu still has child items and cannot be deleted"
+    "600010": "The menu is bound to a role and cannot be deleted"
+    "600011": "Parent menu not found"
+    "600012": "The menu hierarchy would form a cycle"
+    "600013": "User not found"
+    "600014": "Assign at least one role"
+    "600015": "Unknown permission code"
 
   # Dashboard module (40xxxx)
   dashboard:
