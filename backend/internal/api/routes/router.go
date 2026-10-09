@@ -44,6 +44,7 @@ func SetupRouter() *gin.Engine {
 	productOfferingRepo := repository.NewProductOfferingRepository(db)
 	featureTemplateRepo := repository.NewFeatureTemplateRepository(db)
 	auditLogRepo := repository.NewAuditLogRepository(db)
+	rbacRepo := repository.NewRBACRepository(db)
 
 	// 获取logger实例
 	log := logger.GetLogger()
@@ -59,6 +60,7 @@ func SetupRouter() *gin.Engine {
 	productOfferingService := service.NewProductOfferingService(productOfferingRepo)
 	featureTemplateService := service.NewFeatureTemplateService(featureTemplateRepo)
 	auditLogService := service.NewAuditLogService(auditLogRepo)
+	rbacService := service.NewRBACService(rbacRepo, userRepo)
 
 	// 初始化处理器层
 	authHandler := handlers.NewAuthHandler(authService)
@@ -71,6 +73,7 @@ func SetupRouter() *gin.Engine {
 	productOfferingHandler := handlers.NewProductOfferingHandler(productOfferingService)
 	featureTemplateHandler := handlers.NewFeatureTemplateHandler(featureTemplateService)
 	auditLogHandler := handlers.NewAuditLogHandler(auditLogService)
+	rbacHandler := handlers.NewRBACHandler(rbacService)
 
 	// 健康检测接口（无需认证）
 	router.GET("/health", systemHandler.HealthCheck)
@@ -137,6 +140,25 @@ func SetupRouter() *gin.Engine {
 			// 审计日志
 			auth.GET("/v1/audit-logs", auditLogHandler.GetAuditLogList)
 			auth.GET("/v1/audit-logs/statistics", auditLogHandler.GetStatistics)
+
+			// 菜单与权限
+			auth.GET("/v1/menus", rbacHandler.GetUserMenuTree)
+			auth.GET("/v1/menus/all", rbacHandler.GetAllMenuTree)
+			auth.POST("/v1/menus", rbacHandler.CreateMenu)
+			auth.PUT("/v1/menus/:id", rbacHandler.UpdateMenu)
+			auth.DELETE("/v1/menus/:id", rbacHandler.DeleteMenu)
+			auth.GET("/v1/permissions", rbacHandler.GetPermissionMatrix)
+
+			// 角色管理
+			auth.GET("/v1/roles", rbacHandler.GetRoleList)
+			auth.POST("/v1/roles", rbacHandler.CreateRole)
+			auth.GET("/v1/roles/:id", rbacHandler.GetRole)
+			auth.PUT("/v1/roles/:id", rbacHandler.UpdateRole)
+			auth.DELETE("/v1/roles/:id", rbacHandler.DeleteRole)
+
+			// 用户角色绑定
+			auth.GET("/v1/users/:userId/roles", rbacHandler.GetUserRoles)
+			auth.PUT("/v1/users/:userId/roles", rbacHandler.SetUserRoles)
 
 			// 授权码管理
 			auth.GET("/v1/authorization-codes", authCodeHandler.GetAuthorizationCodeList)
