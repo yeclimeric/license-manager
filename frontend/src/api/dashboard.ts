@@ -23,6 +23,13 @@ export interface RecentAuthorizationItem {
   end_date: string
   max_activations: number
   current_activations: number
+  /**
+   * fixed 为固定期限；activation_based 表示从激活起算，
+   * 此时 end_date 只是硬上限，任一设备的实际到期日以 expires_at 为准
+   */
+  validity_mode: 'fixed' | 'activation_based'
+  expires_at: string
+  product_offering_name: string
   created_at: string
   updated_at: string
 }
@@ -134,7 +141,8 @@ export interface DashboardHomeData {
   generated_at: string
   overview: {
     valid_authorizations: DashboardCountBreakdown
-    activated_devices: { total: number }
+    // 手工与体验分开统计：体验型产品不占用客户的激活名额
+    activated_devices: { total: number; manual: number; trial: number }
     remaining_activation_slots: number
   }
   expiry_reminders: {

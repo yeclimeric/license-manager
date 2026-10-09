@@ -68,9 +68,11 @@
       "validAuthorizations": "有効な認可",
       "validBreakdown": "有効化済み {activated} · 未有効化 {notActivated}",
       "activatedDevices": "有効化済みデバイス",
-      "activatedDevicesHelp": "現在アクティブなデバイス",
+      "activatedDevicesHelp": "手動 {manual} · 体験 {trial}",
       "remainingSlots": "残り有効化枠",
-      "remainingSlotsHelp": "有効な認可で利用可能な有効化枠"
+      "remainingSlotsHelp": "有効な認可で利用可能な有効化枠",
+      "manualDevices": "手動",
+      "trialDevices": "体験"
     },
     "expiry": {
       "title": "期限通知",
@@ -112,7 +114,9 @@
       "activationUsage": "有効化済み / 枠",
       "device": "デバイス指紋",
       "activationTime": "有効化日時",
-      "expiryTime": "有効期限"
+      "expiryTime": "有効期限",
+      "productOffering": "製品項目",
+      "createdAt": "作成日時"
     },
     "recentLicenses": {
       "title": "最近のライセンス",
@@ -128,6 +132,10 @@
         "valid": "有効",
         "invalid": "無効"
       }
+    },
+    "noProductOffering": "製品項目未設定",
+    "validity": {
+      "activationBasedHint": "有効期間の起算はアクティベーション日：この日は上限であり、各機器はそれぞれのアクティベーション日から起算されます"
     }
   },
   "navigation": {

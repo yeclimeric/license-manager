@@ -76,9 +76,17 @@
           <div class="panel-body table-wrap">
             <el-table v-loading="homeSkeletonVisible" :data="home?.recent_authorizations || []" @row-click="openAuthorization">
               <el-table-column prop="customer_name" :label="t('dashboard.columns.customerName')" min-width="130" show-overflow-tooltip><template #default="{ row }">{{ row.customer_name || t('dashboard.noCustomer') }}</template></el-table-column>
-              <el-table-column prop="description" :label="t('dashboard.columns.description')" min-width="150" show-overflow-tooltip />
+              <el-table-column prop="product_offering_name" :label="t('dashboard.columns.productOffering')" min-width="150" show-overflow-tooltip><template #default="{ row }">{{ row.product_offering_name || t('dashboard.noProductOffering') }}</template></el-table-column>
               <el-table-column :label="t('dashboard.columns.activationUsage')" min-width="120"><template #default="{ row }">{{ row.current_activations }} / {{ row.max_activations }}</template></el-table-column>
-              <el-table-column :label="t('dashboard.columns.expiryTime')" min-width="125"><template #default="{ row }">{{ formatDate(row.end_date) }}</template></el-table-column>
+              <el-table-column :label="t('dashboard.columns.expiryTime')" min-width="150">
+                <template #default="{ row }">
+                  <el-tooltip v-if="row.validity_mode === 'activation_based'" :content="t('dashboard.validity.activationBasedHint')" placement="top">
+                    <span class="validity-marked">{{ formatDate(row.expires_at || row.end_date) }}<el-icon class="validity-icon"><InfoFilled /></el-icon></span>
+                  </el-tooltip>
+                  <span v-else>{{ formatDate(row.expires_at || row.end_date) }}</span>
+                </template>
+              </el-table-column>
+              <el-table-column :label="t('dashboard.columns.createdAt')" min-width="125" align="center"><template #default="{ row }">{{ formatDate(row.created_at) }}</template></el-table-column>
               <template #empty><el-empty :description="t('dashboard.noRecentAuthorizations')" :image-size="58" /></template>
             </el-table>
           </div>
@@ -105,7 +113,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
-import { Cloudy, Coin, Document, Monitor, Refresh, WarningFilled } from '@element-plus/icons-vue'
+import { Cloudy, Coin, Document, InfoFilled, Monitor, Refresh, WarningFilled } from '@element-plus/icons-vue'
 import Layout from '@/components/common/layout/Layout.vue'
 import DashboardTrendChart from '@/components/dashboard/DashboardTrendChart.vue'
 import { getDashboardBusinessTrends, getDashboardHome, type DashboardBusinessTrendsData, type DashboardHomeData, type DashboardTrendPoint, type RecentActivationItem, type RecentAuthorizationItem } from '@/api/dashboard'
@@ -132,7 +140,7 @@ const overviewCards = computed(() => {
   const overview = home.value?.overview
   return [
     { key: 'valid', label: t('dashboard.overview.validAuthorizations'), icon: Document, value: overview?.valid_authorizations.total ?? 0, help: t('dashboard.overview.validBreakdown', { activated: overview?.valid_authorizations.activated ?? 0, notActivated: overview?.valid_authorizations.not_activated ?? 0 }), tone: 'brand' },
-    { key: 'devices', label: t('dashboard.overview.activatedDevices'), icon: Monitor, value: overview?.activated_devices.total ?? 0, help: t('dashboard.overview.activatedDevicesHelp'), tone: 'info' },
+    { key: 'devices', label: t('dashboard.overview.activatedDevices'), icon: Monitor, value: overview?.activated_devices.total ?? 0, help: t('dashboard.overview.activatedDevicesHelp', { manual: overview?.activated_devices.manual ?? 0, trial: overview?.activated_devices.trial ?? 0 }), tone: 'info' },
     { key: 'slots', label: t('dashboard.overview.remainingSlots'), icon: Coin, value: overview?.remaining_activation_slots ?? 0, help: t('dashboard.overview.remainingSlotsHelp'), tone: 'warning' }
   ]
 })
@@ -184,4 +192,15 @@ onMounted(refreshAll)
 @media (max-width:1023px) { .recent-grid,.trend-grid { grid-template-columns:1fr; }.trend-card+.trend-card { border-top:1px solid var(--dashboard-border); border-left:0; } }
 @media (max-width:767px) { .dashboard-page { padding:14px; }.page-header,.trend-header { align-items:flex-start; flex-direction:column; }.header-actions,.trend-controls { width:100%; justify-content:space-between; }.overview-grid,.expiry-grid { grid-template-columns:1fr; }.metric-card { border-right:0; border-bottom:1px solid var(--dashboard-border); }.metric-card:last-child { border-bottom:0; }.cloud-promo { align-items:flex-start; flex-direction:column; gap:12px; }.cloud-promo__copy { grid-template-columns:1fr; gap:3px; }.cloud-promo__copy p { white-space:normal; }.cloud-promo__actions { width:100%; }.cloud-promo__actions a { flex:1; justify-content:center; }.trend-controls :deep(.el-date-editor) { width:100%; }.recent-grid { gap:14px; } }
 @media (prefers-reduced-motion:reduce) { .cloud-promo__badge .el-icon { transition:none; }.cloud-promo:hover .cloud-promo__badge .el-icon { transform:none; } }
+.validity-marked {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.validity-icon {
+  font-size: 13px;
+  color: var(--app-text-secondary);
+  cursor: help;
+}
 </style>

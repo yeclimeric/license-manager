@@ -67,8 +67,14 @@ type RecentAuthorization struct {
 	EndDate            time.Time `json:"end_date"`            // 到期时间
 	MaxActivations     int       `json:"max_activations"`     // 最大激活数量
 	CurrentActivations int       `json:"current_activations"` // 当前激活数量
-	CreatedAt          time.Time `json:"created_at"`          // 创建时间
-	UpdatedAt          time.Time `json:"updated_at"`          // 更新时间
+	// ValidityMode 有效期模式：fixed(固定期限)/activation_based(从激活起算)
+	// 前端据此提示：起算模式下到期日因设备而异，不能直接展示授权码的 end_date
+	ValidityMode string    `json:"validity_mode"`
+	ExpiresAt    time.Time `json:"expires_at"` // 到期时间（从激活起算时按最近激活推算）
+	// ProductOfferingName 关联产品项名称，未关联时为空
+	ProductOfferingName string    `json:"product_offering_name"`
+	CreatedAt           time.Time `json:"created_at"` // 创建时间
+	UpdatedAt           time.Time `json:"updated_at"` // 更新时间
 }
 
 // DashboardHomeResponse 仪表盘首页聚合数据。
@@ -93,8 +99,16 @@ type DashboardValidAuthorizations struct {
 	NotActivated int64 `json:"not_activated"`
 }
 
+// DashboardActivatedDevices 已激活设备。
+//
+// 拆分手工激活与体验激活：体验型产品不占用客户的激活名额，
+// 运营需要分开看才能判断真实用量。
 type DashboardActivatedDevices struct {
 	Total int64 `json:"total"`
+	// Manual 手工授权码激活的设备
+	Manual int64 `json:"manual"`
+	// Trial 体验型产品激活的设备
+	Trial int64 `json:"trial"`
 }
 
 type DashboardExpiryReminders struct {

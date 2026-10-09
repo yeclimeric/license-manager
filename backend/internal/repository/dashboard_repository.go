@@ -39,13 +39,27 @@ func (r *dashboardRepository) GetHomeData(ctx context.Context, now time.Time, re
 		ValidTotal               int64 `gorm:"column:valid_total"`
 		ValidActivated           int64 `gorm:"column:valid_activated"`
 		ActivatedDevices         int64 `gorm:"column:activated_devices"`
+		ManualDevices            int64 `gorm:"column:manual_devices"`
+		TrialDevices             int64 `gorm:"column:trial_devices"`
 		RemainingActivationSlots int64 `gorm:"column:remaining_activation_slots"`
 	}
 	var overview overviewResult
 	if err := r.db.WithContext(ctx).Table("authorization_codes ac").
 		Select(`COUNT(*) AS valid_total,
 			COALESCE(SUM(CASE WHEN COALESCE(al.active_count, 0) > 0 THEN 1 ELSE 0 END), 0) AS valid_activated,
-			(SELECT COUNT(*) FROM licenses WHERE status = 'active' AND deleted_at IS NULL) AS activated_devices,
+			(SELECT COUNT(*) FROM licenses l
+				WHERE l.status = 'active' AND l.deleted_at IS NULL) AS activated_devices,
+			-- 手工/体验拆分：体验型产品项下的许可证不占用客户名额
+			(SELECT COUNT(*) FROM licenses l
+				LEFT JOIN authorization_codes ac2 ON ac2.id = l.authorization_code_id
+				LEFT JOIN product_offerings po ON po.id = ac2.product_offering_id
+				WHERE l.status = 'active' AND l.deleted_at IS NULL
+					AND COALESCE(po.is_trial_product, 0) = 0) AS manual_devices,
+			(SELECT COUNT(*) FROM licenses l
+				LEFT JOIN authorization_codes ac2 ON ac2.id = l.authorization_code_id
+				LEFT JOIN product_offerings po ON po.id = ac2.product_offering_id
+				WHERE l.status = 'active' AND l.deleted_at IS NULL
+					AND COALESCE(po.is_trial_product, 0) = 1) AS trial_devices,
 			COALESCE(SUM(GREATEST(ac.max_activations - COALESCE(al.active_count, 0), 0)), 0) AS remaining_activation_slots`).
 		Joins("LEFT JOIN ("+activeLicenseSubquery+") al ON al.authorization_code_id = ac.id").
 		Where("ac.is_locked = ? AND ac.end_date >= ?", false, now).
@@ -95,7 +109,11 @@ func (r *dashboardRepository) GetHomeData(ctx context.Context, now time.Time, re
 				Activated:    overview.ValidActivated,
 				NotActivated: overview.ValidTotal - overview.ValidActivated,
 			},
-			ActivatedDevices:         models.DashboardActivatedDevices{Total: overview.ActivatedDevices},
+			ActivatedDevices: models.DashboardActivatedDevices{
+				Total:  overview.ActivatedDevices,
+				Manual: overview.ManualDevices,
+				Trial:  overview.TrialDevices,
+			},
 			RemainingActivationSlots: overview.RemainingActivationSlots,
 		},
 		ExpiryReminders: models.DashboardExpiryReminders{
@@ -110,25 +128,31 @@ func (r *dashboardRepository) GetHomeData(ctx context.Context, now time.Time, re
 
 func (r *dashboardRepository) getHomeRecentAuthorizations(ctx context.Context, now time.Time, limit int) ([]models.RecentAuthorization, error) {
 	type row struct {
-		ID                 string
-		Code               string
-		CustomerID         *string
-		CustomerName       string
-		Description        string
-		StartDate          time.Time
-		EndDate            time.Time
-		MaxActivations     int
-		CurrentActivations int
-		CreatedAt          time.Time
-		UpdatedAt          time.Time
-		IsLocked           bool
+		ID                  string
+		Code                string
+		CustomerID          *string
+		CustomerName        string
+		Description         string
+		StartDate           time.Time
+		EndDate             time.Time
+		MaxActivations      int
+		CurrentActivations  int
+		ValidityMode        string
+		ExpiresAt           *time.Time
+		ProductOfferingName string
+		CreatedAt           time.Time
+		UpdatedAt           time.Time
+		IsLocked            bool
 	}
 	var rows []row
 	err := r.db.WithContext(ctx).Table("authorization_codes ac").
 		Select(`ac.id, ac.code, ac.customer_id, COALESCE(c.customer_name, '') AS customer_name,
 			COALESCE(ac.description, '') AS description, ac.start_date, ac.end_date, ac.max_activations,
-			COALESCE(al.active_count, 0) AS current_activations, ac.created_at, ac.updated_at, ac.is_locked`).
+			COALESCE(al.active_count, 0) AS current_activations, ac.validity_mode, ac.end_date AS expires_at,
+			COALESCE(po.name, '') AS product_offering_name,
+			ac.created_at, ac.updated_at, ac.is_locked`).
 		Joins("LEFT JOIN customers c ON c.id = ac.customer_id").
+		Joins("LEFT JOIN product_offerings po ON po.id = ac.product_offering_id").
 		Joins(`LEFT JOIN (
 			SELECT authorization_code_id, COUNT(*) AS active_count
 			FROM licenses WHERE status = 'active' AND deleted_at IS NULL
@@ -153,7 +177,11 @@ func (r *dashboardRepository) getHomeRecentAuthorizations(ctx context.Context, n
 			Description: item.Description, Status: status,
 			StatusDisplay: i18n.GetEnumMessage("authorization_code_status", status, lang),
 			StartDate:     item.StartDate, EndDate: item.EndDate, MaxActivations: item.MaxActivations,
-			CurrentActivations: item.CurrentActivations, CreatedAt: item.CreatedAt, UpdatedAt: item.UpdatedAt,
+			CurrentActivations:  item.CurrentActivations,
+			ValidityMode:        item.ValidityMode,
+			ExpiresAt:           resolvedExpiry(item.ValidityMode, item.EndDate, item.ExpiresAt),
+			ProductOfferingName: item.ProductOfferingName,
+			CreatedAt:           item.CreatedAt, UpdatedAt: item.UpdatedAt,
 		})
 	}
 	return items, nil
@@ -393,4 +421,16 @@ func (r *dashboardRepository) GetRecentAuthorizations(ctx context.Context, req *
 		List:  authorizations,
 		Total: total,
 	}, nil
+}
+
+// resolvedExpiry 解析列表中展示的到期时间。
+//
+// 从激活起算的授权码，其 end_date 只是硬上限，不代表任一设备的实际到期日。
+// 列表展示用授权码的 end_date 作为参考值，缺失时回退到零值，
+// 由前端按 validity_mode 决定如何呈现。
+func resolvedExpiry(validityMode string, endDate time.Time, expiresAt *time.Time) time.Time {
+	if expiresAt != nil && !expiresAt.IsZero() {
+		return *expiresAt
+	}
+	return endDate
 }

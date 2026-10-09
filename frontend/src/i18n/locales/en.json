@@ -68,9 +68,11 @@
       "validAuthorizations": "Valid Authorizations",
       "validBreakdown": "Activated {activated} · Not activated {notActivated}",
       "activatedDevices": "Activated Devices",
-      "activatedDevicesHelp": "Devices currently in active status",
+      "activatedDevicesHelp": "Manual {manual} · Trial {trial}",
       "remainingSlots": "Remaining Activation Slots",
-      "remainingSlotsHelp": "Slots still available under valid authorizations"
+      "remainingSlotsHelp": "Slots still available under valid authorizations",
+      "manualDevices": "Manual",
+      "trialDevices": "Trial"
     },
     "expiry": {
       "title": "Expiry Reminders",
@@ -112,7 +114,9 @@
       "activationUsage": "Activated / Slots",
       "device": "Device Fingerprint",
       "activationTime": "Activated At",
-      "expiryTime": "Expires At"
+      "expiryTime": "Expires At",
+      "productOffering": "Product",
+      "createdAt": "Created"
     },
     "recentLicenses": {
       "title": "Recent Licenses",
@@ -128,6 +132,10 @@
         "valid": "Valid",
         "invalid": "Invalid"
       }
+    },
+    "noProductOffering": "No product",
+    "validity": {
+      "activationBasedHint": "Counted from activation: this date is the code expiry ceiling; each device expires on its own activation date"
     }
   },
   "navigation": {
