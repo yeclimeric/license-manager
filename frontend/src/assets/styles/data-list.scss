@@ -2,7 +2,7 @@
   --list-canvas: var(--app-bg-color);
   --list-surface: #fff;
   --list-surface-soft: #f5faf7;
-  --list-header-bg: #e2f0ea;
+  --list-header-bg: #ffffff;
   --list-border: #b9d0c6;
   --list-text: #263a32;
   --list-regular: #344d43;
@@ -168,18 +168,19 @@
   --el-table-header-bg-color: var(--list-header-bg);
   --el-table-tr-bg-color: var(--list-surface);
   --el-table-row-hover-bg-color: #f0f8f5;
-  --el-table-border-color: var(--list-border);
-  --el-table-header-text-color: #344a41;
+  --el-table-border-color: #ebeef5;
+  --el-table-header-text-color: var(--app-text-primary);
   --el-table-text-color: var(--list-regular);
   background: var(--list-surface);
 }
 
 .data-list-table .el-table th.el-table__cell {
-  height: 46px;
+  height: 40px;
   padding: 0;
   background: var(--list-header-bg);
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--app-text-primary);
 }
 
 .data-list-table .el-table td.el-table__cell {
