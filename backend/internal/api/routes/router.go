@@ -76,6 +76,7 @@ func SetupRouter() *gin.Engine {
 	featureTemplateHandler := handlers.NewFeatureTemplateHandler(featureTemplateService)
 	auditLogHandler := handlers.NewAuditLogHandler(auditLogService)
 	rbacHandler := handlers.NewRBACHandler(rbacService)
+	userManagementHandler := handlers.NewUserManagementHandler(service.NewUserManagementService(userRepo))
 
 	// 健康检测接口（无需认证）
 	router.GET("/health", systemHandler.HealthCheck)
@@ -158,9 +159,17 @@ func SetupRouter() *gin.Engine {
 			auth.PUT("/v1/roles/:id", middleware.RequirePermission("role:update", permChecker), rbacHandler.UpdateRole)
 			auth.DELETE("/v1/roles/:id", middleware.RequirePermission("role:delete", permChecker), rbacHandler.DeleteRole)
 
-			// 用户角色绑定
-			auth.GET("/v1/users/:userId/roles", middleware.RequirePermission("user:read", permChecker), rbacHandler.GetUserRoles)
-			auth.PUT("/v1/users/:userId/roles", middleware.RequirePermission("user:update", permChecker), rbacHandler.SetUserRoles)
+			// 用户角色绑定（按ID写入，供角色页分配）
+			auth.PUT("/v1/users/:id/roles", middleware.RequirePermission("user:update", permChecker), rbacHandler.SetUserRoles)
+
+			// 用户管理
+			auth.GET("/v1/users", middleware.RequirePermission("user:read", permChecker), userManagementHandler.GetUserList)
+			auth.POST("/v1/users", middleware.RequirePermission("user:create", permChecker), userManagementHandler.CreateUser)
+			auth.GET("/v1/users/:id", middleware.RequirePermission("user:read", permChecker), userManagementHandler.GetUserDetail)
+			auth.PUT("/v1/users/:id", middleware.RequirePermission("user:update", permChecker), userManagementHandler.UpdateUser)
+			auth.DELETE("/v1/users/:id", middleware.RequirePermission("user:delete", permChecker), userManagementHandler.DeleteUser)
+			auth.POST("/v1/users/:id/reset-password", middleware.RequirePermission("user:update", permChecker), userManagementHandler.ResetPassword)
+			auth.GET("/v1/users/:id/roles", middleware.RequirePermission("user:read", permChecker), userManagementHandler.GetUserRoles)
 
 			// 授权码管理
 			auth.GET("/v1/authorization-codes", authCodeHandler.GetAuthorizationCodeList)
