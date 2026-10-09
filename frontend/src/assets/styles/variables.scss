@@ -48,10 +48,10 @@ $spacing-base: 16px;           // 改为16px
 $spacing-small: 8px;
 $spacing-extra-small: 4px;
 
-// 圆角 - 符合8px栅格系统
-$border-radius-base: 0;
-$border-radius-small: 0;
-$border-radius-round: 0;
+// 圆角 - 对齐企业版实测 --el-border-radius-base: 4px
+$border-radius-base: 4px;
+$border-radius-small: 4px;
+$border-radius-round: 4px;
 $border-radius-circle: 100%;
 
 // 阴影
@@ -59,8 +59,10 @@ $box-shadow-base: 0 2px 4px rgba(0, 0, 0, 0.12), 0 0 6px rgba(0, 0, 0, 0.04);
 $box-shadow-light: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
 
 // 响应式断点 - 符合8px栅格系统
+// tablet 取 1024 是因为 mixins.scss 用 ($breakpoint-tablet - 1px) 表达闭区间上限，
+// 实际生效区间为 768–1023，与企业版实测的 768/1023/1200 一致。勿直接改 1023。
 $breakpoint-mobile: 768px;
-$breakpoint-tablet: 1024px;    // 改为1024px
+$breakpoint-tablet: 1024px;
 $breakpoint-desktop: 1200px;
 $breakpoint-wide: 1920px;
 

@@ -9,6 +9,8 @@ export enum DeviceType {
 }
 
 // 断点配置
+// 与 styles/variables.scss 的 $breakpoint-* 保持一致：
+// mobile < 768，tablet 768–1023，desktop >= 1024
 const BREAKPOINTS = {
   mobile: 768,
   tablet: 1024
