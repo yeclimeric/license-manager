@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"license-manager/internal/models"
@@ -33,6 +34,10 @@ func (r *userRepository) GetUserByID(ctx context.Context, id string) (*models.Us
 	var user models.User
 	err := r.db.WithContext(ctx).Where("id = ?", id).First(&user).Error
 	if err != nil {
+		// 转为哨兵错误，调用方无需依赖 GORM 的错误类型
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrUserNotFound
+		}
 		return nil, err
 	}
 	return &user, nil

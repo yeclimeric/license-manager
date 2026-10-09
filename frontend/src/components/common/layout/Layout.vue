@@ -15,20 +15,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { useAppStore } from '@/store/modules/app'
 import Sidebar from './Sidebar.vue'
 import NavContent from './NavContent.vue'
-
-interface NavItem {
-  id: string
-  label: string
-  href: string
-  icon?: string
-  active?: boolean
-}
+import { getUserMenus } from '@/api/rbac'
 
 defineProps<{ appName?: string; pageTitle?: string }>()
 
@@ -37,19 +30,115 @@ const route = useRoute()
 const router = useRouter()
 const appStore = useAppStore()
 
-const defaultNavItems = computed<NavItem[]>(() => [
-  { id: 'dashboard', label: t('navigation.menu.dashboard'), href: '/dashboard', icon: 'dashboard' },
-  { id: 'licenses', label: t('navigation.menu.licenses'), href: '/licenses', icon: 'licenses' },
-  { id: 'customers', label: t('navigation.menu.customers'), href: '/customers', icon: 'customers' },
-  { id: 'products', label: t('navigation.menu.productOfferings'), href: '/products', icon: 'products' },
-  { id: 'feature-templates', label: t('navigation.menu.featureTemplates'), href: '/feature-templates', icon: 'licenses' },
-  { id: 'audit-logs', label: t('navigation.menu.auditLogs'), href: '/audit-logs', icon: 'audit' }
+interface NavItem {
+  id: string
+  label: string
+  href: string
+  icon?: string
+  active?: boolean
+  children?: NavItem[]
+}
+
+interface FallbackEntry {
+  id: string
+  href: string
+  icon: string
+  labelKey: string
+}
+
+// 菜单树由后端按角色返回，标签存 i18n 键，切换语言时随之变化。
+// 取不到时退回静态清单：登录页等未认证场景也要能渲染侧边栏。
+const staticFallback: FallbackEntry[] = [
+  { id: 'dashboard', href: '/dashboard', icon: 'dashboard', labelKey: 'navigation.menu.dashboard' },
+  { id: 'licenses', href: '/licenses', icon: 'licenses', labelKey: 'navigation.menu.licenses' },
+  { id: 'customers', href: '/customers', icon: 'customers', labelKey: 'navigation.menu.customers' },
+  { id: 'products', href: '/products', icon: 'products', labelKey: 'navigation.menu.productOfferings' },
+  { id: 'feature-templates', href: '/feature-templates', icon: 'licenses', labelKey: 'navigation.menu.featureTemplates' },
+  { id: 'audit-logs', href: '/audit-logs', icon: 'audit', labelKey: 'navigation.menu.auditLogs' },
+  { id: 'roles', href: '/roles', icon: 'users', labelKey: 'rbac.page.roleTitle' },
+  { id: 'menus', href: '/menus', icon: 'menu', labelKey: 'rbac.page.menuTitle' }
+]
+
+interface SourceMenu {
+  id: string
+  name_key: string
+  path: string
+  icon: string
+  type: 'menu' | 'directory'
+  children: SourceMenu[] | null
+}
+
+const remoteMenus = ref<SourceMenu[] | null>(null)
+
+const iconFor = (icon: string, id: string): string => {
+  if (icon && iconNames.has(icon)) return icon
+  // 种子数据使用 Material Symbols 名称，回退到既有图标集
+  return id.includes('role') || id.includes('user') ? 'users' : id.includes('menu') ? 'menu' : iconFallback(id)
+}
+
+const iconFallback = (id: string): string => {
+  if (id.includes('dashboard')) return 'dashboard'
+  if (id.includes('license')) return 'licenses'
+  if (id.includes('customer')) return 'customers'
+  if (id.includes('product')) return 'products'
+  if (id.includes('audit') || id.includes('feature')) return 'licenses'
+  return 'dashboard'
+}
+
+const iconNames = new Set([
+  'dashboard', 'licenses', 'customers', 'products', 'users', 'menu', 'audit'
 ])
 
-const navItems = computed(() => defaultNavItems.value.map(item => ({
-  ...item,
-  active: route.path === item.href || route.path.startsWith(`${item.href}/`)
-})))
+// 分组目录本身没有路径，不能作为可点击项，但仍需保留其子菜单。
+// 因此过滤条件是"有路径 或 有子菜单"，而不是只看路径。
+const toNavItems = (list: SourceMenu[]): NavItem[] =>
+  list
+    .map((item) => {
+      const children = toNavItems(item.children || [])
+      if (!item.path && children.length === 0) return null
+
+      const base: NavItem = {
+        id: item.id,
+        label: t(item.name_key),
+        href: item.path,
+        icon: iconFor(item.icon, item.id),
+        active: !!item.path &&
+          (route.path === item.path || route.path.startsWith(`${item.path}/`))
+      }
+      if (children.length > 0) base.children = children
+      return base
+    })
+    .filter((item): item is NavItem => item !== null)
+
+const sourceMenus = computed<SourceMenu[]>(() => {
+  if (remoteMenus.value && remoteMenus.value.length > 0) return remoteMenus.value
+  return staticFallback.map((item) => ({
+    id: item.id,
+    name_key: item.labelKey,
+    path: item.href,
+    icon: item.icon || '',
+    type: 'menu' as const,
+    children: null
+  }))
+})
+
+const navItems = computed(() => toNavItems(sourceMenus.value))
+
+// 拉取用户菜单。失败时保留静态清单，不影响其他页面使用。
+const loadMenus = async () => {
+  try {
+    const res = await getUserMenus()
+    if (res.data?.list?.length) {
+      remoteMenus.value = res.data.list as SourceMenu[]
+    }
+  } catch {
+    remoteMenus.value = null
+  }
+}
+
+onMounted(() => {
+  loadMenus()
+})
 
 const closeMobileSidebar = () => appStore.setSidebarCollapsed(true)
 const handleKeydown = (event: KeyboardEvent) => {

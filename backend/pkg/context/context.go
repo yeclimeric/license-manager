@@ -16,6 +16,9 @@ const (
 	RequestIDKey contextKey = "request_id"
 	// UserIDKey 存储用户ID的上下文键
 	UserIDKey contextKey = "user_id"
+
+	// UsernameKey 存储用户名的上下文键
+	UsernameKey contextKey = "username"
 	// TraceIDKey 存储链路追踪ID的上下文键
 	TraceIDKey contextKey = "trace_id"
 )
@@ -68,14 +71,20 @@ func GetUserIDFromContext(ctx context.Context) string {
 		}
 	}
 
-	// 尝试从标准context.Context获取
-	if userID := ctx.Value("user_id"); userID != nil {
+	// 从标准context.Context获取。必须用 UserIDKey 而非字面量字符串：
+	// context.WithValue 以键的类型与值共同比较，两者不同则取不到。
+	if userID := ctx.Value(UserIDKey); userID != nil {
 		if id, ok := userID.(string); ok {
 			return id
 		}
 	}
 
 	return ""
+}
+
+// WithUsername 将用户名添加到Context中
+func WithUsername(ctx context.Context, username string) context.Context {
+	return context.WithValue(ctx, UsernameKey, username)
 }
 
 // GetUsernameFromContext 从context中获取当前用户名
@@ -88,7 +97,7 @@ func GetUsernameFromContext(ctx context.Context) string {
 		}
 	}
 
-	if username := ctx.Value("username"); username != nil {
+	if username := ctx.Value(UsernameKey); username != nil {
 		if name, ok := username.(string); ok {
 			return name
 		}

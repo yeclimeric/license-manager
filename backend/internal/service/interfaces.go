@@ -34,6 +34,36 @@ type EnumService interface {
 	GetEnumsByType(ctx context.Context, enumType string) (*models.EnumTypeResponse, error)
 }
 
+// RBACService 菜单权限角色服务接口
+type RBACService interface {
+	// GetUserMenuTree 获取当前用户可见菜单树
+	GetUserMenuTree(ctx context.Context) (*models.MenuTreeResponse, error)
+	// GetAllMenuTree 获取全部菜单树
+	GetAllMenuTree(ctx context.Context) (*models.MenuTreeResponse, error)
+	// GetPermissionMatrix 获取权限矩阵
+	GetPermissionMatrix(ctx context.Context) (*models.PermissionMatrixResponse, error)
+	// GetRoleList 获取角色列表
+	GetRoleList(ctx context.Context, keyword string) ([]models.Role, int, error)
+	// GetRole 获取角色详情
+	GetRole(ctx context.Context, id string) (*models.Role, error)
+	// CreateRole 创建角色
+	CreateRole(ctx context.Context, req *models.RoleCreateRequest) (*models.Role, error)
+	// UpdateRole 更新角色
+	UpdateRole(ctx context.Context, id string, req *models.RoleUpdateRequest) (*models.Role, error)
+	// DeleteRole 删除角色
+	DeleteRole(ctx context.Context, id string) error
+	// SetUserRoles 设置用户绑定的角色
+	SetUserRoles(ctx context.Context, userID string, roleIDs []string) error
+	// GetUserRoles 获取用户绑定的角色ID
+	GetUserRoles(ctx context.Context, userID string) ([]string, error)
+	// CreateMenu 创建菜单
+	CreateMenu(ctx context.Context, menu *models.Menu) (*models.Menu, error)
+	// UpdateMenu 更新菜单
+	UpdateMenu(ctx context.Context, id string, menu *models.Menu) (*models.Menu, error)
+	// DeleteMenu 删除菜单
+	DeleteMenu(ctx context.Context, id string) error
+}
+
 // AuditLogService 审计日志服务接口
 type AuditLogService interface {
 	// GetAuditLogList 查询审计日志列表

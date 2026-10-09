@@ -6,6 +6,42 @@ import (
 	"time"
 )
 
+// RBACRepository 菜单权限角色数据访问接口
+type RBACRepository interface {
+	// GetMenuList 查询菜单列表（扁平）
+	GetMenuList(ctx context.Context) ([]models.Menu, error)
+	// GetMenuTree 查询用户可见菜单树，userID 为空时返回全部
+	GetMenuTree(ctx context.Context, userID string) ([]models.Menu, error)
+	// GetUserPermissions 返回用户全部权限码
+	GetUserPermissions(ctx context.Context, userID string) ([]string, error)
+	// HasPermission 判断用户是否持有指定权限
+	HasPermission(ctx context.Context, userID string, permission string) (bool, error)
+	// GetPermissionMatrix 查询权限矩阵
+	GetPermissionMatrix(ctx context.Context) ([]models.PermissionResource, error)
+	// GetRoleList 查询角色列表
+	GetRoleList(ctx context.Context, keyword string) ([]models.Role, error)
+	// GetRoleByID 根据ID获取角色
+	GetRoleByID(ctx context.Context, id string) (*models.Role, error)
+	// CreateRole 创建角色
+	CreateRole(ctx context.Context, role *models.Role, permissions []string, menuIDs []string) error
+	// UpdateRole 更新角色
+	UpdateRole(ctx context.Context, role *models.Role, permissions []string, menuIDs []string) error
+	// DeleteRole 删除角色
+	DeleteRole(ctx context.Context, id string) error
+	// GetUserRoleIDs 返回用户绑定的角色ID列表
+	GetUserRoleIDs(ctx context.Context, userID string) ([]string, error)
+	// SetUserRoles 设置用户绑定的角色（覆盖式）
+	SetUserRoles(ctx context.Context, userID string, roleIDs []string) error
+	// GetMenuByID 根据ID获取菜单
+	GetMenuByID(ctx context.Context, id string) (*models.Menu, error)
+	// CreateMenu 创建菜单
+	CreateMenu(ctx context.Context, menu *models.Menu) error
+	// UpdateMenu 更新菜单
+	UpdateMenu(ctx context.Context, menu *models.Menu) error
+	// DeleteMenu 删除菜单
+	DeleteMenu(ctx context.Context, id string) error
+}
+
 // AuditLogRepository 审计日志数据访问接口
 type AuditLogRepository interface {
 	// Create 写入一条审计日志

@@ -32,6 +32,12 @@ func AutoMigrate() error {
 		&models.FeatureTemplateCategory{},
 		&models.FeatureTemplate{},
 		&models.AuditLog{},
+		&models.Menu{},
+		&models.PermissionResource{},
+		&models.Role{},
+		&models.RolePermission{},
+		&models.RoleMenu{},
+		&models.UserRole{},
 		&models.AuthorizationCode{},
 		&models.License{},
 		&models.AuthorizationChange{},
@@ -57,6 +63,11 @@ func AutoMigrate() error {
 	// 初始化功能模板内置分类
 	if err := initFeatureTemplateCategories(); err != nil {
 		return fmt.Errorf("failed to initialize feature template categories: %w", err)
+	}
+
+	// 初始化 RBAC 基础数据（菜单、权限资源、角色）
+	if err := initRBACData(); err != nil {
+		return fmt.Errorf("failed to initialize rbac data: %w", err)
 	}
 
 	log.Println("Database auto migration completed successfully")

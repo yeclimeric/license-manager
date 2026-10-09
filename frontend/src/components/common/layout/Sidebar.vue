@@ -8,30 +8,75 @@
       <span v-if="!isCollapsed || appStore.isMobile" class="brand-name">Cedar-V</span>
     </div>
     <nav class="sidebar__nav" :aria-label="t('navigation.mainNavigation')">
-      <el-tooltip
-        v-for="item in navItems"
-        :key="item.id"
-        :content="item.label"
-        placement="right"
-        :disabled="!isCollapsed || appStore.isMobile"
-      >
-        <button
-          type="button"
-          class="nav-item"
-          :class="{ 'nav-item--active': item.active }"
-          :aria-current="item.active ? 'page' : undefined"
-          @click="$emit('navClick', item, $event)"
+      <template v-for="entry in navItems" :key="entry.id">
+        <!-- 分组目录：仅作标题，展开时才显示子菜单 -->
+        <div v-if="entry.children?.length" :key="entry.id" class="nav-group">
+          <button
+            v-if="!isCollapsed || appStore.isMobile"
+            type="button"
+            class="nav-group__title"
+            :aria-expanded="isGroupOpen(entry.id)"
+            @click="toggleGroup(entry.id)"
+          >
+            <span class="nav-group__label">{{ entry.label }}</span>
+            <el-icon class="nav-group__arrow" :class="{ 'is-open': isGroupOpen(entry.id) }">
+              <ArrowDown />
+            </el-icon>
+          </button>
+          <el-collapse-transition>
+            <div v-show="isGroupOpen(entry.id)">
+              <el-tooltip
+                v-for="child in entry.children"
+                :key="child.id"
+                :content="child.label"
+                placement="right"
+                :disabled="!isCollapsed || appStore.isMobile"
+              >
+                <button
+                  type="button"
+                  class="nav-item nav-item--nested"
+                  :class="{ 'nav-item--active': child.active }"
+                  :aria-current="child.active ? 'page' : undefined"
+                  @click="$emit('navClick', child, $event)"
+                >
+                  <span class="nav-icon">
+                    <SidebarIcon v-if="child.icon" :name="child.icon" :active="child.active" />
+                  </span>
+                  <span v-if="!isCollapsed || appStore.isMobile" class="nav-label">{{ child.label }}</span>
+                </button>
+              </el-tooltip>
+            </div>
+          </el-collapse-transition>
+        </div>
+
+        <el-tooltip
+          v-else
+          :key="entry.id"
+          :content="entry.label"
+          placement="right"
+          :disabled="!isCollapsed || appStore.isMobile"
         >
-          <span class="nav-icon"><SidebarIcon v-if="item.icon" :name="item.icon" :active="item.active" /></span>
-          <span v-if="!isCollapsed || appStore.isMobile" class="nav-label">{{ item.label }}</span>
-        </button>
-      </el-tooltip>
+          <button
+            type="button"
+            class="nav-item"
+            :class="{ 'nav-item--active': entry.active }"
+            :aria-current="entry.active ? 'page' : undefined"
+            @click="$emit('navClick', entry, $event)"
+          >
+            <span class="nav-icon">
+              <SidebarIcon v-if="entry.icon" :name="entry.icon" :active="entry.active" />
+            </span>
+            <span v-if="!isCollapsed || appStore.isMobile" class="nav-label">{{ entry.label }}</span>
+          </button>
+        </el-tooltip>
+      </template>
     </nav>
   </aside>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
+import { ArrowDown } from '@element-plus/icons-vue'
 import { useI18n } from 'vue-i18n'
 import { useAppStore } from '@/store/modules/app'
 import SidebarIcon from '@/components/common/icons/SidebarIcon.vue'
@@ -42,14 +87,41 @@ interface NavItem {
   href: string
   icon?: string
   active?: boolean
+  /** 分组目录下的子菜单 */
+  children?: NavItem[]
 }
 
-defineProps<{ navItems: NavItem[] }>()
+const props = defineProps<{ navItems: NavItem[] }>()
 defineEmits<{ navClick: [item: NavItem, event: Event] }>()
 const { t } = useI18n()
 const appStore = useAppStore()
 const isCollapsed = computed(() => appStore.sidebarCollapsed)
 const isMobileOpen = computed(() => appStore.isMobile && !appStore.sidebarCollapsed)
+
+// 分组展开状态。默认展开：子菜单少时常驻可见，少一次点击。
+const openGroups = ref<Record<string, boolean>>({})
+
+const isGroupOpen = (id: string) => openGroups.value[id] !== false
+
+// 当前路由所在分组始终展开，否则子菜单不可见
+watch(
+  () => props.navItems,
+  (items) => {
+    const next: Record<string, boolean> = { ...openGroups.value }
+    items.forEach((item) => {
+      if (!item.children?.length) return
+      const active = item.children.some((child) => child.active)
+      next[item.id] = next[item.id] ?? true
+      if (active) next[item.id] = true
+    })
+    openGroups.value = next
+  },
+  { immediate: true, deep: true }
+)
+
+const toggleGroup = (id: string) => {
+  openGroups.value = { ...openGroups.value, [id]: !isGroupOpen(id) }
+}
 </script>
 
 <style lang="scss" scoped>
@@ -135,5 +207,44 @@ const isMobileOpen = computed(() => appStore.isMobile && !appStore.sidebarCollap
   .sidebar--mobile-open { transform: translateX(0); }
   .sidebar__brand { justify-content: flex-start; }
   .sidebar--collapsed .nav-item { justify-content: flex-start; padding: 0 14px; }
+}
+.nav-group__title {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 16px 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--app-text-secondary);
+
+  &:hover {
+    color: var(--app-text-primary);
+  }
+
+  &__label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__arrow {
+    font-size: 12px;
+    transition: transform 0.2s ease;
+
+    &.is-open {
+      transform: rotate(180deg);
+    }
+  }
+}
+
+.nav-item--nested {
+  padding-left: 30px;
 }
 </style>
