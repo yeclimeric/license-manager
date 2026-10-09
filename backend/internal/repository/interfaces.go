@@ -6,6 +6,16 @@ import (
 	"time"
 )
 
+// AuditLogRepository 审计日志数据访问接口
+type AuditLogRepository interface {
+	// Create 写入一条审计日志
+	Create(ctx context.Context, log *models.AuditLog) error
+	// GetAuditLogList 查询审计日志列表
+	GetAuditLogList(ctx context.Context, req *models.AuditLogListRequest) ([]models.AuditLog, int64, error)
+	// GetStatistics 统计审计日志分布
+	GetStatistics(ctx context.Context) (*models.AuditLogStatisticsResponse, error)
+}
+
 // FeatureTemplateRepository 功能模板数据访问接口
 type FeatureTemplateRepository interface {
 	// SeedSystemCategories 插入内置分类（幂等）
