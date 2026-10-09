@@ -258,7 +258,22 @@ onMounted(() => {
 .login-form :deep(input:-webkit-autofill:hover),
 .login-form :deep(input:-webkit-autofill:focus) { -webkit-text-fill-color:#17231f; -webkit-box-shadow:0 0 0 1000px #fff inset; caret-color:#17231f; }
 .form-options { margin:-8px 0 24px; display:flex; justify-content:space-between; }
-.login-button { width:100%; min-height:50px; border-radius: $border-radius-base; font-weight:600; }
+/* 控件尺寸对齐企业版登录页：48px 高、8px 圆角。
+   企业版的 4px 基准令牌不适用于此处 —— 其登录页用自定义类覆盖为 8px，
+   这里显式覆盖而非改令牌，避免影响业务页的控件圆角。 */
+.login-form :deep(.el-input__wrapper) {
+  height: 48px;
+  min-height: 48px;
+  border-radius: 8px;
+}
+.login-button {
+  width: 100%;
+  height: 48px;
+  min-height: 48px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+}
 .login-card footer { margin-top:40px; color:#708079; font-size:12px; text-align:left; }
 @keyframes orbit-rotate { to { transform:rotate(405deg); } }
 @keyframes core-pulse { 0%,100% { opacity:.28; transform:scaleY(.55); } 50% { opacity:1; transform:scaleY(1); } }

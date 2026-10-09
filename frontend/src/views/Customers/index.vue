@@ -340,7 +340,9 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.filter-grid { grid-template-columns:minmax(280px,420px) repeat(3,160px) auto; }
+/* 筛选栅格用可收缩轨道（minmax(0px,1fr)）而非固定宽度。
+   固定列宽在窄视口下会撑破工具栏，右侧按钮被截断。 */
+.filter-grid { grid-template-columns:minmax(200px,1.6fr) repeat(3,minmax(0,1fr)) auto; }
 .enum-alert { margin-bottom:12px; }
 .customer-level-rate { height:22px; }
 .customer-level-rate :deep(.el-rate__item) { margin-right:3px; }
