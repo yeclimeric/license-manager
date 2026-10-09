@@ -6,7 +6,31 @@ import (
 	"time"
 )
 
-// CustomerRepository 客户数据访问接口
+// ProductOfferingRepository 产品项数据访问接口
+type ProductOfferingRepository interface {
+	// GetProductOfferingList 查询产品项列表
+	GetProductOfferingList(ctx context.Context, req *models.ProductOfferingListRequest) ([]models.ProductOffering, int64, error)
+
+	// GetProductOfferingByID 根据ID获取产品项
+	GetProductOfferingByID(ctx context.Context, id string) (*models.ProductOffering, error)
+
+	// GetProductOfferingByCode 根据编码获取产品项
+	GetProductOfferingByCode(ctx context.Context, code string) (*models.ProductOffering, error)
+
+	// CreateProductOffering 创建产品项，编码由服务端生成
+	CreateProductOffering(ctx context.Context, offering *models.ProductOffering) error
+
+	// UpdateProductOffering 更新产品项，编码不可更改
+	UpdateProductOffering(ctx context.Context, offering *models.ProductOffering) error
+
+	// DeleteProductOffering 删除产品项，存在授权码时拒绝
+	DeleteProductOffering(ctx context.Context, id string) error
+
+	// UpdateProductOfferingStatus 更新产品项状态
+	UpdateProductOfferingStatus(ctx context.Context, id string, status string) error
+}
+
+// CustomerRepository interface
 type CustomerRepository interface {
 	// GetCustomerList 查询客户列表
 	GetCustomerList(ctx context.Context, req *models.CustomerListRequest) (*models.CustomerListResponse, error)

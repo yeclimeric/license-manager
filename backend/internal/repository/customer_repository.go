@@ -119,7 +119,7 @@ func (r *customerRepository) GetCustomerList(ctx context.Context, req *models.Cu
 // GetCustomerByID 根据ID获取客户信息
 func (r *customerRepository) GetCustomerByID(ctx context.Context, id string) (*models.Customer, error) {
 	var customer models.Customer
-	
+
 	if err := r.db.Where("id = ?", id).First(&customer).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, ErrCustomerNotFound
@@ -151,7 +151,7 @@ func (r *customerRepository) CreateCustomer(ctx context.Context, customer *model
 // generateCustomerCode 生成客户编码
 func (r *customerRepository) generateCustomerCode(tx *gorm.DB) (string, error) {
 	currentYear := time.Now().Year()
-	
+
 	// 查询或创建当年的序列号记录
 	var sequence models.CustomerCodeSequence
 	err := tx.Where("year = ?", currentYear).First(&sequence).Error
@@ -175,7 +175,7 @@ func (r *customerRepository) generateCustomerCode(tx *gorm.DB) (string, error) {
 			return "", fmt.Errorf("failed to update sequence: %w", err)
 		}
 	}
-	
+
 	// 生成客户编码：CUS-YYYY-NNNN
 	customerCode := fmt.Sprintf("CUS-%d-%04d", currentYear, sequence.SequenceNumber)
 	return customerCode, nil
@@ -225,16 +225,16 @@ func (r *customerRepository) CheckCustomerHasLicenses(ctx context.Context, custo
 func (r *customerRepository) GetCustomerCount(ctx context.Context, filters map[string]interface{}) (int64, error) {
 	var count int64
 	query := r.db.Model(&models.Customer{})
-	
+
 	// 应用筛选条件
 	for key, value := range filters {
 		query = query.Where(fmt.Sprintf("%s = ?", key), value)
 	}
-	
+
 	if err := query.Count(&count).Error; err != nil {
 		return 0, fmt.Errorf("failed to count customers: %w", err)
 	}
-	
+
 	return count, nil
 }
 

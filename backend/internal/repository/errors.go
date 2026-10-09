@@ -23,6 +23,13 @@ var (
 	ErrLicenseDuplicate     = errors.New("license already exists")
 )
 
+// 产品项领域的业务错误
+var (
+	ErrProductOfferingNotFound  = errors.New("product offering not found")
+	ErrProductOfferingDuplicate = errors.New("product offering code already exists")
+	ErrProductOfferingInUse     = errors.New("product offering still has authorization codes")
+)
+
 // 通用的数据库/系统错误（给开发者看的）
 var (
 	ErrDatabaseConnection = errors.New("database connection failed")
