@@ -49,6 +49,56 @@
           <h2>{{ t('pages.licenses.form.sections.licenseConfig') }}</h2>
         </div>
         <div class="field-grid three-columns">
+          <el-form-item :label="t('pages.licenses.form.fields.productOffering')" prop="product_offering_id">
+            <el-select
+              v-model="form.product_offering_id"
+              :placeholder="t('pages.licenses.form.fields.productOfferingPlaceholder')"
+              :loading="productLoading"
+              clearable
+              filterable
+              @change="selectProductOffering"
+            >
+              <el-option
+                v-for="item in productOfferings"
+                :key="item.id"
+                :label="item.alias || item.name"
+                :value="item.id"
+              >
+                <span>{{ item.alias || item.name }}</span>
+                <span class="product-option-code">{{ item.code }}</span>
+              </el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item :label="t('pages.licenses.form.fields.deploymentType')" prop="deployment_type">
+            <el-select v-model="form.deployment_type">
+              <el-option
+                v-for="(label, value) in deploymentTypeLabels"
+                :key="value"
+                :label="label"
+                :value="value"
+              />
+            </el-select>
+          </el-form-item>
+          <el-form-item :label="t('pages.licenses.form.fields.validityMode')" prop="validity_mode">
+            <el-select v-model="form.validity_mode">
+              <el-option
+                v-for="(label, value) in validityModeLabels"
+                :key="value"
+                :label="label"
+                :value="value"
+              />
+            </el-select>
+          </el-form-item>
+        </div>
+        <el-alert
+          v-if="inheritedHint"
+          :title="inheritedHint"
+          type="info"
+          show-icon
+          :closable="false"
+          class="inherit-alert"
+        />
+        <div class="field-grid three-columns">
           <el-form-item :label="t('pages.licenses.form.fields.validityPeriod')" prop="validity_type">
             <el-select v-model="form.validity_type" @change="changeValidityType">
               <el-option :label="t('pages.licenses.form.validityTypes.limited')" value="limited" />
@@ -77,6 +127,9 @@
           </el-form-item>
           <el-form-item :label="t('pages.licenses.form.fields.maxActivations')" prop="max_activations">
             <el-input-number v-model="form.max_activations" :min="1" :max="999999" controls-position="right" />
+          </el-form-item>
+          <el-form-item :label="t('pages.licenses.form.fields.batchCount')" prop="batch_count">
+            <el-input-number v-model="form.batch_count" :min="1" :max="100" controls-position="right" />
           </el-form-item>
         </div>
       </section>
@@ -113,12 +166,13 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { getCustomers } from '@/api/customer'
-import { createLicense, type AuthorizationCodeCreateRequest } from '@/api/license'
+import { batchCreateLicenses, createLicense, type AuthorizationCodeCreateRequest } from '@/api/license'
+import { getProductOfferings, type ProductOffering } from '@/api/productOffering'
 import JsonEditor from '@/components/common/JsonEditor.vue'
 import { getErrorMessage } from '@/utils/error'
 import FormActionBar from '@/components/common/FormActionBar.vue'
@@ -133,6 +187,11 @@ interface CustomerOption {
 interface LicenseFormModel {
   customer_id: string
   customer_code: string
+  product_offering_id: string
+  deployment_type: 'standalone' | 'cloud'
+  validity_mode: 'fixed' | 'activation_based'
+  batch_count: number
+  max_validity_days: number | null
   description: string
   validity_type: 'limited' | 'permanent'
   validity_days: number
@@ -151,6 +210,96 @@ const parameterEditor = ref<InstanceType<typeof JsonEditor>>()
 const submitting = ref(false)
 const customerLoading = ref(false)
 const customers = ref<CustomerOption[]>([])
+const productLoading = ref(false)
+const productOfferings = ref<ProductOffering[]>([])
+const inheritedHint = ref('')
+
+const deploymentTypeLabels = computed(() => ({
+  standalone: t('pages.licenses.form.fields.deploymentTypes.standalone'),
+  cloud: t('pages.licenses.form.fields.deploymentTypes.cloud')
+}))
+
+const validityModeLabels = computed(() => ({
+  fixed: t('pages.licenses.form.fields.validityModes.fixed'),
+  activation_based: t('pages.licenses.form.fields.validityModes.activation_based')
+}))
+
+// 加载可选产品项（仅启用状态）
+const loadProductOfferings = async () => {
+  productLoading.value = true
+  try {
+    const res = await getProductOfferings({ page: 1, page_size: 100, status: 'active' })
+    productOfferings.value = res.data.list
+  } catch {
+    productOfferings.value = []
+  } finally {
+    productLoading.value = false
+  }
+}
+
+// 选择产品项后继承其默认配置，继承值仍可被手工覆盖
+const selectProductOffering = (id?: string | null) => {
+  if (!id) {
+    inheritedHint.value = ''
+    return
+  }
+  const product = productOfferings.value.find(item => item.id === id)
+  if (!product) {
+    inheritedHint.value = ''
+    return
+  }
+
+  const inherited: string[] = []
+  if (product.duration_days && product.duration_days > 0) {
+    form.validity_days = product.duration_days
+    if (form.validity_type === 'limited') {
+      form.date_range = buildDateRange(product.duration_days)
+    }
+    inherited.push('validity')
+  }
+  if (product.max_activations && product.max_activations > 0) {
+    form.max_activations = product.max_activations
+    inherited.push('maxActivations')
+  }
+  if (product.deployment_mode === 'offline') {
+    form.deployment_type = 'standalone'
+    inherited.push('deployment')
+  }
+  if (Object.keys(product.feature_config || {}).length > 0) {
+    featureConfig.value = product.feature_config
+    inherited.push('featureConfig')
+  }
+  if (Object.keys(product.usage_limits || {}).length > 0) {
+    usageLimits.value = product.usage_limits
+    inherited.push('usageLimits')
+  }
+  if (Object.keys(product.custom_parameters || {}).length > 0) {
+    customParameters.value = product.custom_parameters
+    inherited.push('customParameters')
+  }
+
+  // 体验型产品项的有效期上限提示
+  if (product.is_trial_product && product.trial_days) {
+    form.max_validity_days = product.trial_days
+  } else {
+    form.max_validity_days = null
+  }
+
+  inheritedHint.value = inherited.length > 0
+    ? t('pages.licenses.form.messages.inheritedFromProduct')
+    : ''
+}
+
+// 由天数生成起止日期范围（今天起 N 天）
+const buildDateRange = (days: number): [string, string] => {
+  const start = new Date()
+  start.setHours(0, 0, 0, 0)
+  const end = new Date(start)
+  end.setDate(end.getDate() + Math.max(days - 1, 0))
+  const fmt = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  return [fmt(start), fmt(end)]
+}
 const featureConfig = ref<Record<string, unknown> | null>({})
 const usageLimits = ref<Record<string, unknown> | null>({})
 const customParameters = ref<Record<string, unknown> | null>({})
@@ -158,6 +307,11 @@ const customParameters = ref<Record<string, unknown> | null>({})
 const form = reactive<LicenseFormModel>({
   customer_id: String(route.query.customerId || ''),
   customer_code: String(route.query.customerId || ''),
+  product_offering_id: '',
+  deployment_type: 'cloud',
+  validity_mode: 'fixed',
+  batch_count: 1,
+  max_validity_days: null,
   description: '',
   validity_type: 'limited',
   validity_days: 365,
@@ -266,13 +420,30 @@ const submitForm = async () => {
     max_activations: form.max_activations,
     feature_config: featureConfig.value || {},
     usage_limits: JSON.stringify(usageLimits.value || {}),
-    custom_parameters: JSON.stringify(customParameters.value || {})
+    custom_parameters: JSON.stringify(customParameters.value || {}),
+    product_offering_id: form.product_offering_id || undefined,
+    deployment_type: form.deployment_type,
+    validity_mode: form.validity_mode
+  }
+
+  // 数量大于 1 时走批量创建
+  const isBatch = form.batch_count > 1
+  if (isBatch && (form.batch_count < 1 || form.batch_count > 100)) {
+    ElMessage.error(t('pages.licenses.form.validation.batchCountRange'))
+    return
   }
 
   submitting.value = true
   try {
-    const response = await createLicense(payload)
-    ElMessage.success(response.message || t('pages.licenses.form.messages.createSuccess'))
+    if (isBatch) {
+      const batchRes = await batchCreateLicenses({ ...payload, count: form.batch_count })
+      ElMessage.success(
+        t('pages.licenses.form.messages.batchCreateSuccess', { count: batchRes.data?.count ?? form.batch_count })
+      )
+    } else {
+      const response = await createLicense(payload)
+      ElMessage.success(response.message || t('pages.licenses.form.messages.createSuccess'))
+    }
     await router.push({
       name: 'licenses-list',
       query: form.customer_id
@@ -307,7 +478,7 @@ const cancelCreate = async () => {
 
 onMounted(async () => {
   ensureRouteCustomer()
-  await searchCustomers()
+  await Promise.all([searchCustomers(), loadProductOfferings()])
 })
 </script>
 
@@ -392,5 +563,16 @@ onMounted(async () => {
   .date-field {
     grid-column: auto;
   }
+}
+.inherit-alert {
+  margin-bottom: 16px;
+}
+
+.product-option-code {
+  float: right;
+  margin-left: 16px;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 12px;
+  color: var(--app-text-secondary);
 }
 </style>
