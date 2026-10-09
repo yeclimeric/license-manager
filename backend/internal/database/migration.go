@@ -41,6 +41,8 @@ func AutoMigrate() error {
 		&models.AuthorizationCode{},
 		&models.License{},
 		&models.AuthorizationChange{},
+		&models.SystemConfig{},
+		&models.APIKey{},
 	)
 	if err != nil {
 		return fmt.Errorf("failed to migrate database: %w", err)
@@ -68,6 +70,16 @@ func AutoMigrate() error {
 	// 初始化 RBAC 基础数据（菜单、权限资源、角色）
 	if err := initRBACData(); err != nil {
 		return fmt.Errorf("failed to initialize rbac data: %w", err)
+	}
+
+	// 修正 API Key 前缀列名（早期版本命名为 key_prefix）
+	if err := dropLegacyAPIKeyPrefixColumn(); err != nil {
+		return fmt.Errorf("failed to drop legacy api key prefix column: %w", err)
+	}
+
+	// 初始化默认系统配置
+	if err := initSystemConfigs(); err != nil {
+		return fmt.Errorf("failed to initialize system configs: %w", err)
 	}
 
 	log.Println("Database auto migration completed successfully")

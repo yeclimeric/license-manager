@@ -44,6 +44,8 @@ var seedPermissionResources = []models.PermissionResource{
 	{ID: "user", Resource: "user", NameKey: "permission.user", Name: "用户管理", SortOrder: 8},
 	{ID: "menu", Resource: "menu", NameKey: "permission.menu", Name: "菜单管理", SortOrder: 9},
 	{ID: "audit_log", Resource: "audit_log", NameKey: "permission.audit_log", Name: "审计日志", SortOrder: 10},
+	{ID: "system_config", Resource: "system_config", NameKey: "permission.system_config", Name: "系统配置", SortOrder: 11},
+	{ID: "api_key", Resource: "api_key", NameKey: "permission.api_key", Name: "API Key", SortOrder: 12},
 }
 
 // seedRoles 内置角色

@@ -76,6 +76,12 @@ func SetupRouter() *gin.Engine {
 	featureTemplateHandler := handlers.NewFeatureTemplateHandler(featureTemplateService)
 	auditLogHandler := handlers.NewAuditLogHandler(auditLogService)
 	rbacHandler := handlers.NewRBACHandler(rbacService)
+
+	// 系统配置与 API Key
+	systemConfigRepo := repository.NewSystemConfigRepository(db)
+	systemConfigService := service.NewSystemConfigService(systemConfigRepo, userRepo)
+	systemConfigHandler := handlers.NewSystemConfigHandler(systemConfigService)
+	apiKeyChecker := middleware.NewGormAPIKeyChecker(db, systemConfigRepo)
 	userManagementHandler := handlers.NewUserManagementHandler(service.NewUserManagementService(userRepo))
 
 	// 健康检测接口（无需认证）
@@ -86,6 +92,8 @@ func SetupRouter() *gin.Engine {
 
 	// API路由组
 	api := router.Group("/api")
+	// API Key 与登录态并行：两者形态不同，据此区分调用方
+	api.Use(middleware.APIKeyAuthMiddleware(apiKeyChecker))
 	{
 		// 公开接口（无需认证）
 		public := api.Group("")
@@ -159,6 +167,20 @@ func SetupRouter() *gin.Engine {
 			auth.PUT("/v1/roles/:id", middleware.RequirePermission("role:update", permChecker), rbacHandler.UpdateRole)
 			auth.DELETE("/v1/roles/:id", middleware.RequirePermission("role:delete", permChecker), rbacHandler.DeleteRole)
 
+			// 系统配置
+			auth.GET("/v1/system-configs", middleware.RequirePermission("system_config:read", permChecker), systemConfigHandler.GetGroupedConfigs)
+			auth.POST("/v1/system-configs", middleware.RequirePermission("system_config:create", permChecker), systemConfigHandler.CreateConfig)
+			// batch 必须在 :key 之前
+			auth.PUT("/v1/system-configs/batch", middleware.RequirePermission("system_config:update", permChecker), systemConfigHandler.BatchUpdateConfigs)
+			auth.PUT("/v1/system-configs/:key", middleware.RequirePermission("system_config:update", permChecker), systemConfigHandler.UpdateConfig)
+			auth.DELETE("/v1/system-configs/:key", middleware.RequirePermission("system_config:delete", permChecker), systemConfigHandler.DeleteConfig)
+
+			// API Key
+			auth.GET("/v1/api-keys", middleware.RequirePermission("api_key:read", permChecker), systemConfigHandler.GetAPIKeyList)
+			auth.POST("/v1/api-keys", middleware.RequirePermission("api_key:create", permChecker), systemConfigHandler.CreateAPIKey)
+			auth.PUT("/v1/api-keys/:id", middleware.RequirePermission("api_key:update", permChecker), systemConfigHandler.UpdateAPIKey)
+			auth.DELETE("/v1/api-keys/:id", middleware.RequirePermission("api_key:delete", permChecker), systemConfigHandler.DeleteAPIKey)
+
 			// 用户角色绑定（按ID写入，供角色页分配）
 			auth.PUT("/v1/users/:id/roles", middleware.RequirePermission("user:update", permChecker), rbacHandler.SetUserRoles)
 
@@ -211,6 +233,9 @@ func SetupRouter() *gin.Engine {
 			admin.GET("/system/info", systemHandler.GetSystemInfo)
 		}
 	}
+
+	// 公开配置：登录页需在未认证时读取站点信息
+	router.GET("/api/public/config", systemConfigHandler.GetPublicConfig)
 
 	return router
 }

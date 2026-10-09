@@ -34,6 +34,34 @@ type EnumService interface {
 	GetEnumsByType(ctx context.Context, enumType string) (*models.EnumTypeResponse, error)
 }
 
+// SystemConfigService 系统配置与 API Key 服务接口
+type SystemConfigService interface {
+	// GetGroupedConfigs 获取按分组组织的系统配置
+	GetGroupedConfigs(ctx context.Context) (*models.SystemConfigGroupResponse, error)
+	// GetPublicConfigs 获取公开配置
+	GetPublicConfigs(ctx context.Context) (*models.PublicConfigResponse, error)
+	// GetConfigByKey 按键获取配置
+	GetConfigByKey(ctx context.Context, key string) (*models.SystemConfig, error)
+	// CreateConfig 创建配置
+	CreateConfig(ctx context.Context, req *models.SystemConfigCreateRequest) (*models.SystemConfig, error)
+	// UpdateConfig 更新配置
+	UpdateConfig(ctx context.Context, key string, req *models.SystemConfigUpdateRequest) (*models.SystemConfig, error)
+	// BatchUpdateConfigs 批量更新配置值
+	BatchUpdateConfigs(ctx context.Context, req *models.SystemConfigBatchUpdateRequest) error
+	// DeleteConfig 删除配置
+	DeleteConfig(ctx context.Context, key string) error
+	// GetConfigValue 读取单个配置值
+	GetConfigValue(ctx context.Context, key string) string
+	// GetAPIKeyList 查询 API Key 列表
+	GetAPIKeyList(ctx context.Context, req *models.APIKeyListRequest) (*models.APIKeyListResponse, error)
+	// CreateAPIKey 创建 API Key
+	CreateAPIKey(ctx context.Context, req *models.APIKeyCreateRequest, createdBy string) (*models.APIKeyCreateResponse, error)
+	// UpdateAPIKey 更新 API Key
+	UpdateAPIKey(ctx context.Context, id string, req *models.APIKeyUpdateRequest) error
+	// DeleteAPIKey 删除 API Key
+	DeleteAPIKey(ctx context.Context, id string) error
+}
+
 // UserManagementService 用户管理服务接口
 type UserManagementService interface {
 	// GetUserList 查询用户列表
