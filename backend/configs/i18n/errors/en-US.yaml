@@ -52,6 +52,7 @@ errors:
     "500007": "Trial days is required when trial is enabled"
     "500008": "Trial days must not exceed 3650"
     "500009": "Invalid deployment mode"
+    "500010": "Invalid status value"
 
   # Dashboard module (40xxxx)
   dashboard:

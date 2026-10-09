@@ -171,7 +171,7 @@ func (s *productOfferingService) UpdateProductOffering(ctx context.Context, id s
 	}
 	if req.Status != nil {
 		if *req.Status != "active" && *req.Status != "inactive" {
-			return nil, i18n.NewI18nError("900004", lang)
+			return nil, i18n.NewI18nError("500010", lang)
 		}
 		updated.Status = *req.Status
 	}
@@ -234,7 +234,7 @@ func (s *productOfferingService) UpdateProductOfferingStatus(ctx context.Context
 	lang := pkgcontext.GetLanguageFromContext(ctx)
 
 	if status != "active" && status != "inactive" {
-		return nil, i18n.NewI18nError("900004", lang)
+		return nil, i18n.NewI18nError("500010", lang)
 	}
 
 	if err := s.repo.UpdateProductOfferingStatus(ctx, id, status); err != nil {
