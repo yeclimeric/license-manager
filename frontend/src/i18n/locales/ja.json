@@ -137,7 +137,8 @@
       "licenses": "ライセンス管理",
       "productOfferings": "製品項目管理",
       "featureTemplates": "機能テンプレート",
-      "auditLogs": "操作ログ"
+      "auditLogs": "操作ログ",
+      "menus": "メニューと権限"
     },
     "toggleSidebar": "サイドバー切り替え",
     "mainNavigation": "メインナビゲーション",
@@ -170,7 +171,8 @@
       "unknown": "未知ページ",
       "products": "製品項目管理",
       "featureTemplates": "機能テンプレート",
-      "auditLogs": "操作ログ"
+      "auditLogs": "操作ログ",
+      "menus": "メニューと権限"
     }
   },
   "common": {
@@ -1247,6 +1249,108 @@
       "query": "検索",
       "reset": "リセット",
       "retry": "再試行"
+    }
+  },
+  "menu": {
+    "dashboard": "ダッシュボード",
+    "license": "ライセンス管理",
+    "customer": "顧客管理",
+    "product_management": "製品管理",
+    "feature_template": "機能テンプレート",
+    "product_offering": "製品項目管理",
+    "manage": "システム管理",
+    "role": "ロール管理",
+    "user": "ユーザー管理",
+    "menu": "メニュー管理",
+    "audit_log": "操作ログ"
+  },
+  "permission": {
+    "dashboard": "ダッシュボード",
+    "license": "ライセンス管理",
+    "authorization_code": "認可コード管理",
+    "customer": "顧客管理",
+    "product_offering": "製品項目管理",
+    "feature_template": "機能テンプレート",
+    "role": "ロール管理",
+    "user": "ユーザー管理",
+    "menu": "メニュー管理",
+    "audit_log": "監査ログ"
+  },
+  "permissionAction": {
+    "read": "閲覧",
+    "create": "作成",
+    "update": "更新",
+    "delete": "削除"
+  },
+  "rbac": {
+    "table": {
+      "name": "名称",
+      "key": "識別子",
+      "type": "種別",
+      "path": "パス",
+      "permission": "権限",
+      "sortOrder": "並び順",
+      "status": "状態",
+      "actions": "操作",
+      "users": "ユーザー数",
+      "nameKey": "名称キー"
+    },
+    "form": {
+      "displayName": "ロール表示名",
+      "name": "ロール識別子",
+      "namePlaceholder": "例: support_agent",
+      "description": "説明",
+      "permissions": "権限設定",
+      "menus": "表示メニュー",
+      "type": "メニュー種別",
+      "nameKey": "名称キー",
+      "nameKeyPlaceholder": "例: menu.report",
+      "icon": "アイコン",
+      "parentMenu": "上位メニュー",
+      "placeholder": "トップレベル",
+      "hidden": "サイドバーから隠す",
+      "systemRole": "組み込みロール",
+      "systemMenu": "組み込みメニュー"
+    },
+    "type": {
+      "menu": "メニュー",
+      "directory": "ディレクトリ"
+    },
+    "filter": {
+      "keyword": "ロール名を検索",
+      "query": "検索",
+      "reset": "リセット",
+      "empty": "ロールがありません",
+      "menuEmpty": "メニューがありません"
+    },
+    "confirm": {
+      "deleteRole": "ロールを削除",
+      "deleteRoleMessage": "ロール「{name}」を削除しますか？",
+      "deleteMenu": "メニューを削除",
+      "deleteMenuMessage": "メニュー「{name}」を削除しますか？"
+    },
+    "message": {
+      "created": "ロールを作成しました",
+      "updated": "ロールを更新しました",
+      "deleted": "ロールを削除しました",
+      "menuCreated": "メニューを作成しました",
+      "menuUpdated": "メニューを更新しました",
+      "menuDeleted": "メニューを削除しました",
+      "loadFailed": "ロール一覧の読み込みに失敗しました",
+      "menuLoadFailed": "メニュー一覧の読み込みに失敗しました"
+    },
+    "validation": {
+      "nameRequired": "ロール識別子を入力してください",
+      "namePattern": "ロール識別子は小文字・数字・アンダースコアのみ使用でき、先頭は英字である必要があります",
+      "displayNameRequired": "ロール表示名を入力してください",
+      "nameKeyRequired": "名称キーを入力してください",
+      "pathRequired": "メニューにはパスが必要です",
+      "parentRequired": "ディレクトリは自身の子にできません"
+    },
+    "page": {
+      "roleTitle": "ロール管理",
+      "menuTitle": "メニュー管理",
+      "create": "ロールを作成"
     }
   }
 }

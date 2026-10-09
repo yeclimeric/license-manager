@@ -137,7 +137,8 @@
       "licenses": "License Management",
       "productOfferings": "Product Offerings",
       "featureTemplates": "Feature Templates",
-      "auditLogs": "Operation Logs"
+      "auditLogs": "Operation Logs",
+      "menus": "Menus & Roles"
     },
     "toggleSidebar": "Toggle Sidebar",
     "mainNavigation": "Main navigation",
@@ -170,7 +171,8 @@
       "unknown": "Unknown Page",
       "products": "Product Offerings",
       "featureTemplates": "Feature Templates",
-      "auditLogs": "Operation Logs"
+      "auditLogs": "Operation Logs",
+      "menus": "Menus & Roles"
     }
   },
   "common": {
@@ -1247,6 +1249,108 @@
       "query": "Query",
       "reset": "Reset",
       "retry": "Retry"
+    }
+  },
+  "menu": {
+    "dashboard": "Dashboard",
+    "license": "Licenses",
+    "customer": "Customers",
+    "product_management": "Products",
+    "feature_template": "Feature Templates",
+    "product_offering": "Product Offerings",
+    "manage": "Administration",
+    "role": "Roles",
+    "user": "Users",
+    "menu": "Menus",
+    "audit_log": "Operation Logs"
+  },
+  "permission": {
+    "dashboard": "Dashboard",
+    "license": "Licenses",
+    "authorization_code": "Authorization Codes",
+    "customer": "Customers",
+    "product_offering": "Product Offerings",
+    "feature_template": "Feature Templates",
+    "role": "Roles",
+    "user": "Users",
+    "menu": "Menus",
+    "audit_log": "Audit Logs"
+  },
+  "permissionAction": {
+    "read": "Read",
+    "create": "Create",
+    "update": "Update",
+    "delete": "Delete"
+  },
+  "rbac": {
+    "table": {
+      "name": "Name",
+      "key": "Identifier",
+      "type": "Type",
+      "path": "Path",
+      "permission": "Permission",
+      "sortOrder": "Order",
+      "status": "Status",
+      "actions": "Actions",
+      "users": "Users",
+      "nameKey": "Name Key"
+    },
+    "form": {
+      "displayName": "Display Name",
+      "name": "Role Name",
+      "namePlaceholder": "e.g. support_agent",
+      "description": "Description",
+      "permissions": "Permissions",
+      "menus": "Visible Menus",
+      "type": "Menu Type",
+      "nameKey": "Name Key",
+      "nameKeyPlaceholder": "e.g. menu.report",
+      "icon": "Icon",
+      "parentMenu": "Parent Menu",
+      "placeholder": "Top level",
+      "hidden": "Hide from sidebar",
+      "systemRole": "Built-in role",
+      "systemMenu": "Built-in menu"
+    },
+    "type": {
+      "menu": "Menu",
+      "directory": "Directory"
+    },
+    "filter": {
+      "keyword": "Search role names",
+      "query": "Query",
+      "reset": "Reset",
+      "empty": "No roles yet",
+      "menuEmpty": "No menus"
+    },
+    "confirm": {
+      "deleteRole": "Delete Role",
+      "deleteRoleMessage": "Delete the role \"{name}\"?",
+      "deleteMenu": "Delete Menu",
+      "deleteMenuMessage": "Delete the menu \"{name}\"?"
+    },
+    "message": {
+      "created": "Role created",
+      "updated": "Role updated",
+      "deleted": "Role deleted",
+      "menuCreated": "Menu created",
+      "menuUpdated": "Menu updated",
+      "menuDeleted": "Menu deleted",
+      "loadFailed": "Failed to load roles",
+      "menuLoadFailed": "Failed to load menus"
+    },
+    "validation": {
+      "nameRequired": "Enter a role name",
+      "namePattern": "The role name may only contain lower-case letters, digits and underscores, and must start with a letter",
+      "displayNameRequired": "Enter a display name",
+      "nameKeyRequired": "Enter a name key",
+      "pathRequired": "A menu item requires a path",
+      "parentRequired": "A directory cannot be its own child"
+    },
+    "page": {
+      "roleTitle": "Roles",
+      "menuTitle": "Menus",
+      "create": "New Role"
     }
   }
 }

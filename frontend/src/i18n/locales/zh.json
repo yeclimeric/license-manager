@@ -137,7 +137,8 @@
       "licenses": "授权管理",
       "productOfferings": "产品项管理",
       "featureTemplates": "功能模板",
-      "auditLogs": "操作日志"
+      "auditLogs": "操作日志",
+      "menus": "菜单权限"
     },
     "toggleSidebar": "切换侧边栏",
     "mainNavigation": "主导航",
@@ -170,7 +171,8 @@
       "unknown": "未知页面",
       "products": "产品项管理",
       "featureTemplates": "功能模板",
-      "auditLogs": "操作日志"
+      "auditLogs": "操作日志",
+      "menus": "菜单权限"
     }
   },
   "common": {
@@ -1247,6 +1249,108 @@
       "query": "查询",
       "reset": "重置",
       "retry": "重试"
+    }
+  },
+  "menu": {
+    "dashboard": "仪表盘",
+    "license": "授权管理",
+    "customer": "客户管理",
+    "product_management": "产品管理",
+    "feature_template": "功能模板",
+    "product_offering": "产品项管理",
+    "manage": "系统管理",
+    "role": "角色管理",
+    "user": "用户管理",
+    "menu": "菜单管理",
+    "audit_log": "操作日志"
+  },
+  "permission": {
+    "dashboard": "仪表盘",
+    "license": "许可证管理",
+    "authorization_code": "授权码管理",
+    "customer": "客户管理",
+    "product_offering": "产品项管理",
+    "feature_template": "功能模板",
+    "role": "角色管理",
+    "user": "用户管理",
+    "menu": "菜单管理",
+    "audit_log": "审计日志"
+  },
+  "permissionAction": {
+    "read": "查看",
+    "create": "创建",
+    "update": "更新",
+    "delete": "删除"
+  },
+  "rbac": {
+    "table": {
+      "name": "名称",
+      "key": "标识",
+      "type": "类型",
+      "path": "路径",
+      "permission": "权限",
+      "sortOrder": "排序",
+      "status": "状态",
+      "actions": "操作",
+      "users": "用户数",
+      "nameKey": "名称键"
+    },
+    "form": {
+      "displayName": "角色名称",
+      "name": "角色标识",
+      "namePlaceholder": "如 support_agent",
+      "description": "描述",
+      "permissions": "权限配置",
+      "menus": "可见菜单",
+      "type": "菜单类型",
+      "nameKey": "名称键",
+      "nameKeyPlaceholder": "如 menu.report",
+      "icon": "图标",
+      "parentMenu": "上级菜单",
+      "placeholder": "顶级菜单",
+      "hidden": "在侧边栏隐藏",
+      "systemRole": "内置角色",
+      "systemMenu": "内置菜单"
+    },
+    "type": {
+      "menu": "菜单",
+      "directory": "分组目录"
+    },
+    "filter": {
+      "keyword": "搜索角色名称",
+      "query": "查询",
+      "reset": "重置",
+      "empty": "暂无角色",
+      "menuEmpty": "暂无菜单"
+    },
+    "confirm": {
+      "deleteRole": "删除角色",
+      "deleteRoleMessage": "确定删除角色「{name}」吗？",
+      "deleteMenu": "删除菜单",
+      "deleteMenuMessage": "确定删除菜单「{name}」吗？"
+    },
+    "message": {
+      "created": "角色创建成功",
+      "updated": "角色更新成功",
+      "deleted": "角色删除成功",
+      "menuCreated": "菜单创建成功",
+      "menuUpdated": "菜单更新成功",
+      "menuDeleted": "菜单删除成功",
+      "loadFailed": "加载角色列表失败",
+      "menuLoadFailed": "加载菜单列表失败"
+    },
+    "validation": {
+      "nameRequired": "请输入角色标识",
+      "namePattern": "角色标识仅支持小写字母、数字和下划线，且以字母开头",
+      "displayNameRequired": "请输入角色名称",
+      "nameKeyRequired": "请输入名称键",
+      "pathRequired": "菜单项必须填写路径",
+      "parentRequired": "分组目录不能作为自身子级"
+    },
+    "page": {
+      "roleTitle": "角色管理",
+      "menuTitle": "菜单管理",
+      "create": "新建角色"
     }
   }
 }
