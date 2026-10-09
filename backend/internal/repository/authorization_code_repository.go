@@ -36,6 +36,18 @@ func (r *authorizationCodeRepository) GetAuthorizationCodeByID(ctx context.Conte
 		}
 		return nil, err
 	}
+
+	// 回填产品项名称，供详情页展示
+	if authCode.ProductOfferingID != nil && *authCode.ProductOfferingID != "" {
+		var offering models.ProductOffering
+		if err := r.db.WithContext(ctx).
+			Select("name", "alias", "code").
+			Where("id = ?", *authCode.ProductOfferingID).
+			First(&offering).Error; err == nil {
+			authCode.ProductOfferingName = offering.DisplayName()
+		}
+	}
+
 	return &authCode, nil
 }
 
@@ -61,8 +73,10 @@ func (r *authorizationCodeRepository) GetAuthorizationCodeList(ctx context.Conte
 
 	// 构建查询，包含状态计算与当前激活数量
 	query := r.db.WithContext(ctx).Table("authorization_codes ac").
-		Select(`ac.id, ac.code, ac.customer_id, c.customer_name, 
-				ac.start_date, ac.end_date, ac.max_activations, 
+		Select(`ac.id, ac.code, ac.customer_id, c.customer_name,
+				ac.product_offering_id, COALESCE(po.name, '') AS product_offering_name,
+				ac.deployment_type, ac.validity_mode, ac.duration_days,
+				ac.start_date, ac.end_date, ac.max_activations,
 				COALESCE(l.active_count, 0) AS current_activations,
 				ac.is_locked, ac.description, ac.created_at,
 				CASE
@@ -72,6 +86,7 @@ func (r *authorizationCodeRepository) GetAuthorizationCodeList(ctx context.Conte
 					ELSE 'expired'
 				END AS status`).
 		Joins("LEFT JOIN customers c ON ac.customer_id = c.id AND c.deleted_at IS NULL").
+		Joins("LEFT JOIN product_offerings po ON ac.product_offering_id = po.id AND po.deleted_at IS NULL").
 		Joins(`LEFT JOIN (
 			SELECT authorization_code_id, COUNT(*) AS active_count
 			FROM licenses
@@ -82,6 +97,19 @@ func (r *authorizationCodeRepository) GetAuthorizationCodeList(ctx context.Conte
 	// 添加筛选条件
 	if req.CustomerID != "" {
 		query = query.Where("ac.customer_id = ?", req.CustomerID)
+	}
+
+	// 产品项筛选：支持按产品项过滤，或筛选出未关联产品项的授权码（none）
+	if req.ProductOfferingID != "" {
+		if req.ProductOfferingID == "none" {
+			query = query.Where("ac.product_offering_id IS NULL")
+		} else {
+			query = query.Where("ac.product_offering_id = ?", req.ProductOfferingID)
+		}
+	}
+
+	if req.DeploymentType != "" {
+		query = query.Where("ac.deployment_type = ?", req.DeploymentType)
 	}
 
 	// 状态筛选 - 在 SQL 层面处理
@@ -115,18 +143,23 @@ func (r *authorizationCodeRepository) GetAuthorizationCodeList(ctx context.Conte
 
 	// 分页查询
 	var results []struct {
-		ID                 string  `json:"id"`
-		Code               string  `json:"code"`
-		CustomerID         *string `json:"customer_id"`
-		CustomerName       *string `json:"customer_name"`
-		StartDate          string  `json:"start_date"`
-		EndDate            string  `json:"end_date"`
-		MaxActivations     int     `json:"max_activations"`
-		CurrentActivations int     `json:"current_activations" gorm:"column:current_activations"`
-		IsLocked           bool    `json:"is_locked"`
-		Description        *string `json:"description"`
-		CreatedAt          string  `json:"created_at"`
-		Status             string  `json:"status"` // 添加状态字段
+		ID                  string  `json:"id"`
+		Code                string  `json:"code"`
+		CustomerID          *string `json:"customer_id"`
+		CustomerName        *string `json:"customer_name"`
+		ProductOfferingID   *string `json:"product_offering_id"`
+		ProductOfferingName string  `json:"product_offering_name"`
+		DeploymentType      string  `json:"deployment_type"`
+		ValidityMode        string  `json:"validity_mode"`
+		DurationDays        *int    `json:"duration_days"`
+		StartDate           string  `json:"start_date"`
+		EndDate             string  `json:"end_date"`
+		MaxActivations      int     `json:"max_activations"`
+		CurrentActivations  int     `json:"current_activations" gorm:"column:current_activations"`
+		IsLocked            bool    `json:"is_locked"`
+		Description         *string `json:"description"`
+		CreatedAt           string  `json:"created_at"`
+		Status              string  `json:"status"` // 添加状态字段
 	}
 
 	offset := (page - 1) * pageSize
@@ -144,18 +177,23 @@ func (r *authorizationCodeRepository) GetAuthorizationCodeList(ctx context.Conte
 		}
 
 		list[i] = models.AuthorizationCodeListItem{
-			ID:                 result.ID,
-			Code:               result.Code,
-			CustomerID:         result.CustomerID,
-			CustomerName:       customerName,
-			Status:             result.Status, // 使用 SQL 计算的状态
-			StartDate:          result.StartDate,
-			EndDate:            result.EndDate,
-			MaxActivations:     result.MaxActivations,
-			CurrentActivations: result.CurrentActivations,
-			IsLocked:           result.IsLocked,
-			Description:        result.Description,
-			CreatedAt:          result.CreatedAt,
+			ID:                  result.ID,
+			Code:                result.Code,
+			CustomerID:          result.CustomerID,
+			CustomerName:        customerName,
+			ProductOfferingID:   result.ProductOfferingID,
+			ProductOfferingName: result.ProductOfferingName,
+			DeploymentType:      result.DeploymentType,
+			ValidityMode:        result.ValidityMode,
+			DurationDays:        result.DurationDays,
+			Status:              result.Status, // 使用 SQL 计算的状态
+			StartDate:           result.StartDate,
+			EndDate:             result.EndDate,
+			MaxActivations:      result.MaxActivations,
+			CurrentActivations:  result.CurrentActivations,
+			IsLocked:            result.IsLocked,
+			Description:         result.Description,
+			CreatedAt:           result.CreatedAt,
 		}
 	}
 

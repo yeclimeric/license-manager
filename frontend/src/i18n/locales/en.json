@@ -316,7 +316,10 @@
         "activationDate": "Activation Date",
         "createTime": "Create Time",
         "operation": "Operation",
-        "loading": "Loading..."
+        "loading": "Loading...",
+        "productOffering": "Product",
+        "deploymentType": "Deployment",
+        "noProductOffering": "-"
       },
       "status": {
         "active": "Active",
@@ -604,7 +607,20 @@
           "validityType": "Validity Type",
           "dateRange": "Date Range",
           "validityDays": "Validity Days",
-          "maxActivations": "Max Activations"
+          "maxActivations": "Max Activations",
+          "productOffering": "Product Offering",
+          "productOfferingPlaceholder": "Not linked to a product",
+          "deploymentType": "Deployment Type",
+          "deploymentTypes": {
+            "standalone": "Standalone",
+            "cloud": "Cloud"
+          },
+          "validityMode": "Validity Mode",
+          "validityModes": {
+            "fixed": "Fixed date",
+            "activation_based": "From activation"
+          },
+          "batchCount": "Quantity"
         },
         "validityTypes": {
           "permanent": "Permanent",
@@ -640,7 +656,10 @@
           "validityPeriodTooLong": "Validity period cannot exceed 10 years",
           "maxActivationsRequired": "Please enter max activations",
           "maxActivationsRange": "Max activations must be between 1-999999",
-          "maxActivationsInteger": "Max activations must be an integer"
+          "maxActivationsInteger": "Max activations must be an integer",
+          "productOfferingInactive": "This product is inactive and cannot be authorized",
+          "validityExceedsTrial": "The validity period cannot exceed the product trial length ({days} days)",
+          "batchCountRange": "Quantity must be between 1 and 100"
         },
         "messages": {
           "searchCustomerError": "Failed to search customers",
@@ -654,7 +673,10 @@
           "cancelConfirm": "Are you sure you want to cancel? Unsaved changes will be lost.",
           "cancelTitle": "Confirm",
           "cancelConfirmButton": "Confirm",
-          "cancelCancelButton": "Continue Editing"
+          "cancelCancelButton": "Continue Editing",
+          "batchCreateSuccess": "Created {count} authorization codes",
+          "batchCreateFailed": "Failed to create the authorization codes",
+          "inheritedFromProduct": "Defaults inherited from the product"
         },
         "keyValue": {
           "addItem": "Add Item",
@@ -697,6 +719,11 @@
           "importFailed": "Failed to parse JSON, please check the format",
           "importEmpty": "JSON content is empty"
         }
+      },
+      "filter": {
+        "productOffering": "All Products",
+        "noProductOffering": "No product",
+        "deploymentType": "All Deployment Types"
       }
     }
   },

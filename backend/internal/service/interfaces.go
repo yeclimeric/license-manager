@@ -75,6 +75,7 @@ type ProductOfferingService interface {
 // AuthorizationCodeService 授权码服务接口
 type AuthorizationCodeService interface {
 	CreateAuthorizationCode(ctx context.Context, req *models.AuthorizationCodeCreateRequest) (*models.AuthorizationCodeCreateResponse, error)
+	BatchCreateAuthorizationCodes(ctx context.Context, req *models.AuthorizationCodeBatchCreateRequest) (*models.AuthorizationCodeBatchCreateResponse, error)
 	GetAuthorizationCodeList(ctx context.Context, req *models.AuthorizationCodeListRequest) (*models.AuthorizationCodeListResponse, error)
 	GetAuthorizationCode(ctx context.Context, id string) (*models.AuthorizationCode, error)
 	UpdateAuthorizationCode(ctx context.Context, id string, req *models.AuthorizationCodeUpdateRequest) (*models.AuthorizationCode, error)

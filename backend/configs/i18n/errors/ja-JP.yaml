@@ -38,6 +38,9 @@ errors:
     "300010": "無効な設定パラメータ"
     "300011": "認可コードには関連ライセンスが存在するため削除できません"
     "300012": "取り消し済みのライセンスのみ削除できます"
+    "300013": "製品項目が無効のため認可を作成できません"
+    "300014": "有効期間は製品の試用日数を超えることはできません"
+    "300015": "一度の一括作成は100件までです"
     "300101": "認可コードが見つかりません"
     "300102": "認可コードがロックされています"
   
@@ -158,6 +161,17 @@ enums:
   feature_template_status:
     "active": "有効"
     "inactive": "無効"
+
+  authorization_deployment_type:
+    "standalone": "单机版"
+    "cloud": "クラウド版"
+
+  authorization_validity_mode:
+    "fixed": "固定期間"
+    "activation_based": "アクティベーションから"
+
+  authorization_source_type:
+    "manual": "手動作成"
 
 # デフォルトエラーメッセージ
 default_error: "不明なエラー"

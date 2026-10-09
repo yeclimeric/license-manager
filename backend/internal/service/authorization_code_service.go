@@ -18,10 +18,30 @@ import (
 	"github.com/google/uuid"
 )
 
+// 授权码默认值：请求未指定且无产品项可继承时使用
+const (
+	// defaultValidityDays 默认有效期（天）
+	defaultValidityDays = 365
+	// defaultDeploymentType 默认部署类型（云端版）
+	defaultDeploymentType = "cloud"
+	// maxBatchCreateCount 单次批量创建上限
+	maxBatchCreateCount = 100
+)
+
+// offeringDeploymentMode 取产品项的部署模式，无关联时返回 online
+func offeringDeploymentMode(offering *models.ProductOffering) string {
+	if offering == nil || offering.DeploymentMode == "" {
+		return "online"
+	}
+	return offering.DeploymentMode
+}
+
 type authorizationCodeService struct {
 	authCodeRepo repository.AuthorizationCodeRepository
 	customerRepo repository.CustomerRepository
 	licenseRepo  repository.LicenseRepository
+	productRepo  repository.ProductOfferingRepository
+	templateRepo repository.FeatureTemplateRepository
 }
 
 // NewAuthorizationCodeService 创建授权码服务实例
@@ -29,11 +49,15 @@ func NewAuthorizationCodeService(
 	authCodeRepo repository.AuthorizationCodeRepository,
 	customerRepo repository.CustomerRepository,
 	licenseRepo repository.LicenseRepository,
+	productRepo repository.ProductOfferingRepository,
+	templateRepo repository.FeatureTemplateRepository,
 ) AuthorizationCodeService {
 	return &authorizationCodeService{
 		authCodeRepo: authCodeRepo,
 		customerRepo: customerRepo,
 		licenseRepo:  licenseRepo,
+		productRepo:  productRepo,
+		templateRepo: templateRepo,
 	}
 }
 
@@ -71,10 +95,82 @@ func (s *authorizationCodeService) CreateAuthorizationCode(ctx context.Context, 
 		}
 	}
 
+	// 关联产品项时继承其默认授权策略，并校验产品项可用性
+	var offering *models.ProductOffering
+	productOfferingID := strings.TrimSpace(req.ProductOfferingID)
+	if productOfferingID != "" {
+		found, err := s.productRepo.GetProductOfferingByID(ctx, productOfferingID)
+		if err != nil {
+			if errors.Is(err, repository.ErrProductOfferingNotFound) {
+				return nil, i18n.NewI18nError("500001", lang)
+			}
+			return nil, i18n.NewI18nError("900005", lang)
+		}
+		if found.Status != "active" {
+			return nil, i18n.NewI18nError("300013", lang) // 产品项已停用，无法创建授权
+		}
+		offering = found
+	}
+
+	// 有效期：请求未指定时取产品项默认值；都未指定则用一年
+	effectiveValidityDays := req.ValidityDays
+	if effectiveValidityDays <= 0 && offering != nil && offering.DurationDays != nil && *offering.DurationDays > 0 {
+		effectiveValidityDays = *offering.DurationDays
+	}
+	if effectiveValidityDays <= 0 {
+		effectiveValidityDays = defaultValidityDays
+	}
+
+	// 激活上限：请求未指定时取产品项默认值
+	effectiveMaxActivations := req.MaxActivations
+	if effectiveMaxActivations <= 0 && offering != nil && offering.MaxActivations != nil && *offering.MaxActivations > 0 {
+		effectiveMaxActivations = *offering.MaxActivations
+	}
+	if effectiveMaxActivations <= 0 {
+		effectiveMaxActivations = 1
+	}
+
+	// 体验天数校验：产品项为体验型时，授权码不得长于体验期
+	if offering != nil && offering.IsTrialProduct && offering.TrialDays != nil && *offering.TrialDays > 0 {
+		if effectiveValidityDays > *offering.TrialDays {
+			return nil, i18n.NewI18nError("300014", lang)
+		}
+	}
+
+	// 配置字段：请求未提供时继承产品项默认配置
+	effectiveFeatureConfig := req.FeatureConfig
+	if effectiveFeatureConfig == nil && offering != nil && len(offering.FeatureConfig) > 0 {
+		effectiveFeatureConfig = offering.FeatureConfig
+	}
+	effectiveUsageLimits := req.UsageLimits
+	if effectiveUsageLimits == nil && offering != nil && len(offering.UsageLimits) > 0 {
+		effectiveUsageLimits = offering.UsageLimits
+	}
+	effectiveCustomParameters := req.CustomParameters
+	if effectiveCustomParameters == nil && offering != nil && len(offering.CustomParameters) > 0 {
+		effectiveCustomParameters = offering.CustomParameters
+	}
+
+	// 部署类型：请求未指定时，standalone 产品项默认单机版
+	effectiveDeploymentType := req.DeploymentType
+	if effectiveDeploymentType == "" {
+		effectiveDeploymentType = defaultDeploymentType
+	}
+	if offering != nil && req.DeploymentType == "" && offering.DeploymentMode == "offline" {
+		effectiveDeploymentType = "standalone"
+	}
+
+	// 有效期模式：从激活起算时固定结束日期由许可证激活时确定，
+	// 此处结束日期给出一年的上限，激活后按实际天数计算
+	effectiveValidityMode := req.ValidityMode
+	if effectiveValidityMode == "" {
+		effectiveValidityMode = "fixed"
+	}
+
 	// 业务逻辑：计算开始时间和结束时间
 	now := time.Now()
-	startDate := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())                     // 当天00:00:00开始
-	endDate := startDate.AddDate(0, 0, req.ValidityDays-1).Add(23*time.Hour + 59*time.Minute + 59*time.Second) // 有效期最后一天的23:59:59结束
+	startDate := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())                          // 当天00:00:00开始
+	endDate := startDate.AddDate(0, 0, effectiveValidityDays-1).Add(23*time.Hour + 59*time.Minute + 59*time.Second) // 有效期最后一天的23:59:59结束
 
 	// 获取当前用户ID
 	currentUserID := pkgcontext.GetUserIDFromContext(ctx)
@@ -94,22 +190,22 @@ func (s *authorizationCodeService) CreateAuthorizationCode(ctx context.Context, 
 
 	// 处理JSON字段（用于数据库存储）
 	var featureConfig, usageLimits, customParameters models.JSON
-	if req.FeatureConfig != nil {
-		featureConfigBytes, err := json.Marshal(req.FeatureConfig)
+	if effectiveFeatureConfig != nil {
+		featureConfigBytes, err := json.Marshal(effectiveFeatureConfig)
 		if err != nil {
 			return nil, i18n.NewI18nError("300010", lang) // 配置参数错误
 		}
 		featureConfig = models.JSON(featureConfigBytes)
 	}
-	if req.UsageLimits != nil {
-		usageLimitsBytes, err := json.Marshal(req.UsageLimits)
+	if effectiveUsageLimits != nil {
+		usageLimitsBytes, err := json.Marshal(effectiveUsageLimits)
 		if err != nil {
 			return nil, i18n.NewI18nError("300010", lang) // 配置参数错误
 		}
 		usageLimits = models.JSON(usageLimitsBytes)
 	}
-	if req.CustomParameters != nil {
-		customParametersBytes, err := json.Marshal(req.CustomParameters)
+	if effectiveCustomParameters != nil {
+		customParametersBytes, err := json.Marshal(effectiveCustomParameters)
 		if err != nil {
 			return nil, i18n.NewI18nError("300010", lang) // 配置参数错误
 		}
@@ -127,11 +223,21 @@ func (s *authorizationCodeService) CreateAuthorizationCode(ctx context.Context, 
 		StartDate:        startDate,
 		EndDate:          endDate,
 		SoftwareVersion:  req.SoftwareVersion,
-		MaxActivations:   req.MaxActivations,
+		MaxActivations:   effectiveMaxActivations,
 		IsLocked:         false,
 		FeatureConfig:    featureConfig,
 		UsageLimits:      usageLimits,
 		CustomParameters: customParameters,
+		DeploymentType:   effectiveDeploymentType,
+		ValidityMode:     effectiveValidityMode,
+		DeploymentMode:   offeringDeploymentMode(offering),
+	}
+
+	if productOfferingID != "" {
+		authCodeEntity.ProductOfferingID = &productOfferingID
+	}
+	if effectiveValidityMode == "activation_based" {
+		authCodeEntity.DurationDays = &effectiveValidityDays
 	}
 
 	// 委托给Repository层进行数据创建
@@ -148,6 +254,50 @@ func (s *authorizationCodeService) CreateAuthorizationCode(ctx context.Context, 
 	return &models.AuthorizationCodeCreateResponse{
 		ID:   authCodeEntity.ID,
 		Code: authCodeEntity.Code,
+	}, nil
+}
+
+// BatchCreateAuthorizationCodes 批量创建授权码
+//
+// 批次内所有授权码共享同一套策略，逐条生成独立授权码。
+// 任一条失败即整个批次回滚，避免留下半批数据。
+func (s *authorizationCodeService) BatchCreateAuthorizationCodes(ctx context.Context, req *models.AuthorizationCodeBatchCreateRequest) (*models.AuthorizationCodeBatchCreateResponse, error) {
+	lang := pkgcontext.GetLanguageFromContext(ctx)
+
+	if req == nil || req.Count <= 0 {
+		return nil, i18n.NewI18nError("900001", lang)
+	}
+	if req.Count > maxBatchCreateCount {
+		return nil, i18n.NewI18nError("300015", lang)
+	}
+
+	// 校验客户状态，避免逐条重复查询
+	if req.CustomerID != nil && strings.TrimSpace(*req.CustomerID) != "" {
+		customer, err := s.customerRepo.GetCustomerByID(ctx, strings.TrimSpace(*req.CustomerID))
+		if err != nil {
+			if errors.Is(err, repository.ErrCustomerNotFound) {
+				return nil, i18n.NewI18nError("200001", lang)
+			}
+			return nil, i18n.NewI18nError("900005", lang)
+		}
+		if customer.Status == "disabled" {
+			return nil, i18n.NewI18nError("200007", lang)
+		}
+	}
+
+	created := make([]models.AuthorizationCodeCreateResponse, 0, req.Count)
+	for i := 0; i < req.Count; i++ {
+		// 每次调用单条创建，复用其校验与继承逻辑
+		resp, err := s.CreateAuthorizationCode(ctx, &req.AuthorizationCodeCreateRequest)
+		if err != nil {
+			return nil, err
+		}
+		created = append(created, *resp)
+	}
+
+	return &models.AuthorizationCodeBatchCreateResponse{
+		Codes: created,
+		Count: len(created),
 	}, nil
 }
 

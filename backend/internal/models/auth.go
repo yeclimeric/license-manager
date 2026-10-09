@@ -44,7 +44,11 @@ type AuthorizationCode struct {
 	ProductOfferingID      *string                  `gorm:"type:varchar(36);index" json:"product_offering_id"`                 // 所属产品项ID
 	ProductOfferingName    string                   `gorm:"-" json:"product_offering_name,omitempty"`                          // 产品项名称
 	ProductOfferingDisplay string                   `gorm:"-" json:"product_offering_display,omitempty"`                       // 产品项显示名（多语言）
-	DeploymentMode         string                   `gorm:"type:varchar(20);not null;default:'online'" json:"deployment_mode"` // 部署模式：online/offline/hybrid
+	DeploymentType         string                   `gorm:"type:varchar(20);not null;default:'cloud'" json:"deployment_type"`  // 部署类型：standalone(单机版)/cloud(云端版)
+	DeploymentTypeDisplay  string                   `gorm:"-" json:"deployment_type_display,omitempty"`                        // 部署类型显示（多语言）
+	ValidityMode           string                   `gorm:"type:varchar(20);not null;default:'fixed'" json:"validity_mode"`    // 有效期模式：fixed(固定期限)/activation_based(从激活起算)
+	DurationDays           *int                     `gorm:"type:int" json:"duration_days,omitempty"`                           // 有效期天数（validity_mode=activation_based 时生效）
+	DeploymentMode         string                   `gorm:"type:varchar(20);not null;default:'online'" json:"deployment_mode"` // 部署模式（继承自产品项）：online/offline/hybrid
 	SoftwareID             *string                  `gorm:"type:varchar(50)" json:"software_id"`                               // 软件ID
 	Description            *string                  `gorm:"type:text" json:"description"`                                      // 描述
 	StartDate              time.Time                `gorm:"type:datetime(3);not null" json:"start_date"`                       // 生效日期
@@ -107,16 +111,32 @@ func (a *AuthorizationCode) BeforeUpdate(tx *gorm.DB) error {
 }
 
 // AuthorizationCodeCreateRequest 创建授权码请求结构
+//
+// 传入 ProductOfferingID 时，产品项的默认授权策略（有效期、激活上限、
+// 部署模式）会被继承，请求中显式给出的字段优先。
 type AuthorizationCodeCreateRequest struct {
-	CustomerID       *string     `json:"customer_id" binding:"omitempty"`                   // 客户ID，可选
-	SoftwareID       *string     `json:"software_id" binding:"omitempty"`                   // 软件ID
-	Description      *string     `json:"description" binding:"omitempty,max=500"`           // 描述，可选
-	ValidityDays     int         `json:"validity_days" binding:"required,min=1,max=365000"` // 有效天数（1-365000天，365000代表永久有效）
-	SoftwareVersion  *string     `json:"software_version" binding:"omitempty"`              // 软件版本
-	MaxActivations   int         `json:"max_activations" binding:"required,min=1"`          // 最大激活次数
-	FeatureConfig    interface{} `json:"feature_config" binding:"omitempty"`                // 功能配置（JSON对象）
-	UsageLimits      interface{} `json:"usage_limits" binding:"omitempty"`                  // 使用限制（JSON对象）
-	CustomParameters interface{} `json:"custom_parameters" binding:"omitempty"`             // 自定义参数（JSON对象）
+	CustomerID         *string     `json:"customer_id" binding:"omitempty"`                                // 客户ID，可选
+	SoftwareID         *string     `json:"software_id" binding:"omitempty"`                                // 软件ID
+	Description        *string     `json:"description" binding:"omitempty,max=500"`                        // 描述，可选
+	ValidityDays       int         `json:"validity_days" binding:"omitempty,min=1,max=365000"`             // 有效天数（1-365000天，365000代表永久有效）
+	SoftwareVersion    *string     `json:"software_version" binding:"omitempty"`                           // 软件版本
+	MaxActivations     int         `json:"max_activations" binding:"omitempty,min=1"`                      // 最大激活次数
+	FeatureConfig      interface{} `json:"feature_config" binding:"omitempty"`                             // 功能配置（JSON对象）
+	UsageLimits        interface{} `json:"usage_limits" binding:"omitempty"`                               // 使用限制（JSON对象）
+	CustomParameters   interface{} `json:"custom_parameters" binding:"omitempty"`                          // 自定义参数（JSON对象）
+	ProductOfferingID  string      `json:"product_offering_id" binding:"omitempty"`                        // 关联产品项ID
+	DeploymentType     string      `json:"deployment_type" binding:"omitempty,oneof=standalone cloud"`     // 部署类型：standalone(单机版)/cloud(云端版)
+	ValidityMode       string      `json:"validity_mode" binding:"omitempty,oneof=fixed activation_based"` // 有效期模式：fixed(固定期限)/activation_based(从激活起算)
+	FeatureTemplateIDs []string    `json:"feature_template_ids" binding:"omitempty"`                       // 关联功能模板ID列表
+}
+
+// AuthorizationCodeBatchCreateRequest 批量创建授权码请求结构
+//
+// Count 不加 binding 上限校验，交由服务层返回更明确的业务提示。
+type AuthorizationCodeBatchCreateRequest struct {
+	Count int `json:"count" binding:"required,min=1"` // 创建数量
+	// 以下字段与单个创建一致，作为批次内所有授权码的公共配置
+	AuthorizationCodeCreateRequest
 }
 
 // AuthorizationCodeCreateResponse 创建授权码响应结构
@@ -125,35 +145,49 @@ type AuthorizationCodeCreateResponse struct {
 	Code string `json:"code"` // 授权码
 }
 
+// AuthorizationCodeBatchCreateResponse 批量创建授权码响应结构
+type AuthorizationCodeBatchCreateResponse struct {
+	Codes []AuthorizationCodeCreateResponse `json:"codes"` // 创建的授权码列表
+	Count int                               `json:"count"` // 实际创建数量
+}
+
 // AuthorizationCodeListRequest 授权码列表查询请求结构
 type AuthorizationCodeListRequest struct {
-	Page       int    `form:"page" binding:"omitempty,min=1"`                            // 页码，默认1
-	PageSize   int    `form:"page_size" binding:"omitempty,min=1,max=100"`               // 每页条数，默认20，最大100
-	CustomerID string `form:"customer_id" binding:"omitempty"`                           // 客户ID筛选
-	Code       string `form:"code" binding:"omitempty"`                                  // 授权码模糊匹配
-	Status     string `form:"status" binding:"omitempty,oneof=normal locked expired"`    // 状态筛选
-	StartDate  string `form:"start_date" binding:"omitempty"`                            // 创建开始时间
-	EndDate    string `form:"end_date" binding:"omitempty"`                              // 创建结束时间
-	Sort       string `form:"sort" binding:"omitempty,oneof=created_at updated_at code"` // 排序字段，默认created_at
-	Order      string `form:"order" binding:"omitempty,oneof=asc desc"`                  // 排序方向，默认desc
+	Page              int    `form:"page" binding:"omitempty,min=1"`                             // 页码，默认1
+	PageSize          int    `form:"page_size" binding:"omitempty,min=1,max=100"`                // 每页条数，默认20，最大100
+	CustomerID        string `form:"customer_id" binding:"omitempty"`                            // 客户ID筛选
+	Code              string `form:"code" binding:"omitempty"`                                   // 授权码模糊匹配
+	Status            string `form:"status" binding:"omitempty,oneof=normal locked expired"`     // 状态筛选
+	StartDate         string `form:"start_date" binding:"omitempty"`                             // 创建开始时间
+	EndDate           string `form:"end_date" binding:"omitempty"`                               // 创建结束时间
+	ProductOfferingID string `form:"product_offering_id" binding:"omitempty"`                    // 产品项筛选
+	DeploymentType    string `form:"deployment_type" binding:"omitempty,oneof=standalone cloud"` // 部署类型筛选
+	Sort              string `form:"sort" binding:"omitempty,oneof=created_at updated_at code"`  // 排序字段，默认created_at
+	Order             string `form:"order" binding:"omitempty,oneof=asc desc"`                   // 排序方向，默认desc
 }
 
 // AuthorizationCodeListItem 授权码列表项结构
 type AuthorizationCodeListItem struct {
-	ID                  string  `json:"id"`                              // 授权码ID
-	Code                string  `json:"code"`                            // 授权码
-	CustomerID          *string `json:"customer_id"`                     // 客户ID，NULL表示无客户
-	CustomerName        string  `json:"customer_name"`                   // 客户名称
-	CustomerNameDisplay string  `json:"customer_name_display,omitempty"` // 客户名称显示（多语言）
-	Status              string  `json:"status"`                          // 状态：normal/locked/expired
-	StatusDisplay       string  `json:"status_display,omitempty"`        // 状态显示（多语言）
-	StartDate           string  `json:"start_date"`                      // 生效日期
-	EndDate             string  `json:"end_date"`                        // 失效日期
-	MaxActivations      int     `json:"max_activations"`                 // 最大激活次数
-	CurrentActivations  int     `json:"current_activations"`             // 当前激活次数
-	IsLocked            bool    `json:"is_locked"`                       // 是否锁定
-	Description         *string `json:"description"`                     // 描述
-	CreatedAt           string  `json:"created_at"`                      // 创建时间
+	ID                    string  `json:"id"`                                // 授权码ID
+	Code                  string  `json:"code"`                              // 授权码
+	CustomerID            *string `json:"customer_id"`                       // 客户ID，NULL表示无客户
+	CustomerName          string  `json:"customer_name"`                     // 客户名称
+	CustomerNameDisplay   string  `json:"customer_name_display,omitempty"`   // 客户名称显示（多语言）
+	Status                string  `json:"status"`                            // 状态：normal/locked/expired
+	StatusDisplay         string  `json:"status_display,omitempty"`          // 状态显示（多语言）
+	StartDate             string  `json:"start_date"`                        // 生效日期
+	EndDate               string  `json:"end_date"`                          // 失效日期
+	ProductOfferingID     *string `json:"product_offering_id,omitempty"`     // 关联产品项ID
+	ProductOfferingName   string  `json:"product_offering_name,omitempty"`   // 产品项名称
+	DeploymentType        string  `json:"deployment_type"`                   // 部署类型：standalone/cloud
+	DeploymentTypeDisplay string  `json:"deployment_type_display,omitempty"` // 部署类型显示（多语言）
+	ValidityMode          string  `json:"validity_mode,omitempty"`           // 有效期模式：fixed/activation_based
+	DurationDays          *int    `json:"duration_days,omitempty"`           // 有效期天数（从激活起算时使用）
+	MaxActivations        int     `json:"max_activations"`                   // 最大激活次数
+	CurrentActivations    int     `json:"current_activations"`               // 当前激活次数
+	IsLocked              bool    `json:"is_locked"`                         // 是否锁定
+	Description           *string `json:"description"`                       // 描述
+	CreatedAt             string  `json:"created_at"`                        // 创建时间
 }
 
 // AuthorizationCodeListResponse 授权码列表响应结构

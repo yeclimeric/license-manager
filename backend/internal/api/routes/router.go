@@ -51,7 +51,7 @@ func SetupRouter() *gin.Engine {
 	authService := service.NewAuthService(userRepo)
 	systemService := service.NewSystemService()
 	customerService := service.NewCustomerService(customerRepo)
-	authCodeService := service.NewAuthorizationCodeService(authCodeRepo, customerRepo, licenseRepo)
+	authCodeService := service.NewAuthorizationCodeService(authCodeRepo, customerRepo, licenseRepo, productOfferingRepo, featureTemplateRepo)
 	enumService := service.NewEnumService()
 	licenseService := service.NewLicenseService(licenseRepo, db, log)
 	dashboardService := service.NewDashboardService(dashboardRepo)
@@ -130,6 +130,7 @@ func SetupRouter() *gin.Engine {
 			// 授权码管理
 			auth.GET("/v1/authorization-codes", authCodeHandler.GetAuthorizationCodeList)
 			auth.POST("/v1/authorization-codes", authCodeHandler.CreateAuthorizationCode)
+			auth.POST("/v1/authorization-codes/batch", authCodeHandler.BatchCreateAuthorizationCodes)
 			auth.GET("/v1/authorization-codes/:id", authCodeHandler.GetAuthorizationCode)
 			auth.GET("/v1/authorization-codes/:id/download", authCodeHandler.DownloadAuthorizationFile)
 			auth.PUT("/v1/authorization-codes/:id", authCodeHandler.UpdateAuthorizationCode)
