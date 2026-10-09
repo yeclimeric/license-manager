@@ -30,6 +30,8 @@ var seedMenus = []models.Menu{
 	{ID: "menu-user", NameKey: "menu.user", Type: models.MenuTypeMenu, Path: "/users", Icon: "User", Permission: "user:read", SortOrder: 22, ParentID: strPtr("menu-manage"), IsSystem: true},
 	{ID: "menu-menu", NameKey: "menu.menu", Type: models.MenuTypeMenu, Path: "/menus", Icon: "Menu", Permission: "menu:read", SortOrder: 23, ParentID: strPtr("menu-manage"), IsSystem: true},
 	{ID: "menu-audit-log", NameKey: "menu.audit_log", Type: models.MenuTypeMenu, Path: "/audit-logs", Icon: "Document", Permission: "audit_log:read", SortOrder: 24, ParentID: strPtr("menu-manage"), IsSystem: true},
+	{ID: "menu-system-config", NameKey: "menu.system_config", Type: models.MenuTypeMenu, Path: "/system-config", Icon: "Setting", Permission: "system_config:read", SortOrder: 25, ParentID: strPtr("menu-manage"), IsSystem: true},
+	{ID: "menu-api-key", NameKey: "menu.api_key", Type: models.MenuTypeMenu, Path: "/api-keys", Icon: "Key", Permission: "api_key:read", SortOrder: 26, ParentID: strPtr("menu-manage"), IsSystem: true},
 }
 
 // seedPermissionResources 权限资源，对齐企业版实测的 16 项中社区版支持的部分
@@ -44,6 +46,8 @@ var seedPermissionResources = []models.PermissionResource{
 	{ID: "user", Resource: "user", NameKey: "permission.user", Name: "用户管理", SortOrder: 8},
 	{ID: "menu", Resource: "menu", NameKey: "permission.menu", Name: "菜单管理", SortOrder: 9},
 	{ID: "audit_log", Resource: "audit_log", NameKey: "permission.audit_log", Name: "审计日志", SortOrder: 10},
+	{ID: "system_config", Resource: "system_config", NameKey: "permission.system_config", Name: "系统配置", SortOrder: 11},
+	{ID: "api_key", Resource: "api_key", NameKey: "permission.api_key", Name: "API Key", SortOrder: 12},
 }
 
 // seedRoles 内置角色

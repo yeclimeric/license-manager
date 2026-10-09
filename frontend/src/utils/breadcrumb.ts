@@ -28,6 +28,8 @@ const routeBreadcrumbKeys: Record<string, string[]> = {
   '/audit-logs': ['auditLogs'],
   '/roles': ['menus'],
   '/users': ['menus'],
+  '/system-config': ['menus'],
+  '/api-keys': ['menus'],
   '/menus': ['menus'],
   '/login': ['login']
 }
@@ -123,7 +125,7 @@ export function useBreadcrumb() {
 
   // 根据路径段获取标题
   function getSegmentTitle(segment: string): string {
-    const knownSegments = ['dashboard', 'customers', 'licenses', 'products', 'feature-templates', 'audit-logs', 'roles', 'users', 'menus', 'login', 'settings', 'profile']
+    const knownSegments = ['dashboard', 'customers', 'licenses', 'products', 'feature-templates', 'audit-logs', 'roles', 'users', 'system-config', 'api-keys', 'menus', 'login', 'settings', 'profile']
     
     if (knownSegments.includes(segment)) {
       return t(`navigation.breadcrumb.${segment}`)

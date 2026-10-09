@@ -19,6 +19,12 @@ const (
 // AuthMiddleware 认证中间件（支持自动延长）
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		// API Key 中间件已先行认证通过时不再要求 JWT：
+		// 两种凭据各自独立，不该要求调用方同时具备两者
+		if authType, exists := c.Get("auth_type"); exists && authType == "api_key" {
+			c.Next()
+			return
+		}
 		authorizationHeader := c.GetHeader(AuthorizationHeaderKey)
 		if len(authorizationHeader) == 0 {
 			c.JSON(http.StatusUnauthorized, gin.H{

@@ -14,6 +14,7 @@ errors:
     "100004": "Authentication required"
     "100005": "Insufficient permissions"
     "100006": "You do not have permission to access this resource"
+    "100007": "The API key is invalid, disabled or expired"
   
   # Customer module (20xxxx)
   customer:
@@ -76,6 +77,11 @@ errors:
     "510012": "Invalid feature item list"
 
 # 菜单权限角色模块 (60xxxx)
+  system_config:
+    "800001": "System config not found"
+    "800002": "The config key already exists"
+    "800003": "API key not found"
+
   rbac:
     "600001": "Role not found"
     "600002": "Role name already exists"

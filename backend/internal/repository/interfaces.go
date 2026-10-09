@@ -130,6 +130,41 @@ type CustomerRepository interface {
 	GetCustomerAuthorizationStats(ctx context.Context, customerID string) (*models.AuthorizationStats, error)
 }
 
+// SystemConfigRepository 系统配置与 API Key 数据访问接口
+type SystemConfigRepository interface {
+	// GetByKey 按键获取配置
+	GetByKey(ctx context.Context, key string) (*models.SystemConfig, error)
+	// GetAll 获取全部配置
+	GetAll(ctx context.Context) ([]models.SystemConfig, error)
+	// GetPublic 获取可公开的配置
+	GetPublic(ctx context.Context) ([]models.SystemConfig, error)
+	// Create 创建配置
+	Create(ctx context.Context, config *models.SystemConfig) error
+	// Update 更新配置
+	Update(ctx context.Context, config *models.SystemConfig) error
+	// UpdateValueOnly 仅更新配置值
+	UpdateValueOnly(ctx context.Context, key, value string) error
+	// Delete 删除配置
+	Delete(ctx context.Context, key string) error
+
+	// GetAPIKeyList 查询 API Key 列表
+	GetAPIKeyList(ctx context.Context, req *models.APIKeyListRequest) ([]models.APIKeyListItem, int64, error)
+	// GetAPIKeyByID 按ID获取 API Key
+	GetAPIKeyByID(ctx context.Context, id string) (*models.APIKey, error)
+	// GetAPIKeyByHash 按哈希查找 API Key
+	GetAPIKeyByHash(ctx context.Context, hash string) (*models.APIKey, error)
+	// CreateAPIKey 创建 API Key
+	CreateAPIKey(ctx context.Context, key *models.APIKey) error
+	// UpdateAPIKey 更新 API Key
+	UpdateAPIKey(ctx context.Context, key *models.APIKey) error
+	// DeleteAPIKey 删除 API Key
+	DeleteAPIKey(ctx context.Context, id string) error
+	// TouchAPIKeyUsage 记录最近使用时间
+	TouchAPIKeyUsage(ctx context.Context, id string) error
+	// VerifyAPIKey 校验 API Key，返回所属用户ID与是否放行
+	VerifyAPIKey(ctx context.Context, plaintext, hash, clientIP string) (string, bool, error)
+}
+
 // UserRepository 用户数据访问接口
 type UserRepository interface {
 	// GetUserByUsername 根据用户名获取用户

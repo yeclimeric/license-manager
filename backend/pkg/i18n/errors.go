@@ -109,9 +109,9 @@ func getHTTPStatusByCode(code string) int {
 		return StatusUnauthorized
 	case "100005", "100006": // 权限不足 / 无资源访问权限
 		return StatusForbidden
-	case "900002", "200001", "300001", "300006", "500001", "510001", "510008", "600001", "600006", "600011", "600013": // 资源不存在
+	case "900002", "200001", "300001", "300006", "500001", "510001", "510008", "600001", "600006", "600011", "600013", "800001", "800003": // 资源不存在
 		return StatusNotFound
-	case "900003", "200002", "200006", "300004", "300012", "500002", "510002", "510010", "600002", "600007", "200011": // 资源冲突
+	case "900003", "200002", "200006", "300004", "300012", "500002", "510002", "510010", "600002", "600007", "200011", "800002": // 资源冲突
 		return StatusConflict
 	case "900004": // 服务器内部错误
 		return StatusInternalServerError
@@ -136,7 +136,7 @@ func getHTTPStatusByCode(code string) int {
 				return StatusOK
 			case "51": // 功能模板模块错误，默认200（业务错误通过响应体区分）
 				return StatusOK
-			case "60": // 菜单权限角色模块错误，默认200（业务错误通过响应体区分）
+			case "60", "80": // 菜单权限、系统配置模块错误，默认200（业务错误通过响应体区分）
 				return StatusOK
 			case "90": // 系统错误，默认500
 				return StatusInternalServerError
