@@ -68,6 +68,8 @@ type ProductOfferingService interface {
 	UpdateProductOffering(ctx context.Context, id string, req *models.ProductOfferingUpdateRequest) (*models.ProductOfferingResponse, error)
 	// DeleteProductOffering 删除产品项
 	DeleteProductOffering(ctx context.Context, id string) error
+	// GetProductOfferingPublicKey 获取产品项公钥
+	GetProductOfferingPublicKey(ctx context.Context, id string) (*models.ProductOfferingPublicKeyResponse, error)
 	// UpdateProductOfferingStatus 启用/停用产品项
 	UpdateProductOfferingStatus(ctx context.Context, id string, status string) (*models.ProductOfferingResponse, error)
 }

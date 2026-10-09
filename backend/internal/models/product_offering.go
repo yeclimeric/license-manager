@@ -35,6 +35,11 @@ type ProductOffering struct {
 	Status        string `gorm:"type:varchar(20);not null;default:'active';index" json:"status"`
 	StatusDisplay string `gorm:"-" json:"status_display,omitempty"`
 
+	// 签名密钥。创建产品项时自动生成：客户端内嵌公钥验签，
+	// 服务端持私钥签发许可证。公钥随产品项一并导出，私钥永不出接口。
+	SigningPrivateKey string `gorm:"type:text" json:"-"`
+	SigningPublicKey  string `gorm:"type:text" json:"-"`
+
 	CreatedAt time.Time      `gorm:"not null;index" json:"created_at"`
 	UpdatedAt time.Time      `gorm:"not null" json:"updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
@@ -125,6 +130,17 @@ type ProductOfferingUpdateRequest struct {
 type ProductOfferingResponse struct {
 	*ProductOffering
 	TrialDisplay string `json:"trial_display,omitempty"`
+	// HasSigningKey 标识该产品项是否已生成签名密钥
+	HasSigningKey bool `json:"has_signing_key"`
+}
+
+// ProductOfferingPublicKeyResponse 产品公钥响应
+//
+// 与企业版实测契约一致：只返回产品标识与公钥本身。
+type ProductOfferingPublicKeyResponse struct {
+	ProductID   string `json:"product_id"`   // 产品项ID
+	ProductCode string `json:"product_code"` // 产品项编码
+	PublicKey   string `json:"public_key"`   // PEM 格式公钥
 }
 
 // ListResponse 分页响应

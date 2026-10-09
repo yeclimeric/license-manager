@@ -112,6 +112,7 @@ func SetupRouter() *gin.Engine {
 			auth.GET("/v1/product-offerings", productOfferingHandler.GetProductOfferingList)
 			auth.POST("/v1/product-offerings", productOfferingHandler.CreateProductOffering)
 			auth.GET("/v1/product-offerings/:id", productOfferingHandler.GetProductOffering)
+			auth.GET("/v1/product-offerings/:id/public-key", productOfferingHandler.GetProductOfferingPublicKey)
 			auth.PUT("/v1/product-offerings/:id", productOfferingHandler.UpdateProductOffering)
 			auth.DELETE("/v1/product-offerings/:id", productOfferingHandler.DeleteProductOffering)
 			auth.PATCH("/v1/product-offerings/:id/status", productOfferingHandler.UpdateProductOfferingStatus)

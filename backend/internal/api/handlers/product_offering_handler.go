@@ -204,6 +204,38 @@ func (h *ProductOfferingHandler) UpdateProductOffering(c *gin.Context) {
 	respondSuccess(c, data)
 }
 
+// GetProductOfferingPublicKey 获取产品项公钥
+// @Summary 获取产品公钥
+// @Description 获取产品项的签名公钥，客户端用于验证许可证签名
+// @Tags 产品项管理
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path string true "产品项ID"
+// @Success 200 {object} models.APIResponse{data=models.ProductOfferingPublicKeyResponse} "查询成功"
+// @Failure 400 {object} models.ErrorResponse "请求参数无效"
+// @Failure 401 {object} models.ErrorResponse "未认证"
+// @Failure 404 {object} models.ErrorResponse "产品项不存在"
+// @Failure 500 {object} models.ErrorResponse "服务器内部错误"
+// @Router /api/v1/product-offerings/{id}/public-key [get]
+func (h *ProductOfferingHandler) GetProductOfferingPublicKey(c *gin.Context) {
+	id := c.Param("id")
+	if id == "" {
+		respondErrorWithCode(c, "900001")
+		return
+	}
+
+	ctx := middleware.WithLanguage(c.Request.Context(), c)
+
+	data, err := h.productOfferingService.GetProductOfferingPublicKey(ctx, id)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondSuccess(c, data)
+}
+
 // DeleteProductOffering 删除产品项
 // @Summary 删除产品项
 // @Description 删除产品项，产品项下存在授权码时不可删除
