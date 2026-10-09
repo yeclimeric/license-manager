@@ -44,7 +44,11 @@ type AuthorizationCode struct {
 	ProductOfferingID      *string                  `gorm:"type:varchar(36);index" json:"product_offering_id"`                 // 所属产品项ID
 	ProductOfferingName    string                   `gorm:"-" json:"product_offering_name,omitempty"`                          // 产品项名称
 	ProductOfferingDisplay string                   `gorm:"-" json:"product_offering_display,omitempty"`                       // 产品项显示名（多语言）
-	DeploymentMode         string                   `gorm:"type:varchar(20);not null;default:'online'" json:"deployment_mode"` // 部署模式：online/offline/hybrid
+	DeploymentType         string                   `gorm:"type:varchar(20);not null;default:'cloud'" json:"deployment_type"`  // 部署类型：standalone(单机版)/cloud(云端版)
+	DeploymentTypeDisplay  string                   `gorm:"-" json:"deployment_type_display,omitempty"`                        // 部署类型显示（多语言）
+	ValidityMode           string                   `gorm:"type:varchar(20);not null;default:'fixed'" json:"validity_mode"`    // 有效期模式：fixed(固定期限)/activation_based(从激活起算)
+	DurationDays           *int                     `gorm:"type:int" json:"duration_days,omitempty"`                           // 有效期天数（validity_mode=activation_based 时生效）
+	DeploymentMode         string                   `gorm:"type:varchar(20);not null;default:'online'" json:"deployment_mode"` // 部署模式（继承自产品项）：online/offline/hybrid
 	SoftwareID             *string                  `gorm:"type:varchar(50)" json:"software_id"`                               // 软件ID
 	Description            *string                  `gorm:"type:text" json:"description"`                                      // 描述
 	StartDate              time.Time                `gorm:"type:datetime(3);not null" json:"start_date"`                       // 生效日期

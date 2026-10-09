@@ -159,5 +159,16 @@ enums:
     "active": "有効"
     "inactive": "無効"
 
+  authorization_deployment_type:
+    "standalone": "单机版"
+    "cloud": "クラウド版"
+
+  authorization_validity_mode:
+    "fixed": "固定期間"
+    "activation_based": "アクティベーションから"
+
+  authorization_source_type:
+    "manual": "手動作成"
+
 # デフォルトエラーメッセージ
 default_error: "不明なエラー"

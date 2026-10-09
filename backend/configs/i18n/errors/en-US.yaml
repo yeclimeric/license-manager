@@ -158,5 +158,16 @@ enums:
     "active": "Active"
     "inactive": "Inactive"
 
+  authorization_deployment_type:
+    "standalone": "Standalone"
+    "cloud": "Cloud"
+
+  authorization_validity_mode:
+    "fixed": "Fixed date"
+    "activation_based": "From activation"
+
+  authorization_source_type:
+    "manual": "Manual"
+
 # Default error message
 default_error: "Unknown error"

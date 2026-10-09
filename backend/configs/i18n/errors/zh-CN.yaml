@@ -160,5 +160,16 @@ enums:
     "active": "启用"
     "inactive": "停用"
 
+  authorization_deployment_type:
+    "standalone": "单机版"
+    "cloud": "云端版"
+
+  authorization_validity_mode:
+    "fixed": "固定期限"
+    "activation_based": "从激活起算"
+
+  authorization_source_type:
+    "manual": "手动创建"
+
 # 默认错误信息
 default_error: "未知错误"
