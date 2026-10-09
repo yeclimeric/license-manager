@@ -1284,7 +1284,9 @@
     "role": "Roles",
     "user": "Users",
     "menu": "Menus",
-    "audit_log": "Audit Logs"
+    "audit_log": "Audit Logs",
+    "system_config": "System Config",
+    "api_key": "API Key"
   },
   "permissionAction": {
     "read": "Read",
