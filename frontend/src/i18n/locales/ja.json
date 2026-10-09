@@ -316,7 +316,10 @@
         "activationDate": "有効化日",
         "createTime": "作成日時",
         "operation": "操作",
-        "loading": "読み込み中..."
+        "loading": "読み込み中...",
+        "productOffering": "製品項目",
+        "deploymentType": "展開タイプ",
+        "noProductOffering": "-"
       },
       "status": {
         "active": "有効",
@@ -604,7 +607,20 @@
           "validityType": "有効期間タイプ",
           "dateRange": "期間",
           "validityDays": "有効日数",
-          "maxActivations": "最大アクティベーション数"
+          "maxActivations": "最大アクティベーション数",
+          "productOffering": "製品項目",
+          "productOfferingPlaceholder": "製品項目に紐付けない",
+          "deploymentType": "展開タイプ",
+          "deploymentTypes": {
+            "standalone": "单机版",
+            "cloud": "クラウド版"
+          },
+          "validityMode": "有効期間モード",
+          "validityModes": {
+            "fixed": "固定期間",
+            "activation_based": "アクティベーションから"
+          },
+          "batchCount": "作成数量"
         },
         "validityTypes": {
           "permanent": "永続",
@@ -640,7 +656,10 @@
           "validityPeriodTooLong": "有効期間は10年を超えることはできません",
           "maxActivationsRequired": "最大アクティベーション数を入力してください",
           "maxActivationsRange": "最大アクティベーション数は1-999999の間である必要があります",
-          "maxActivationsInteger": "最大アクティベーション数は整数である必要があります"
+          "maxActivationsInteger": "最大アクティベーション数は整数である必要があります",
+          "productOfferingInactive": "この製品項目は無効のため認可を作成できません",
+          "validityExceedsTrial": "有効期間は製品項目の試用日数（{days}日）を超えられません",
+          "batchCountRange": "作成数量は1から100の範囲で指定してください"
         },
         "messages": {
           "searchCustomerError": "顧客検索に失敗しました",
@@ -654,7 +673,10 @@
           "cancelConfirm": "キャンセルしてもよろしいですか？保存されていない変更は失われます。",
           "cancelTitle": "確認",
           "cancelConfirmButton": "確認",
-          "cancelCancelButton": "編集を続行"
+          "cancelCancelButton": "編集を続行",
+          "batchCreateSuccess": "{count} 件の認可コードを作成しました",
+          "batchCreateFailed": "認可コードの一括作成に失敗しました",
+          "inheritedFromProduct": "製品項目の既定値を継承しました"
         },
         "keyValue": {
           "addItem": "項目を追加",
@@ -697,6 +719,11 @@
           "importFailed": "JSON の解析に失敗しました。形式を確認してください",
           "importEmpty": "JSON が空です"
         }
+      },
+      "filter": {
+        "productOffering": "すべての製品項目",
+        "noProductOffering": "未紐付け",
+        "deploymentType": "すべての展開タイプ"
       }
     }
   },

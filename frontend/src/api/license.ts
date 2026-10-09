@@ -20,6 +20,12 @@ export interface AuthorizationCode {
   current_activations?: number;
   activated_licenses_count?: number;
   is_locked?: boolean;
+  product_offering_id?: string | null;
+  product_offering_name?: string;
+  deployment_type?: string;
+  deployment_type_display?: string;
+  validity_mode?: string;
+  duration_days?: number | null;
   feature_config?: any;
   usage_limits?: any;
   custom_parameters?: any;
@@ -67,6 +73,8 @@ export interface LicenseQueryRequest {
   expiry_start_date?: string; // 到期时间开始
   expiry_end_date?: string; // 到期时间结束
   code?: string; // 授权码搜索
+  product_offering_id?: string; // 产品项筛选，none 表示未关联
+  deployment_type?: 'standalone' | 'cloud'; // 部署类型筛选
 }
 
 // 创建授权请求参数
@@ -74,12 +82,29 @@ export interface AuthorizationCodeCreateRequest {
   customer_id?: string;
   software_id?: string;
   description?: string;
-  validity_days: number;
+  validity_days?: number;
   software_version?: string;
-  max_activations: number;
+  max_activations?: number;
   feature_config?: any;
   usage_limits?: string | null;
   custom_parameters?: string | null;
+  /** 关联产品项：其默认授权策略会被继承 */
+  product_offering_id?: string;
+  /** 部署类型：standalone(单机版)/cloud(云端版)，缺省随产品项推导 */
+  deployment_type?: 'standalone' | 'cloud';
+  /** 有效期模式：fixed(固定期限)/activation_based(从激活起算) */
+  validity_mode?: 'fixed' | 'activation_based';
+}
+
+/** 批量创建授权码请求 */
+export interface AuthorizationCodeBatchCreateRequest extends AuthorizationCodeCreateRequest {
+  count: number;
+}
+
+/** 批量创建授权码响应 */
+export interface AuthorizationCodeBatchCreateResponse {
+  codes: { id: string; code: string }[];
+  count: number;
 }
 
 // 更新授权请求参数
@@ -147,6 +172,15 @@ export function getLicenseDetail(id: string): Promise<ApiResponse<AuthorizationC
  */
 export function createLicense(data: AuthorizationCodeCreateRequest): Promise<ApiResponse<AuthorizationCode>> {
   return Axios.post('/api/v1/authorization-codes', data)
+}
+
+/**
+ * 批量创建授权码
+ */
+export function batchCreateLicenses(
+  data: AuthorizationCodeBatchCreateRequest
+): Promise<ApiResponse<AuthorizationCodeBatchCreateResponse>> {
+  return Axios.post('/api/v1/authorization-codes/batch', data)
 }
 
 /**

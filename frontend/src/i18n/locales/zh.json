@@ -316,7 +316,10 @@
         "activationDate": "激活时间",
         "createTime": "创建时间",
         "operation": "操作",
-        "loading": "加载中..."
+        "loading": "加载中...",
+        "productOffering": "产品项",
+        "deploymentType": "部署类型",
+        "noProductOffering": "-"
       },
       "status": {
         "active": "有效",
@@ -604,7 +607,20 @@
           "validityType": "授权期限类型",
           "dateRange": "起止时间",
           "validityDays": "有效期天数",
-          "maxActivations": "最大激活设备数"
+          "maxActivations": "最大激活设备数",
+          "productOffering": "关联产品项",
+          "productOfferingPlaceholder": "不关联产品项",
+          "deploymentType": "部署类型",
+          "deploymentTypes": {
+            "standalone": "单机版",
+            "cloud": "云端版"
+          },
+          "validityMode": "有效期模式",
+          "validityModes": {
+            "fixed": "固定期限",
+            "activation_based": "从激活起算"
+          },
+          "batchCount": "创建数量"
         },
         "validityTypes": {
           "permanent": "永久",
@@ -640,7 +656,10 @@
           "validityPeriodTooLong": "授权期限不能超过10年",
           "maxActivationsRequired": "请输入最大激活设备数",
           "maxActivationsRange": "最大激活设备数必须在1-999999之间",
-          "maxActivationsInteger": "最大激活设备数必须为整数"
+          "maxActivationsInteger": "最大激活设备数必须为整数",
+          "productOfferingInactive": "该产品项已停用，无法创建授权",
+          "validityExceedsTrial": "授权期限不能超过产品项的体验天数（{days} 天）",
+          "batchCountRange": "创建数量需在 1 到 100 之间"
         },
         "messages": {
           "searchCustomerError": "搜索客户失败",
@@ -654,7 +673,10 @@
           "cancelConfirm": "确定要取消吗？未保存的更改将丢失。",
           "cancelTitle": "提示",
           "cancelConfirmButton": "确定",
-          "cancelCancelButton": "继续编辑"
+          "cancelCancelButton": "继续编辑",
+          "batchCreateSuccess": "成功创建 {count} 个授权码",
+          "batchCreateFailed": "批量创建授权码失败",
+          "inheritedFromProduct": "已继承产品项默认配置"
         },
         "keyValue": {
           "addItem": "添加条目",
@@ -697,6 +719,11 @@
           "importFailed": "JSON 解析失败，请检查格式",
           "importEmpty": "JSON 内容为空"
         }
+      },
+      "filter": {
+        "productOffering": "全部产品项",
+        "noProductOffering": "未关联产品项",
+        "deploymentType": "全部部署类型"
       }
     }
   },
