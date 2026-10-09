@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strings"
 
+	pkgcontext "license-manager/pkg/context"
 	"license-manager/pkg/utils"
 
 	"github.com/gin-gonic/gin"
@@ -97,6 +98,12 @@ func AuthMiddleware() gin.HandlerFunc {
 		c.Set("role", claims.Role)
 		c.Set(AuthorizationPayloadKey, claims)
 
+		// 同步写入请求 context：handler 侧经 WithLanguage 包装后
+		// ctx 不再是 *gin.Context，服务层只能从这里取值
+		ctx := pkgcontext.WithUserID(c.Request.Context(), claims.UserID)
+		ctx = pkgcontext.WithUsername(ctx, claims.Username)
+		c.Request = c.Request.WithContext(ctx)
+
 		c.Next()
 	}
 }
@@ -130,6 +137,9 @@ func OptionalAuthMiddleware() gin.HandlerFunc {
 			c.Set("username", claims.Username)
 			c.Set("role", claims.Role)
 			c.Set(AuthorizationPayloadKey, claims)
+
+			ctx := pkgcontext.WithUserID(c.Request.Context(), claims.UserID)
+			c.Request = c.Request.WithContext(ctx)
 		}
 
 		c.Next()
