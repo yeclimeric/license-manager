@@ -358,10 +358,12 @@ func (s *licenseService) GenerateLicenseFile(ctx context.Context, id string) ([]
 	// 包含授权码信息
 	if license.AuthorizationCode != nil {
 		licenseFileData["authorization_code"] = license.AuthorizationCode.Code
-		licenseFileData["start_date"] = license.AuthorizationCode.StartDate
-		licenseFileData["end_date"] = license.AuthorizationCode.EndDate
+		periodStart, periodEnd := resolveLicensePeriod(license, license.AuthorizationCode)
+		licenseFileData["start_date"] = periodStart
+		licenseFileData["end_date"] = periodEnd
 		licenseFileData["max_activations"] = license.AuthorizationCode.MaxActivations
 		licenseFileData["deployment_type"] = license.AuthorizationCode.DeploymentType
+		licenseFileData["validity_mode"] = license.AuthorizationCode.ValidityMode
 
 		// 包含功能配置
 		if featureConfig := parseJSONField(license.AuthorizationCode.FeatureConfig); len(featureConfig) > 0 {
@@ -587,7 +589,8 @@ func (s *licenseService) Heartbeat(ctx context.Context, req *models.HeartbeatReq
 		if license.AuthorizationCode.IsLocked {
 			return nil, i18n.NewI18nError("300003", lang) // 授权码已被锁定
 		}
-		if now.After(license.AuthorizationCode.EndDate) {
+		_, periodEnd := resolveLicensePeriod(license, license.AuthorizationCode)
+		if now.After(periodEnd) {
 			return nil, i18n.NewI18nError("300016", lang) // 许可证已过期
 		}
 	}
@@ -652,11 +655,15 @@ func (s *licenseService) generateLicenseFileContent(license *models.License, aut
 
 	if authCode != nil {
 		licenseFileData["authorization_code"] = authCode.Code
-		licenseFileData["start_date"] = authCode.StartDate
-		licenseFileData["end_date"] = authCode.EndDate
+		// 起止时间按有效期模式计算：从激活起算时不能沿用授权码的日期
+		periodStart, periodEnd := resolveLicensePeriod(license, authCode)
+		licenseFileData["start_date"] = periodStart
+		licenseFileData["end_date"] = periodEnd
 		licenseFileData["max_activations"] = authCode.MaxActivations
 		// 部署类型随许可证下发：客户端据此决定校验单机型还是云端型
 		licenseFileData["deployment_type"] = authCode.DeploymentType
+		// 有效期模式一并下发，客户端才知道该以哪个日期为准
+		licenseFileData["validity_mode"] = authCode.ValidityMode
 
 		// 包含功能配置等
 		if featureConfig := parseJSONField(authCode.FeatureConfig); len(featureConfig) > 0 {
