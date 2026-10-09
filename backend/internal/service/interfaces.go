@@ -34,6 +34,22 @@ type EnumService interface {
 	GetEnumsByType(ctx context.Context, enumType string) (*models.EnumTypeResponse, error)
 }
 
+// ProductOfferingService 产品项服务接口
+type ProductOfferingService interface {
+	// GetProductOfferingList 查询产品项列表
+	GetProductOfferingList(ctx context.Context, req *models.ProductOfferingListRequest) (*models.ProductOfferingListResponse, error)
+	// GetProductOffering 获取产品项详情
+	GetProductOffering(ctx context.Context, id string) (*models.ProductOfferingResponse, error)
+	// CreateProductOffering 创建产品项，编码由服务端生成
+	CreateProductOffering(ctx context.Context, req *models.ProductOfferingCreateRequest) (*models.ProductOfferingResponse, error)
+	// UpdateProductOffering 更新产品项，编码不可更改
+	UpdateProductOffering(ctx context.Context, id string, req *models.ProductOfferingUpdateRequest) (*models.ProductOfferingResponse, error)
+	// DeleteProductOffering 删除产品项
+	DeleteProductOffering(ctx context.Context, id string) error
+	// UpdateProductOfferingStatus 启用/停用产品项
+	UpdateProductOfferingStatus(ctx context.Context, id string, status string) (*models.ProductOfferingResponse, error)
+}
+
 // AuthorizationCodeService 授权码服务接口
 type AuthorizationCodeService interface {
 	CreateAuthorizationCode(ctx context.Context, req *models.AuthorizationCodeCreateRequest) (*models.AuthorizationCodeCreateResponse, error)

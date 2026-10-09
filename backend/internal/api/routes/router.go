@@ -41,6 +41,7 @@ func SetupRouter() *gin.Engine {
 	authCodeRepo := repository.NewAuthorizationCodeRepository(db)
 	licenseRepo := repository.NewLicenseRepository(db)
 	dashboardRepo := repository.NewDashboardRepository(db)
+	productOfferingRepo := repository.NewProductOfferingRepository(db)
 
 	// 获取logger实例
 	log := logger.GetLogger()
@@ -53,6 +54,7 @@ func SetupRouter() *gin.Engine {
 	enumService := service.NewEnumService()
 	licenseService := service.NewLicenseService(licenseRepo, db, log)
 	dashboardService := service.NewDashboardService(dashboardRepo)
+	productOfferingService := service.NewProductOfferingService(productOfferingRepo)
 
 	// 初始化处理器层
 	authHandler := handlers.NewAuthHandler(authService)
@@ -62,6 +64,7 @@ func SetupRouter() *gin.Engine {
 	authCodeHandler := handlers.NewAuthorizationCodeHandler(authCodeService)
 	licenseHandler := handlers.NewLicenseHandler(licenseService)
 	dashboardHandler := handlers.NewDashboardHandler(dashboardService)
+	productOfferingHandler := handlers.NewProductOfferingHandler(productOfferingService)
 
 	// 健康检测接口（无需认证）
 	router.GET("/health", systemHandler.HealthCheck)
@@ -101,6 +104,14 @@ func SetupRouter() *gin.Engine {
 			// 枚举管理
 			auth.GET("/enums", enumHandler.GetAllEnums)
 			auth.GET("/enums/:type", enumHandler.GetEnumsByType)
+
+			// 产品项管理
+			auth.GET("/v1/product-offerings", productOfferingHandler.GetProductOfferingList)
+			auth.POST("/v1/product-offerings", productOfferingHandler.CreateProductOffering)
+			auth.GET("/v1/product-offerings/:id", productOfferingHandler.GetProductOffering)
+			auth.PUT("/v1/product-offerings/:id", productOfferingHandler.UpdateProductOffering)
+			auth.DELETE("/v1/product-offerings/:id", productOfferingHandler.DeleteProductOffering)
+			auth.PATCH("/v1/product-offerings/:id/status", productOfferingHandler.UpdateProductOfferingStatus)
 
 			// 授权码管理
 			auth.GET("/v1/authorization-codes", authCodeHandler.GetAuthorizationCodeList)

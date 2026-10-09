@@ -100,8 +100,12 @@
     "noCustomer": "No customer",
     "noRecentAuthorizations": "No recent authorizations",
     "noRecentActivations": "No recent activations",
-    "recentAuthorizations": { "title": "Recent Authorizations" },
-    "recentActivations": { "title": "Recent Activations" },
+    "recentAuthorizations": {
+      "title": "Recent Authorizations"
+    },
+    "recentActivations": {
+      "title": "Recent Activations"
+    },
     "columns": {
       "customerName": "Customer",
       "description": "Description",
@@ -130,7 +134,8 @@
     "menu": {
       "dashboard": "Dashboard",
       "customers": "Customer Management",
-      "licenses": "License Management"
+      "licenses": "License Management",
+      "productOfferings": "Product Offerings"
     },
     "toggleSidebar": "Toggle Sidebar",
     "mainNavigation": "Main navigation",
@@ -160,7 +165,8 @@
       "settings": "Settings",
       "profile": "Profile",
       "workspace": "Workspace",
-      "unknown": "Unknown Page"
+      "unknown": "Unknown Page",
+      "products": "Product Offerings"
     }
   },
   "common": {
@@ -498,10 +504,10 @@
         "actions": {
           "copyCode": "Copy License Code",
           "updateLicense": "Update License",
-      "changeValidity": "Change Validity Period",
-      "revokeLicense": "Revoke License",
-      "deleteLicense": "Delete License",
-      "downloadCertificate": "Download Authorization File",
+          "changeValidity": "Change Validity Period",
+          "revokeLicense": "Revoke License",
+          "deleteLicense": "Delete License",
+          "downloadCertificate": "Download Authorization File",
           "backToList": "Back to licenses"
         },
         "updateDialog": {
@@ -554,14 +560,14 @@
           "revokeReasonPlaceholder": "Please enter revocation reason",
           "revokeReasonRequired": "Revocation reason is required",
           "revokeReasonMax": "Revocation reason cannot exceed 500 characters",
-      "revokeSuccess": "License revoked successfully",
-      "revokeError": "Failed to revoke the license, please try again later",
-      "deleteLicenseTitle": "Delete License",
-      "deleteLicenseConfirm": "Permanently delete this revoked license? The device can be bound again after deletion. This action cannot be undone.",
-      "deleteLicenseConfirmButton": "Delete",
-      "deleteLicenseSuccess": "License deleted successfully",
-      "deleteLicenseError": "Failed to delete the license, please try again later",
-      "loadError": "Failed to load license details",
+          "revokeSuccess": "License revoked successfully",
+          "revokeError": "Failed to revoke the license, please try again later",
+          "deleteLicenseTitle": "Delete License",
+          "deleteLicenseConfirm": "Permanently delete this revoked license? The device can be bound again after deletion. This action cannot be undone.",
+          "deleteLicenseConfirmButton": "Delete",
+          "deleteLicenseSuccess": "License deleted successfully",
+          "deleteLicenseError": "Failed to delete the license, please try again later",
+          "loadError": "Failed to load license details",
           "missingId": "Missing license ID"
         }
       },
@@ -893,6 +899,137 @@
       "boolean": "Boolean",
       "object": "Object",
       "array": "Array"
+    }
+  },
+  "products": {
+    "title": "Product Offerings",
+    "description": "Define the software products that need licensing, their default features and usage limits.",
+    "addProduct": "New Product",
+    "editProduct": "Edit Product",
+    "viewProduct": "View Product",
+    "breadcrumb": {
+      "list": "Product Offerings",
+      "create": "New Product",
+      "edit": "Edit Product"
+    },
+    "table": {
+      "name": "Product Name",
+      "code": "Product Code",
+      "status": "Status",
+      "trial": "Trial",
+      "userCount": "Users",
+      "authCodeCount": "Authorization Codes",
+      "createdAt": "Created",
+      "actions": "Actions",
+      "noTrial": "-",
+      "empty": "No products yet"
+    },
+    "filter": {
+      "status": "All Status",
+      "statusActive": "Active",
+      "statusInactive": "Inactive",
+      "search": "Search name / alias / code",
+      "reset": "Reset",
+      "refresh": "Refresh"
+    },
+    "form": {
+      "stepBasic": "Basic Information",
+      "stepBasicDesc": "Enter the display name and alias. The product code is generated automatically.",
+      "stepDefault": "Default Licensing Policy",
+      "stepDefaultDesc": "New authorization codes inherit these defaults and may override them individually.",
+      "stepAdvanced": "Advanced Configuration (Optional)",
+      "stepAdvancedDesc": "Feature switches, usage limits and custom parameters.",
+      "basicInfo": "Basic Information",
+      "name": "Product Name",
+      "namePlaceholder": "Enter the product name",
+      "nameRequired": "Enter the product name",
+      "alias": "Alias",
+      "aliasPlaceholder": "Used for display, optional",
+      "aliasHint": "When empty, the code is shown instead. Name and code identify the product to the API; the alias only affects display.",
+      "code": "Product Code",
+      "codePlaceholder": "Generated on save",
+      "codeHint": "The code is generated by the server and cannot be changed afterwards.",
+      "codeReadonly": "The code cannot be changed after creation",
+      "description": "Description",
+      "descriptionPlaceholder": "Enter a description",
+      "defaultConfig": "Default Licensing Policy",
+      "maxActivations": "Max Activations",
+      "maxActivationsPlaceholder": "Enter the activation limit",
+      "durationDays": "License Duration (days)",
+      "durationDaysPlaceholder": "Enter the number of days",
+      "deploymentMode": "Deployment Mode",
+      "deploymentOnline": "Online",
+      "deploymentOffline": "Offline",
+      "deploymentHybrid": "Hybrid",
+      "enableTrial": "Offer Trial",
+      "enableTrialDesc": "When enabled, trial licenses can be issued for this product",
+      "trialDays": "Trial Days",
+      "trialDaysPlaceholder": "Enter the trial length",
+      "trialDaysRequired": "Trial days is required when the trial is enabled",
+      "trialDaysInvalid": "Trial days must be a positive integer",
+      "trialDaysMax": "Trial days must not exceed 3650",
+      "advancedConfig": "Advanced Configuration",
+      "featureConfig": "Feature Configuration",
+      "featureConfigHint": "Describe the available feature switches as JSON",
+      "usageLimits": "Usage Limits",
+      "usageLimitsHint": "Describe usage caps such as seats or call counts as JSON",
+      "customParameters": "Custom Parameters",
+      "customParametersHint": "Describe bespoke parameters as JSON"
+    },
+    "actions": {
+      "create": "New Product",
+      "edit": "Edit",
+      "view": "View",
+      "viewPublicKey": "View Public Key",
+      "createAuthCode": "Create Authorization",
+      "enable": "Enable",
+      "disable": "Disable",
+      "delete": "Delete",
+      "cancel": "Cancel",
+      "save": "Save",
+      "confirm": "Confirm",
+      "previous": "Previous",
+      "next": "Next"
+    },
+    "confirm": {
+      "deleteTitle": "Delete Product",
+      "deleteMessage": "Delete the product \"{name}\"? This cannot be undone.",
+      "deleteWithAuthCodes": "This product still has {count} authorization codes and cannot be deleted. Remove them first.",
+      "disableTitle": "Disable Product",
+      "disableMessage": "Once disabled, new authorizations cannot use this product. Existing licenses are unaffected. Continue?",
+      "enableTitle": "Enable Product",
+      "enableMessage": "Enable the product \"{name}\"?"
+    },
+    "message": {
+      "created": "Product created",
+      "updated": "Product updated",
+      "deleted": "Product deleted",
+      "statusUpdated": "Product status updated",
+      "loadFailed": "Failed to load products",
+      "detailFailed": "Failed to load product details",
+      "createFailed": "Failed to create the product",
+      "updateFailed": "Failed to update the product",
+      "deleteFailed": "Failed to delete the product",
+      "publicKeyUnavailable": "Public keys arrive in a later stage"
+    },
+    "validation": {
+      "nameRequired": "Enter the product name",
+      "nameTooLong": "The product name cannot exceed 200 characters",
+      "aliasTooLong": "The alias cannot exceed 200 characters",
+      "trialDaysRequired": "Trial days is required when the trial is enabled",
+      "trialDaysInvalid": "Trial days must be a positive integer",
+      "trialDaysMax": "Trial days must not exceed 3650",
+      "maxActivationsInvalid": "The activation limit must be an integer between 1 and 999999",
+      "durationDaysInvalid": "The license duration must be a positive integer",
+      "jsonInvalid": "Invalid JSON"
+    },
+    "view": {
+      "basicInfo": "Basic Information",
+      "defaultConfig": "Default Licensing Policy",
+      "advancedConfig": "Advanced Configuration",
+      "trialEnabled": "Trial offered",
+      "trialDisabled": "No trial",
+      "codeReadonlyHint": "The product code is generated by the server and cannot be changed"
     }
   }
 }

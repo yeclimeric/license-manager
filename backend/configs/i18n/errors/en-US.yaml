@@ -41,6 +41,19 @@ errors:
     "300101": "Authorization code not found"
     "300102": "Authorization code is locked"
   
+  # Product offering module (50xxxx)
+  product_offering:
+    "500001": "Product offering not found"
+    "500002": "Product offering code already exists"
+    "500003": "Product name is required"
+    "500004": "Product still has authorization codes and cannot be deleted"
+    "500005": "Product code cannot be modified"
+    "500006": "Trial days must be a positive integer"
+    "500007": "Trial days is required when trial is enabled"
+    "500008": "Trial days must not exceed 3650"
+    "500009": "Invalid deployment mode"
+    "500010": "Invalid status value"
+
   # Dashboard module (40xxxx)
   dashboard:
     "400001": "Invalid time type parameter"
@@ -54,6 +67,7 @@ errors:
     "900002": "Resource not found"
     "900003": "Resource conflict"
     "900004": "Internal server error"
+    "900005": "Database operation failed"
 # Common text
 common:
   success: "Success"
@@ -111,5 +125,19 @@ enums:
     "lock": "Lock"
     "unlock": "Unlock"
     "other": "Other"
+
+  product_offering_status:
+    "active": "Active"
+    "inactive": "Inactive"
+
+  deployment_mode:
+    "online": "Online"
+    "offline": "Offline"
+    "hybrid": "Hybrid"
+
+  product_offering_trial:
+    "enabled": "Trial"
+    "days": "days"
+
 # Default error message
 default_error: "Unknown error"

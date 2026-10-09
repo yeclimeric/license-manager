@@ -100,8 +100,12 @@
     "noCustomer": "未关联客户",
     "noRecentAuthorizations": "暂无最近授权",
     "noRecentActivations": "暂无最近激活",
-    "recentAuthorizations": { "title": "最近授权" },
-    "recentActivations": { "title": "最近激活" },
+    "recentAuthorizations": {
+      "title": "最近授权"
+    },
+    "recentActivations": {
+      "title": "最近激活"
+    },
     "columns": {
       "customerName": "客户名称",
       "description": "描述",
@@ -130,7 +134,8 @@
     "menu": {
       "dashboard": "仪表盘",
       "customers": "客户管理",
-      "licenses": "授权管理"
+      "licenses": "授权管理",
+      "productOfferings": "产品项管理"
     },
     "toggleSidebar": "切换侧边栏",
     "mainNavigation": "主导航",
@@ -160,7 +165,8 @@
       "settings": "设置",
       "profile": "个人资料",
       "workspace": "工作台",
-      "unknown": "未知页面"
+      "unknown": "未知页面",
+      "products": "产品项管理"
     }
   },
   "common": {
@@ -498,10 +504,10 @@
         "actions": {
           "copyCode": "复制授权码",
           "updateLicense": "变更授权",
-      "changeValidity": "变更授权期限",
-      "revokeLicense": "撤销许可证",
-      "deleteLicense": "删除许可证",
-      "downloadCertificate": "授权文件下载",
+          "changeValidity": "变更授权期限",
+          "revokeLicense": "撤销许可证",
+          "deleteLicense": "删除许可证",
+          "downloadCertificate": "授权文件下载",
           "backToList": "返回授权列表"
         },
         "updateDialog": {
@@ -554,14 +560,14 @@
           "revokeReasonPlaceholder": "请输入撤销原因",
           "revokeReasonRequired": "请填写撤销原因",
           "revokeReasonMax": "撤销原因不能超过500个字符",
-      "revokeSuccess": "许可证已成功撤销",
-      "revokeError": "撤销许可证失败，请稍后重试",
-      "deleteLicenseTitle": "删除许可证",
-      "deleteLicenseConfirm": "确定要永久删除这张已撤销的许可证吗？删除后可重新绑定该设备，此操作不可恢复。",
-      "deleteLicenseConfirmButton": "确定删除",
-      "deleteLicenseSuccess": "许可证已删除",
-      "deleteLicenseError": "删除许可证失败，请稍后重试",
-      "loadError": "加载授权详情失败",
+          "revokeSuccess": "许可证已成功撤销",
+          "revokeError": "撤销许可证失败，请稍后重试",
+          "deleteLicenseTitle": "删除许可证",
+          "deleteLicenseConfirm": "确定要永久删除这张已撤销的许可证吗？删除后可重新绑定该设备，此操作不可恢复。",
+          "deleteLicenseConfirmButton": "确定删除",
+          "deleteLicenseSuccess": "许可证已删除",
+          "deleteLicenseError": "删除许可证失败，请稍后重试",
+          "loadError": "加载授权详情失败",
           "missingId": "缺少授权ID"
         }
       },
@@ -893,6 +899,137 @@
       "boolean": "布尔",
       "object": "对象",
       "array": "数组"
+    }
+  },
+  "products": {
+    "title": "产品项管理",
+    "description": "定义需要授权的软件产品、默认功能和使用限制。",
+    "addProduct": "新建产品项",
+    "editProduct": "编辑产品项",
+    "viewProduct": "查看产品项",
+    "breadcrumb": {
+      "list": "产品项管理",
+      "create": "新建产品项",
+      "edit": "编辑产品项"
+    },
+    "table": {
+      "name": "产品项名称",
+      "code": "产品项编码",
+      "status": "状态",
+      "trial": "体验",
+      "userCount": "用户数",
+      "authCodeCount": "授权码数",
+      "createdAt": "创建时间",
+      "actions": "操作",
+      "noTrial": "-",
+      "empty": "暂无产品项"
+    },
+    "filter": {
+      "status": "全部状态",
+      "statusActive": "启用",
+      "statusInactive": "停用",
+      "search": "搜索名称/别名/编码",
+      "reset": "重置",
+      "refresh": "刷新"
+    },
+    "form": {
+      "stepBasic": "填写基本信息",
+      "stepBasicDesc": "填写用于界面识别的名称与别名，产品项编码由系统自动生成。",
+      "stepDefault": "设置默认授权配置",
+      "stepDefaultDesc": "新建授权码时会继承这里的默认配置，可在单个授权码上覆盖。",
+      "stepAdvanced": "高级配置（可选）",
+      "stepAdvancedDesc": "功能开关、使用量限制与自定义参数。",
+      "basicInfo": "填写基本信息",
+      "name": "产品项名称",
+      "namePlaceholder": "请输入产品项名称",
+      "nameRequired": "请输入产品项名称",
+      "alias": "别名",
+      "aliasPlaceholder": "用于界面显示，可留空",
+      "aliasHint": "留空时界面显示编码。名称与编码用于接口调用，别名仅影响显示。",
+      "code": "产品项编码",
+      "codePlaceholder": "保存后自动生成",
+      "codeHint": "编码由系统自动生成，创建后不可修改。",
+      "codeReadonly": "编码创建后不可更改",
+      "description": "描述",
+      "descriptionPlaceholder": "请输入描述",
+      "defaultConfig": "默认授权配置",
+      "maxActivations": "最大激活设备数",
+      "maxActivationsPlaceholder": "请输入最大激活设备数",
+      "durationDays": "授权有效期（天）",
+      "durationDaysPlaceholder": "请输入授权天数",
+      "deploymentMode": "部署模式",
+      "deploymentOnline": "在线授权",
+      "deploymentOffline": "离线授权",
+      "deploymentHybrid": "混合授权",
+      "enableTrial": "开放体验",
+      "enableTrialDesc": "开启后该产品可按体验版发放授权",
+      "trialDays": "体验天数",
+      "trialDaysPlaceholder": "请输入体验天数",
+      "trialDaysRequired": "开启体验后必须设置体验天数",
+      "trialDaysInvalid": "体验天数必须为正整数",
+      "trialDaysMax": "体验天数不得超过 3650 天",
+      "advancedConfig": "高级配置",
+      "featureConfig": "功能配置",
+      "featureConfigHint": "以 JSON 描述可用的功能开关",
+      "usageLimits": "使用量限制",
+      "usageLimitsHint": "以 JSON 描述用量上限，如用户数、调用次数",
+      "customParameters": "自定义参数",
+      "customParametersHint": "以 JSON 描述定制功能参数"
+    },
+    "actions": {
+      "create": "新建产品项",
+      "edit": "编辑",
+      "view": "查看",
+      "viewPublicKey": "查看公钥",
+      "createAuthCode": "创建授权",
+      "enable": "启用",
+      "disable": "禁用",
+      "delete": "删除",
+      "cancel": "取消",
+      "save": "保存",
+      "confirm": "确定",
+      "previous": "上一步",
+      "next": "下一步"
+    },
+    "confirm": {
+      "deleteTitle": "删除产品项",
+      "deleteMessage": "确定要删除产品项「{name}」吗？此操作不可撤销。",
+      "deleteWithAuthCodes": "该产品项下仍有 {count} 个授权码，无法删除。请先删除相关授权码。",
+      "disableTitle": "停用产品项",
+      "disableMessage": "停用后该产品项无法用于新建授权，已发放的授权不受影响。确定继续吗？",
+      "enableTitle": "启用产品项",
+      "enableMessage": "确定要启用产品项「{name}」吗？"
+    },
+    "message": {
+      "created": "产品项创建成功",
+      "updated": "产品项更新成功",
+      "deleted": "产品项删除成功",
+      "statusUpdated": "产品项状态已更新",
+      "loadFailed": "加载产品项列表失败",
+      "detailFailed": "加载产品项详情失败",
+      "createFailed": "创建产品项失败",
+      "updateFailed": "更新产品项失败",
+      "deleteFailed": "删除产品项失败",
+      "publicKeyUnavailable": "公钥功能将在后续阶段提供"
+    },
+    "validation": {
+      "nameRequired": "请输入产品项名称",
+      "nameTooLong": "产品项名称不能超过 200 个字符",
+      "aliasTooLong": "别名不能超过 200 个字符",
+      "trialDaysRequired": "开启体验后必须设置体验天数",
+      "trialDaysInvalid": "体验天数必须为正整数",
+      "trialDaysMax": "体验天数不得超过 3650 天",
+      "maxActivationsInvalid": "最大激活设备数必须为 1 到 999999 之间的整数",
+      "durationDaysInvalid": "授权天数必须为正整数",
+      "jsonInvalid": "JSON 格式不正确"
+    },
+    "view": {
+      "basicInfo": "基本信息",
+      "defaultConfig": "默认授权配置",
+      "advancedConfig": "高级配置",
+      "trialEnabled": "已开放体验",
+      "trialDisabled": "未开放体验",
+      "codeReadonlyHint": "产品项编码由系统生成，不可修改"
     }
   }
 }
