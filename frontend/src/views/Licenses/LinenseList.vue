@@ -499,7 +499,7 @@ onMounted(async () => {
 </script>
 
 <style scoped lang="scss">
-.filter-grid { grid-template-columns:minmax(240px,320px) minmax(280px,380px) 160px auto; }
+.filter-grid { grid-template-columns:minmax(200px,1.4fr) minmax(200px,1.2fr) minmax(0,1fr) auto; }
 
 .context-back { margin:0 0 6px; padding:0; display:inline-flex; align-items:center; gap:5px; border:0; background:transparent; color:#526a60; font:inherit; font-size:13px; cursor:pointer; }
 .context-back:hover { color:var(--el-color-primary); }
