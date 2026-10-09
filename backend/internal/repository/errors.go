@@ -30,6 +30,21 @@ var (
 	ErrProductOfferingInUse     = errors.New("product offering still has authorization codes")
 )
 
+// RBAC 领域的业务错误
+var (
+	ErrRoleNotFound        = errors.New("role not found")
+	ErrRoleDuplicate       = errors.New("role name already exists")
+	ErrRoleSystemProtected = errors.New("system role cannot be modified or deleted")
+	ErrRoleInUse           = errors.New("role is assigned to users")
+	ErrMenuNotFound        = errors.New("menu not found")
+	ErrMenuDuplicate       = errors.New("menu identifier already exists")
+	ErrMenuSystemProtected = errors.New("system menu cannot be modified or deleted")
+	ErrMenuHasChildren     = errors.New("menu still has child items")
+	ErrMenuInUse           = errors.New("menu is bound to roles")
+	ErrMenuParentNotFound  = errors.New("parent menu not found")
+	ErrMenuCyclicReference = errors.New("menu hierarchy would form a cycle")
+)
+
 // 功能模板领域的业务错误
 var (
 	ErrFeatureTemplateNotFound         = errors.New("feature template not found")
