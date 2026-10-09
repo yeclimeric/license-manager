@@ -135,7 +135,8 @@
       "dashboard": "仪表盘",
       "customers": "客户管理",
       "licenses": "授权管理",
-      "productOfferings": "产品项管理"
+      "productOfferings": "产品项管理",
+      "featureTemplates": "功能模板"
     },
     "toggleSidebar": "切换侧边栏",
     "mainNavigation": "主导航",
@@ -166,7 +167,8 @@
       "profile": "个人资料",
       "workspace": "工作台",
       "unknown": "未知页面",
-      "products": "产品项管理"
+      "products": "产品项管理",
+      "featureTemplates": "功能模板"
     }
   },
   "common": {
@@ -1030,6 +1032,144 @@
       "trialEnabled": "已开放体验",
       "trialDisabled": "未开放体验",
       "codeReadonlyHint": "产品项编码由系统生成，不可修改"
+    }
+  },
+  "featureTemplates": {
+    "title": "功能模板",
+    "description": "集中维护可用的功能配置，创建产品项时可选择和组合。",
+    "addTemplate": "新建模板",
+    "editTemplate": "编辑模板",
+    "breadcrumb": {
+      "list": "功能模板",
+      "create": "新建模板"
+    },
+    "table": {
+      "name": "模板名称",
+      "identifier": "标识符",
+      "category": "分类",
+      "status": "状态",
+      "createdAt": "创建时间",
+      "actions": "操作",
+      "empty": "暂无功能模板",
+      "featureCount": "{count} 个功能项"
+    },
+    "filter": {
+      "category": "全部分类",
+      "status": "全部状态",
+      "statusActive": "启用",
+      "statusInactive": "停用",
+      "search": "搜索名称/标识符",
+      "reset": "重置"
+    },
+    "actions": {
+      "create": "新建模板",
+      "manageCategories": "管理分类",
+      "edit": "编辑",
+      "view": "查看",
+      "enable": "启用",
+      "disable": "禁用",
+      "delete": "删除",
+      "cancel": "取消",
+      "save": "保存",
+      "confirm": "确定",
+      "addFeature": "添加功能项",
+      "removeFeature": "移除",
+      "moveUp": "上移",
+      "moveDown": "下移"
+    },
+    "form": {
+      "basicInfo": "基本信息",
+      "name": "模板名称",
+      "namePlaceholder": "请输入模板名称",
+      "identifier": "标识符",
+      "identifierPlaceholder": "留空则根据名称自动生成",
+      "identifierHint": "标识符会被客户端 SDK 读取并写入许可证，创建后不可修改。仅支持小写字母、数字和下划线，且以字母开头。",
+      "description": "描述",
+      "descriptionPlaceholder": "请输入描述",
+      "category": "分类",
+      "sortOrder": "排序",
+      "sortOrderHint": "数值越小越靠前",
+      "featureItems": "功能项",
+      "featureItemsHint": "定义该模板包含的功能开关，顺序即为客户端读取顺序",
+      "featureKey": "功能标识",
+      "featureKeyPlaceholder": "如 core",
+      "featureName": "功能名称",
+      "featureNamePlaceholder": "如 核心功能",
+      "featureDescription": "功能描述",
+      "featureDescriptionPlaceholder": "选填",
+      "advancedConfig": "高级配置",
+      "usageLimits": "使用量限制",
+      "usageLimitsHint": "以 JSON 描述用量上限",
+      "customParameters": "自定义参数",
+      "customParametersHint": "以 JSON 描述定制功能参数"
+    },
+    "category": {
+      "title": "分类管理",
+      "value": "分类标识",
+      "valuePlaceholder": "如 imaging",
+      "label": "分类名称",
+      "labelPlaceholder": "如 脑成像",
+      "sortOrder": "排序",
+      "templateCount": "模板数",
+      "isSystem": "内置",
+      "add": "新建分类",
+      "edit": "编辑",
+      "delete": "删除",
+      "empty": "暂无分类",
+      "valueHint": "标识仅支持小写字母、数字和下划线，且以字母开头",
+      "deleteBlocked": "该分类下仍有 {count} 个模板，无法删除"
+    },
+    "confirm": {
+      "deleteTitle": "删除模板",
+      "deleteMessage": "确定要删除模板「{name}」吗？此操作不可撤销。",
+      "disableTitle": "停用模板",
+      "disableMessage": "停用后该模板不再出现在产品项的可选列表中，已发放的许可证不受影响。确定继续吗？",
+      "enableTitle": "启用模板",
+      "enableMessage": "确定要启用模板「{name}」吗？",
+      "deleteCategoryTitle": "删除分类",
+      "deleteCategoryMessage": "确定要删除分类「{label}」吗？",
+      "removeFeatureTitle": "移除功能项",
+      "removeFeatureMessage": "确定要移除功能项「{name}」吗？"
+    },
+    "message": {
+      "created": "功能模板创建成功",
+      "updated": "功能模板更新成功",
+      "deleted": "功能模板删除成功",
+      "categoryCreated": "分类创建成功",
+      "categoryUpdated": "分类更新成功",
+      "categoryDeleted": "分类删除成功",
+      "loadFailed": "加载功能模板列表失败",
+      "detailFailed": "加载功能模板详情失败",
+      "categoryLoadFailed": "加载分类列表失败",
+      "createFailed": "创建功能模板失败",
+      "updateFailed": "更新功能模板失败",
+      "deleteFailed": "删除功能模板失败",
+      "categoryCreateFailed": "创建分类失败",
+      "categoryUpdateFailed": "更新分类失败",
+      "categoryDeleteFailed": "删除分类失败"
+    },
+    "validation": {
+      "nameRequired": "请输入模板名称",
+      "nameTooLong": "模板名称不能超过 200 个字符",
+      "identifierInvalid": "标识符仅支持小写字母、数字和下划线，且以字母开头",
+      "identifierTooLong": "标识符不能超过 100 个字符",
+      "categoryRequired": "请选择分类",
+      "categoryValueRequired": "请输入分类标识",
+      "categoryValueInvalid": "分类标识仅支持小写字母、数字和下划线，且以字母开头",
+      "categoryLabelRequired": "请输入分类名称",
+      "featureKeyRequired": "请输入功能标识",
+      "featureKeyInvalid": "功能标识仅支持字母、数字、下划线或连字符",
+      "featureNameRequired": "请输入功能名称",
+      "featureKeyDuplicate": "功能标识重复：{key}",
+      "jsonInvalid": "JSON 格式不正确"
+    },
+    "view": {
+      "basicInfo": "基本信息",
+      "featureItems": "功能项",
+      "advancedConfig": "高级配置",
+      "noFeatures": "该模板未定义功能项",
+      "identifierReadonly": "标识符创建后不可修改",
+      "systemTemplate": "内置模板不可修改或删除"
     }
   }
 }
