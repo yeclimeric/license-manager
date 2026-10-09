@@ -30,6 +30,11 @@ var (
 	ErrProductOfferingInUse     = errors.New("product offering still has authorization codes")
 )
 
+// 用户领域的业务错误
+var (
+	ErrUserNotFound = errors.New("user not found")
+)
+
 // RBAC 领域的业务错误
 var (
 	ErrRoleNotFound        = errors.New("role not found")

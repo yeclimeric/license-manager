@@ -501,6 +501,8 @@ func (r *rbacRepository) DeleteMenu(ctx context.Context, id string) error {
 		return fmt.Errorf("failed to load menu: %w", err)
 	}
 
+	// 内置归属判断先于一切：内置菜单即便被角色绑定也不可删除，
+	// 否则运营会看到"已绑定角色"而误以为可以先解绑再删
 	if menu.IsSystem {
 		return ErrMenuSystemProtected
 	}

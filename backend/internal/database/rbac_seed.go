@@ -15,21 +15,21 @@ import (
 // 本项目尚未实现的模块，避免侧边栏出现点不开的死链。
 var seedMenus = []models.Menu{
 	// 一级菜单
-	{ID: "menu-dashboard", NameKey: "menu.dashboard", Type: models.MenuTypeMenu, Path: "/dashboard", Icon: "DataLine", Permission: "dashboard:read", SortOrder: 1},
-	{ID: "menu-license", NameKey: "menu.license", Type: models.MenuTypeMenu, Path: "/licenses", Icon: "Lock", Permission: "license:read", SortOrder: 2},
-	{ID: "menu-customer", NameKey: "menu.customer", Type: models.MenuTypeMenu, Path: "/customers", Icon: "User", Permission: "customer:read", SortOrder: 3},
+	{ID: "menu-dashboard", NameKey: "menu.dashboard", Type: models.MenuTypeMenu, Path: "/dashboard", Icon: "DataLine", Permission: "dashboard:read", SortOrder: 1, IsSystem: true},
+	{ID: "menu-license", NameKey: "menu.license", Type: models.MenuTypeMenu, Path: "/licenses", Icon: "Lock", Permission: "license:read", SortOrder: 2, IsSystem: true},
+	{ID: "menu-customer", NameKey: "menu.customer", Type: models.MenuTypeMenu, Path: "/customers", Icon: "User", Permission: "customer:read", SortOrder: 3, IsSystem: true},
 
 	// 产品管理分组
 	{ID: "menu-product-management", NameKey: "menu.product_management", Type: models.MenuTypeDirectory, Path: "", Icon: "Box", Permission: "product_offering", SortOrder: 10, IsSystem: true},
-	{ID: "menu-feature-template", NameKey: "menu.feature_template", Type: models.MenuTypeMenu, Path: "/feature-templates", Icon: "Files", Permission: "feature_template:read", SortOrder: 11, ParentID: strPtr("menu-product-management")},
-	{ID: "menu-product-offering", NameKey: "menu.product_offering", Type: models.MenuTypeMenu, Path: "/products", Icon: "Goods", Permission: "product_offering:read", SortOrder: 12, ParentID: strPtr("menu-product-management")},
+	{ID: "menu-feature-template", NameKey: "menu.feature_template", Type: models.MenuTypeMenu, Path: "/feature-templates", Icon: "Files", Permission: "feature_template:read", SortOrder: 11, ParentID: strPtr("menu-product-management"), IsSystem: true},
+	{ID: "menu-product-offering", NameKey: "menu.product_offering", Type: models.MenuTypeMenu, Path: "/products", Icon: "Goods", Permission: "product_offering:read", SortOrder: 12, ParentID: strPtr("menu-product-management"), IsSystem: true},
 
 	// 管理分组
 	{ID: "menu-manage", NameKey: "menu.manage", Type: models.MenuTypeDirectory, Path: "", Icon: "Setting", Permission: "role", SortOrder: 20, IsSystem: true},
-	{ID: "menu-role", NameKey: "menu.role", Type: models.MenuTypeMenu, Path: "/roles", Icon: "UserFilled", Permission: "role:read", SortOrder: 21, ParentID: strPtr("menu-manage")},
-	{ID: "menu-user", NameKey: "menu.user", Type: models.MenuTypeMenu, Path: "/users", Icon: "User", Permission: "user:read", SortOrder: 22, ParentID: strPtr("menu-manage")},
-	{ID: "menu-menu", NameKey: "menu.menu", Type: models.MenuTypeMenu, Path: "/menus", Icon: "Menu", Permission: "menu:read", SortOrder: 23, ParentID: strPtr("menu-manage")},
-	{ID: "menu-audit-log", NameKey: "menu.audit_log", Type: models.MenuTypeMenu, Path: "/audit-logs", Icon: "Document", Permission: "audit_log:read", SortOrder: 24, ParentID: strPtr("menu-manage")},
+	{ID: "menu-role", NameKey: "menu.role", Type: models.MenuTypeMenu, Path: "/roles", Icon: "UserFilled", Permission: "role:read", SortOrder: 21, ParentID: strPtr("menu-manage"), IsSystem: true},
+	{ID: "menu-user", NameKey: "menu.user", Type: models.MenuTypeMenu, Path: "/users", Icon: "User", Permission: "user:read", SortOrder: 22, ParentID: strPtr("menu-manage"), IsSystem: true},
+	{ID: "menu-menu", NameKey: "menu.menu", Type: models.MenuTypeMenu, Path: "/menus", Icon: "Menu", Permission: "menu:read", SortOrder: 23, ParentID: strPtr("menu-manage"), IsSystem: true},
+	{ID: "menu-audit-log", NameKey: "menu.audit_log", Type: models.MenuTypeMenu, Path: "/audit-logs", Icon: "Document", Permission: "audit_log:read", SortOrder: 24, ParentID: strPtr("menu-manage"), IsSystem: true},
 }
 
 // seedPermissionResources 权限资源，对齐企业版实测的 16 项中社区版支持的部分
@@ -104,6 +104,15 @@ func initRBACData() error {
 		var existing models.Menu
 		err := db.WithContext(ctx).Where("id = ?", menu.ID).First(&existing).Error
 		if err == nil {
+			// 已存在时同步标记归属：早期种子数据未标 IsSystem，
+			// 补上后可防止内置菜单被误删
+			if !existing.IsSystem && menu.IsSystem {
+				if err := db.WithContext(ctx).Model(&models.Menu{}).
+					Where("id = ?", menu.ID).
+					Update("is_system", true).Error; err != nil {
+					return err
+				}
+			}
 			continue
 		}
 		if !errors.Is(err, gorm.ErrRecordNotFound) {

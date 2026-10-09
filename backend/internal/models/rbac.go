@@ -42,7 +42,7 @@ type Menu struct {
 	UpdatedAt time.Time      `gorm:"not null" json:"updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 
-	Children []*Menu `gorm:"-" json:"children"`
+	Children []Menu `gorm:"-" json:"children"`
 
 	CanDelete bool `gorm:"-" json:"can_delete"`
 }
