@@ -35,6 +35,15 @@ var (
 	ErrUserNotFound = errors.New("user not found")
 )
 
+// 系统配置与 API Key 领域的业务错误
+var (
+	ErrSystemConfigNotFound  = errors.New("system config not found")
+	ErrSystemConfigDuplicate = errors.New("system config key already exists")
+	ErrAPIKeyNotFound        = errors.New("api key not found")
+	ErrAPIKeyExpired         = errors.New("api key has expired")
+	ErrAPIKeyIPNotAllowed    = errors.New("api key is not allowed from this address")
+)
+
 // 用户管理领域的业务错误
 var (
 	ErrUserDuplicate       = errors.New("username or email already exists")
