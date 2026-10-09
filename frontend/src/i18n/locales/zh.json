@@ -146,7 +146,8 @@
       "productOfferings": "产品项管理",
       "featureTemplates": "功能模板",
       "auditLogs": "操作日志",
-      "menus": "菜单权限"
+      "menus": "菜单权限",
+      "users": "用户管理"
     },
     "toggleSidebar": "切换侧边栏",
     "mainNavigation": "主导航",
@@ -180,7 +181,8 @@
       "products": "产品项管理",
       "featureTemplates": "功能模板",
       "auditLogs": "操作日志",
-      "menus": "菜单权限"
+      "menus": "菜单权限",
+      "users": "用户管理"
     }
   },
   "common": {
@@ -1360,5 +1362,81 @@
       "menuTitle": "菜单管理",
       "create": "新建角色"
     }
+  },
+  "users": {
+    "title": "用户管理",
+    "description": "管理控制台账号，分配角色以控制其可见菜单与可执行操作。",
+    "table": {
+      "username": "用户名",
+      "email": "邮箱",
+      "fullName": "姓名",
+      "phone": "手机号",
+      "roles": "角色",
+      "status": "状态",
+      "lastLogin": "最近登录",
+      "createdAt": "创建时间",
+      "actions": "操作"
+    },
+    "form": {
+      "create": "新建用户",
+      "edit": "编辑用户",
+      "username": "用户名",
+      "email": "邮箱",
+      "fullName": "姓名",
+      "phone": "手机号",
+      "roles": "角色",
+      "status": "状态",
+      "newPassword": "新密码",
+      "passwordHint": "至少 8 位"
+    },
+    "filter": {
+      "search": "搜索用户名/邮箱/姓名",
+      "allStatus": "全部状态",
+      "query": "查询",
+      "reset": "重置"
+    },
+    "status": {
+      "active": "正常",
+      "locked": "锁定",
+      "inactive": "停用"
+    },
+    "actions": {
+      "create": "新建用户",
+      "edit": "编辑用户",
+      "resetPassword": "重置密码",
+      "deleteUser": "删除用户"
+    },
+    "message": {
+      "empty": "暂无用户",
+      "loadFailed": "加载用户列表失败",
+      "userCreated": "用户创建成功",
+      "userUpdated": "用户更新成功",
+      "userDeleted": "用户删除成功",
+      "passwordReset": "密码已重置"
+    },
+    "confirm": {
+      "deleteUser": "删除用户",
+      "deleteUserMsg": "确定删除用户「{name}」吗？",
+      "resetPassword": "重置密码",
+      "resetPasswordMsg": "将为用户「{name}」设置新密码，原密码立即失效。"
+    },
+    "validation": {
+      "newPassword": "请输入新密码",
+      "passwordRequired": "请输入新密码",
+      "usernameRequired": "请输入用户名",
+      "emailRequired": "请输入邮箱",
+      "emailInvalid": "邮箱格式不正确",
+      "fullNameRequired": "请输入姓名",
+      "rolesRequired": "请至少分配一个角色",
+      "passwordLength": "密码至少 8 位"
+    },
+    "empty": {
+      "roles": "未分配角色",
+      "user": "—",
+      "neverLogin": "从未登录"
+    },
+    "createSuccess": "创建成功",
+    "cancel": "取消",
+    "save": "保存"
   }
 }
