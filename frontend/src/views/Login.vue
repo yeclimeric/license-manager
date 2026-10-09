@@ -12,11 +12,12 @@
         <div class="motion-signal motion-signal--three"></div>
       </div>
       <div class="brand-mark">
-        <svg viewBox="0 0 41 40" fill="none" aria-hidden="true">
+        <img v-if="publicConfig.logoUrl" :src="publicConfig.logoUrl" :alt="siteName" class="brand-logo-img" />
+        <svg v-else viewBox="0 0 41 40" fill="none" aria-hidden="true">
           <path d="M26.3125 11.4814L22.25 19.5947V22.7148L27.1191 13.0576L29.7393 18.1777L18.7988 40H0L13.5938 22.8037H14L13.8125 23.1201L7.46875 33.541H17.8438V16.9111L7.1875 25.6475L18.0312 10.1406L11.625 14.4463V14.2588L20.4375 0L26.3125 11.4814Z" fill="currentColor"/>
           <path d="M34.5498 39.9996H28.75L24.5938 32.8864L27.125 27.6246L34.5498 39.9996ZM41 39.9996H36.2705L27.9346 25.941L30.7188 20.1559L41 39.9996Z" fill="currentColor" opacity=".7"/>
         </svg>
-        <span>Cedar-V</span>
+        <span>{{ siteName }}</span>
       </div>
       <div class="brand-copy">
         <p class="eyebrow">{{ t('login.communityEdition') }}</p>
@@ -89,12 +90,13 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { Lock, User } from '@element-plus/icons-vue'
 import { Login, type LoginRequest } from '@/api/user'
+import { getPublicConfig } from '@/api/systemConfig'
 import { useUserStore } from '@/store/modules/user'
 import { changeLanguage, type SupportedLocale } from '@/utils/language'
 
@@ -104,6 +106,27 @@ const DEFAULT_COMMUNITY_LOGIN = {
   password: 'admin@123'
 }
 const { t, locale } = useI18n()
+
+// 站点名与 Logo 来自公开配置：登录页在未认证时也要能读取。
+// 取不到时退回内置品牌，不阻塞登录。
+const publicConfig = reactive({ siteName: 'Cedar-V', logoUrl: '' })
+const siteName = computed(() => publicConfig.siteName)
+
+const loadPublicConfig = async () => {
+  try {
+    const res = await getPublicConfig()
+    const configs = res.data || {}
+    if (configs['system.site_name']) publicConfig.siteName = configs['system.site_name']
+    if (configs['system.logo_url']) publicConfig.logoUrl = configs['system.logo_url']
+    if (configs['system.favicon_url']) {
+      const link = document.querySelector<HTMLLinkElement>('link[rel="icon"]')
+      if (link) link.href = configs['system.favicon_url']
+    }
+    document.title = publicConfig.siteName
+  } catch {
+    // 公开配置不可用时保持内置品牌
+  }
+}
 const router = useRouter()
 const userStore = useUserStore()
 const loginFormRef = ref<FormInstance>()
@@ -173,7 +196,10 @@ const handleLogin = async () => {
   }
 }
 
-onMounted(loadRememberedUsername)
+onMounted(() => {
+	loadPublicConfig()
+	loadRememberedUsername()
+})
 </script>
 
 <style lang="scss" scoped>

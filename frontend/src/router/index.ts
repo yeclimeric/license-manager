@@ -80,6 +80,18 @@ const routes: Array<RouteRecordRaw> = [
     meta: { title: "功能模板", requiresAuth: true }
   },
   {
+    path: "/system-config",
+    name: "system-config",
+    component: () => import("@/views/SystemConfig/index.vue"),
+    meta: { title: "系统配置", requiresAuth: true }
+  },
+  {
+    path: "/api-keys",
+    name: "api-keys",
+    component: () => import("@/views/ApiKeys/index.vue"),
+    meta: { title: "API Key", requiresAuth: true }
+  },
+  {
     path: "/users",
     name: "users",
     component: () => import("@/views/Users/index.vue"),
