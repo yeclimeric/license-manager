@@ -247,7 +247,7 @@ const getStatusType = (changeType: string) => {
       :deep(.el-input__wrapper) {
         padding: 2px 4px 2px 12px;
         border: 1px solid var(--app-border-color);
-        border-radius: 0;
+        border-radius: $border-radius-base;
       }
 
       :deep(.el-input__inner) {
@@ -284,7 +284,7 @@ const getStatusType = (changeType: string) => {
 .history-container {
   background: var(--app-content-bg);
   border: 1px solid var(--app-border-color);
-  border-radius: 0;
+  border-radius: $border-radius-base;
   padding: 20px;
   min-height: 400px;
 }
@@ -379,7 +379,7 @@ const getStatusType = (changeType: string) => {
         font-size: 14px;
         font-weight: 500;
         line-height: 21px;
-        border-radius: 0;
+        border-radius: $border-radius-base;
 
         &.el-tag--success {
           background: rgba(0, 194, 124, 0.08);
@@ -425,7 +425,7 @@ const getStatusType = (changeType: string) => {
       color: var(--app-text-secondary);
       padding: 8px 12px;
       background: rgba(136, 165, 209, 0.1);
-      border-radius: 0;
+      border-radius: $border-radius-base;
     }
   }
 }

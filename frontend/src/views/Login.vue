@@ -215,7 +215,7 @@ onMounted(loadRememberedUsername)
 .language-switcher { position:absolute; top:24px; right:28px; width:132px; }
 .language-switcher>svg { position:absolute; top:50%; left:12px; z-index:2; width:17px; height:17px; color:#647870; transform:translateY(-50%); pointer-events:none; }
 .language-switcher>svg :is(circle,path) { stroke:currentColor; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; }
-.language-switcher :deep(.el-select__wrapper) { min-height:38px; padding-left:38px; border:1px solid #cddcd7; border-radius:0; background:#fff; box-shadow:none; transition:border-color .2s ease,background-color .2s ease; }
+.language-switcher :deep(.el-select__wrapper) { min-height:38px; padding-left:38px; border:1px solid #cddcd7; border-radius: $border-radius-base; background:#fff; box-shadow:none; transition:border-color .2s ease,background-color .2s ease; }
 .language-switcher :deep(.el-select__wrapper:hover) { border-color:#82a69a; background:#f4faf7; }
 .language-switcher :deep(.el-select__wrapper.is-focused) { border-color:#019c7c; box-shadow:0 0 0 1px #019c7c; }
 .language-switcher:focus-within>svg { color:#019c7c; }
@@ -225,14 +225,14 @@ onMounted(loadRememberedUsername)
 .login-form :deep(.el-form-item) { position:relative; margin-bottom:30px; }
 .login-form :deep(.el-form-item__label) { position:absolute; top:-8px; left:12px; z-index:2; width:auto; height:18px; margin:0; padding:0 6px; color:#52665f; background:#f8fbfa; font-size:12px; line-height:18px; }
 .login-form :deep(.el-form-item__label::before) { display:none; }
-.login-form :deep(.el-input__wrapper) { min-height:54px; border:1px solid #cddcd7; border-radius:0; background:#fff; box-shadow:none; }
+.login-form :deep(.el-input__wrapper) { min-height:54px; border:1px solid #cddcd7; border-radius: $border-radius-base; background:#fff; box-shadow:none; }
 .login-form :deep(.el-input__wrapper:hover) { border-color:#8eaaa1; }
 .login-form :deep(.el-input__wrapper.is-focus) { border-color:#019c7c; box-shadow:0 0 0 1px #019c7c; }
 .login-form :deep(input:-webkit-autofill),
 .login-form :deep(input:-webkit-autofill:hover),
 .login-form :deep(input:-webkit-autofill:focus) { -webkit-text-fill-color:#17231f; -webkit-box-shadow:0 0 0 1000px #fff inset; caret-color:#17231f; }
 .form-options { margin:-8px 0 24px; display:flex; justify-content:space-between; }
-.login-button { width:100%; min-height:50px; border-radius:0; font-weight:600; }
+.login-button { width:100%; min-height:50px; border-radius: $border-radius-base; font-weight:600; }
 .login-card footer { margin-top:40px; color:#708079; font-size:12px; text-align:left; }
 @keyframes orbit-rotate { to { transform:rotate(405deg); } }
 @keyframes core-pulse { 0%,100% { opacity:.28; transform:scaleY(.55); } 50% { opacity:1; transform:scaleY(1); } }

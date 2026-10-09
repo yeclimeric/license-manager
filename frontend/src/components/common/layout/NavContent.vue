@@ -124,7 +124,7 @@ const handleUserCommand = async (command: string) => {
 .topbar__left { gap:12px; }
 .topbar__right { height:36px; gap:0; }
 .icon-button,.language-button,.user-button,.text-button,.breadcrumb-link { border:0; background:transparent; color:var(--topbar-text); font:inherit; cursor:pointer; }
-.icon-button { width:36px; height:36px; display:flex; align-items:center; justify-content:center; border-radius:0; flex-shrink:0; }
+.icon-button { width:36px; height:36px; display:flex; align-items:center; justify-content:center; border-radius: $border-radius-base; flex-shrink:0; }
 .icon-button:hover,.user-button:hover { background:#edf7f3; color:#017c63; }
 .breadcrumb { min-width:0; gap:8px; white-space:nowrap; }
 .breadcrumb-link { padding:0; }

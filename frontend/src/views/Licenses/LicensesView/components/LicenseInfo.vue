@@ -552,7 +552,7 @@ const submitAddLicense = async () => {
 
 .license-add-dialog {
   :deep(.el-dialog) {
-    border-radius: 0;
+    border-radius: $border-radius-base;
     padding-bottom: 12px;
   }
 
@@ -621,7 +621,7 @@ const submitAddLicense = async () => {
     font-size: 14px;
     font-weight: 500;
     line-height: 21px;
-    border-radius: 0;
+    border-radius: $border-radius-base;
   }
 }
 
@@ -634,7 +634,7 @@ const submitAddLicense = async () => {
 .device-card {
   background: var(--app-content-bg);
   border: 1px solid var(--app-border-color);
-  border-radius: 0;
+  border-radius: $border-radius-base;
   padding: 16px 20px;
 }
 
@@ -662,7 +662,7 @@ const submitAddLicense = async () => {
       font-size: 14px;
       font-weight: 500;
       line-height: 21px;
-      border-radius: 0;
+      border-radius: $border-radius-base;
 
       &.el-tag--success {
         background: rgba(0, 194, 124, 0.08);
@@ -695,7 +695,7 @@ const submitAddLicense = async () => {
 .info-section {
   background: rgba(247, 248, 250, 0.7);
   border: 1px solid rgba(226, 226, 226, 0.6);
-  border-radius: 0;
+  border-radius: $border-radius-base;
   padding: 16px;
   margin-bottom: 16px;
 
@@ -757,7 +757,7 @@ const submitAddLicense = async () => {
         color: var(--app-text-primary);
         padding: 8px 12px;
         background: rgba(136, 165, 209, 0.2);
-        border-radius: 0;
+        border-radius: $border-radius-base;
         word-break: break-all;
       }
     }
@@ -794,7 +794,7 @@ const submitAddLicense = async () => {
         color: var(--app-text-primary);
         padding: 8px 12px;
         background: rgba(136, 165, 209, 0.2);
-        border-radius: 0;
+        border-radius: $border-radius-base;
         word-break: break-all;
 
         &.status-text {
@@ -815,7 +815,7 @@ const submitAddLicense = async () => {
     font-size: 14px;
     font-weight: 500;
     line-height: 21px;
-    border-radius: 0;
+    border-radius: $border-radius-base;
 
     &:hover {
       background: #019C7C;

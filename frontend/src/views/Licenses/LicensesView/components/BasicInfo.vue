@@ -165,7 +165,7 @@ const formatRemainingTime = (endDate?: string) => {
   flex: 1;
   max-width: 280px;
   height: 192px;
-  border-radius: 0;
+  border-radius: $border-radius-base;
   overflow: hidden;
   display: flex;
   flex-direction: column;

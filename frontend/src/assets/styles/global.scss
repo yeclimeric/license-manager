@@ -55,9 +55,9 @@ body {
   --el-color-primary-light-8: rgba(1, 156, 124, 0.2) !important;
   --el-color-primary-light-9: rgba(1, 156, 124, 0.1) !important;
   --el-color-primary-dark-2: #0e8a71 !important;
-  --el-border-radius-base: 0;
-  --el-border-radius-small: 0;
-  --el-border-radius-round: 0;
+  --el-border-radius-base: #{$border-radius-base};
+  --el-border-radius-small: #{$border-radius-small};
+  --el-border-radius-round: #{$border-radius-round};
   --el-font-size-base: 14px;
   --el-font-family: #{$font-family-primary};
 
@@ -217,12 +217,12 @@ body {
   
   &::-webkit-scrollbar-track {
     background: #F5F7FA;
-    border-radius: 0;
+    border-radius: $border-radius-base;
   }
   
   &::-webkit-scrollbar-thumb {
     background: #c1c1c1;
-    border-radius: 0;
+    border-radius: $border-radius-base;
     
     &:hover {
       background: #a8a8a8;
