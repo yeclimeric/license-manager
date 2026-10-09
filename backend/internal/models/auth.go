@@ -35,32 +35,36 @@ type UserInfo struct {
 
 // AuthorizationCode 授权码模型
 type AuthorizationCode struct {
-	ID                     string                   `gorm:"type:varchar(36);primaryKey" json:"id"`                   // 授权码ID
-	Code                   string                   `gorm:"type:varchar(1000);not null" json:"code"`                 // 授权码
-	CustomerID             *string                  `gorm:"type:varchar(36);index" json:"customer_id"`               // 客户ID，NULL表示无客户
-	CustomerName           string                   `gorm:"-" json:"customer_name,omitempty"`                        // 客户名称
-	CustomerNameDisplay    string                   `gorm:"-" json:"customer_name_display,omitempty"`                // 客户名称显示（多语言）
-	CreatedBy              string                   `gorm:"type:varchar(36);not null" json:"created_by"`             // 创建人ID
-	SoftwareID             *string                  `gorm:"type:varchar(50)" json:"software_id"`                     // 软件ID
-	Description            *string                  `gorm:"type:text" json:"description"`                            // 描述
-	StartDate              time.Time                `gorm:"type:datetime(3);not null" json:"start_date"`             // 生效日期
-	EndDate                time.Time                `gorm:"type:datetime(3);not null" json:"end_date"`               // 失效日期
-	SoftwareVersion        *string                  `gorm:"type:varchar(50)" json:"software_version"`                // 软件版本
-	MaxActivations         int                      `gorm:"not null;default:1" json:"max_activations"`               // 最大激活次数
-	CurrentActivations     int                      `gorm:"-" json:"current_activations,omitempty"`                  // 当前激活次数
-	IsLocked               bool                     `gorm:"not null;default:false" json:"is_locked"`                 // 是否锁定
-	LockReason             *string                  `gorm:"type:text" json:"lock_reason"`                            // 锁定原因
-	LockedAt               *time.Time               `gorm:"type:datetime(3)" json:"locked_at"`                       // 锁定时间
-	LockedBy               *string                  `gorm:"type:varchar(36)" json:"locked_by"`                       // 锁定人ID
-	FeatureConfig          JSON                     `gorm:"type:json" json:"feature_config" swaggertype:"object"`    // 功能配置（JSON对象）
-	UsageLimits            JSON                     `gorm:"type:json" json:"usage_limits" swaggertype:"object"`      // 使用限制（JSON对象）
-	CustomParameters       JSON                     `gorm:"type:json" json:"custom_parameters" swaggertype:"object"` // 自定义参数（JSON对象）
-	Status                 string                   `gorm:"-" json:"status,omitempty"`                               // 状态：normal/locked/expired
-	StatusDisplay          string                   `gorm:"-" json:"status_display,omitempty"`                       // 状态显示（多语言）
-	CreatedAt              time.Time                `gorm:"type:datetime(3);not null" json:"created_at"`             // 创建时间
-	UpdatedAt              time.Time                `gorm:"type:datetime(3);not null" json:"updated_at"`             // 更新时间
-	CustomerInfo           *CustomerInfoForAuthCode `gorm:"-" json:"customer_info,omitempty"`                        // 客户信息（仅在详情接口返回）
-	ActivatedLicensesCount int64                    `gorm:"-" json:"activated_licenses_count,omitempty"`             // 该授权码下已激活的许可证数量
+	ID                     string                   `gorm:"type:varchar(36);primaryKey" json:"id"`                             // 授权码ID
+	Code                   string                   `gorm:"type:varchar(1000);not null" json:"code"`                           // 授权码
+	CustomerID             *string                  `gorm:"type:varchar(36);index" json:"customer_id"`                         // 客户ID，NULL表示无客户
+	CustomerName           string                   `gorm:"-" json:"customer_name,omitempty"`                                  // 客户名称
+	CustomerNameDisplay    string                   `gorm:"-" json:"customer_name_display,omitempty"`                          // 客户名称显示（多语言）
+	CreatedBy              string                   `gorm:"type:varchar(36);not null" json:"created_by"`                       // 创建人ID
+	ProductOfferingID      *string                  `gorm:"type:varchar(36);index" json:"product_offering_id"`                 // 所属产品项ID
+	ProductOfferingName    string                   `gorm:"-" json:"product_offering_name,omitempty"`                          // 产品项名称
+	ProductOfferingDisplay string                   `gorm:"-" json:"product_offering_display,omitempty"`                       // 产品项显示名（多语言）
+	DeploymentMode         string                   `gorm:"type:varchar(20);not null;default:'online'" json:"deployment_mode"` // 部署模式：online/offline/hybrid
+	SoftwareID             *string                  `gorm:"type:varchar(50)" json:"software_id"`                               // 软件ID
+	Description            *string                  `gorm:"type:text" json:"description"`                                      // 描述
+	StartDate              time.Time                `gorm:"type:datetime(3);not null" json:"start_date"`                       // 生效日期
+	EndDate                time.Time                `gorm:"type:datetime(3);not null" json:"end_date"`                         // 失效日期
+	SoftwareVersion        *string                  `gorm:"type:varchar(50)" json:"software_version"`                          // 软件版本
+	MaxActivations         int                      `gorm:"not null;default:1" json:"max_activations"`                         // 最大激活次数
+	CurrentActivations     int                      `gorm:"-" json:"current_activations,omitempty"`                            // 当前激活次数
+	IsLocked               bool                     `gorm:"not null;default:false" json:"is_locked"`                           // 是否锁定
+	LockReason             *string                  `gorm:"type:text" json:"lock_reason"`                                      // 锁定原因
+	LockedAt               *time.Time               `gorm:"type:datetime(3)" json:"locked_at"`                                 // 锁定时间
+	LockedBy               *string                  `gorm:"type:varchar(36)" json:"locked_by"`                                 // 锁定人ID
+	FeatureConfig          JSON                     `gorm:"type:json" json:"feature_config" swaggertype:"object"`              // 功能配置（JSON对象）
+	UsageLimits            JSON                     `gorm:"type:json" json:"usage_limits" swaggertype:"object"`                // 使用限制（JSON对象）
+	CustomParameters       JSON                     `gorm:"type:json" json:"custom_parameters" swaggertype:"object"`           // 自定义参数（JSON对象）
+	Status                 string                   `gorm:"-" json:"status,omitempty"`                                         // 状态：normal/locked/expired
+	StatusDisplay          string                   `gorm:"-" json:"status_display,omitempty"`                                 // 状态显示（多语言）
+	CreatedAt              time.Time                `gorm:"type:datetime(3);not null" json:"created_at"`                       // 创建时间
+	UpdatedAt              time.Time                `gorm:"type:datetime(3);not null" json:"updated_at"`                       // 更新时间
+	CustomerInfo           *CustomerInfoForAuthCode `gorm:"-" json:"customer_info,omitempty"`                                  // 客户信息（仅在详情接口返回）
+	ActivatedLicensesCount int64                    `gorm:"-" json:"activated_licenses_count,omitempty"`                       // 该授权码下已激活的许可证数量
 }
 
 // CustomerInfoForAuthCode 授权码详情中的客户信息结构
