@@ -148,8 +148,11 @@ type ActivateRequest struct {
 // ActivateResponse 软件激活响应结构
 type ActivateResponse struct {
 	LicenseKey        string `json:"license_key"`        // 许可证密钥
-	LicenseFile       string `json:"license_file"`       // base64编码的加密许可证文件
+	LicenseFile       string `json:"license_file"`       // base64编码的签名许可证文件
 	HeartbeatInterval int    `json:"heartbeat_interval"` // 心跳间隔(秒)
+	// PublicKey 产品签名公钥，客户端据此验证 license_file 签名。
+	// 随产品项分发，客户端无需内置即可完成验签。
+	PublicKey string `json:"public_key,omitempty"`
 }
 
 // HeartbeatRequest 心跳检测请求结构

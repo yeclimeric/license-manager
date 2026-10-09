@@ -16,6 +16,8 @@ import (
 )
 
 func SetupRouter() *gin.Engine {
+	// 权限校验器：直接查关联表，避免 middleware 反向依赖 service 层
+	permChecker := middleware.NewGormPermissionChecker(database.GetDB())
 	router := gin.New()
 
 	// 全局中间件
@@ -55,7 +57,7 @@ func SetupRouter() *gin.Engine {
 	customerService := service.NewCustomerService(customerRepo)
 	authCodeService := service.NewAuthorizationCodeService(authCodeRepo, customerRepo, licenseRepo, productOfferingRepo, featureTemplateRepo)
 	enumService := service.NewEnumService()
-	licenseService := service.NewLicenseService(licenseRepo, db, log)
+	licenseService := service.NewLicenseService(licenseRepo, productOfferingRepo, db, log)
 	dashboardService := service.NewDashboardService(dashboardRepo)
 	productOfferingService := service.NewProductOfferingService(productOfferingRepo)
 	featureTemplateService := service.NewFeatureTemplateService(featureTemplateRepo)
@@ -108,9 +110,9 @@ func SetupRouter() *gin.Engine {
 			// 客户管理
 			auth.GET("/customers", customerHandler.GetCustomerList)
 			auth.GET("/customers/:id", customerHandler.GetCustomer)
-			auth.POST("/customers", customerHandler.CreateCustomer)
-			auth.PUT("/customers/:id", customerHandler.UpdateCustomer)
-			auth.DELETE("/customers/:id", customerHandler.DeleteCustomer)
+			auth.POST("/customers", middleware.RequirePermission("customer:create", permChecker), customerHandler.CreateCustomer)
+			auth.PUT("/customers/:id", middleware.RequirePermission("customer:update", permChecker), customerHandler.UpdateCustomer)
+			auth.DELETE("/customers/:id", middleware.RequirePermission("customer:delete", permChecker), customerHandler.DeleteCustomer)
 			auth.PATCH("/customers/:id/status", customerHandler.UpdateCustomerStatus)
 
 			// 枚举管理
@@ -119,7 +121,7 @@ func SetupRouter() *gin.Engine {
 
 			// 产品项管理
 			auth.GET("/v1/product-offerings", productOfferingHandler.GetProductOfferingList)
-			auth.POST("/v1/product-offerings", productOfferingHandler.CreateProductOffering)
+			auth.POST("/v1/product-offerings", middleware.RequirePermission("product_offering:create", permChecker), productOfferingHandler.CreateProductOffering)
 			auth.GET("/v1/product-offerings/:id", productOfferingHandler.GetProductOffering)
 			auth.GET("/v1/product-offerings/:id/public-key", productOfferingHandler.GetProductOfferingPublicKey)
 			auth.PUT("/v1/product-offerings/:id", productOfferingHandler.UpdateProductOffering)
@@ -128,7 +130,7 @@ func SetupRouter() *gin.Engine {
 
 			// 功能模板管理
 			auth.GET("/v1/feature-templates", featureTemplateHandler.GetFeatureTemplateList)
-			auth.POST("/v1/feature-templates", featureTemplateHandler.CreateFeatureTemplate)
+			auth.POST("/v1/feature-templates", middleware.RequirePermission("feature_template:create", permChecker), featureTemplateHandler.CreateFeatureTemplate)
 			auth.GET("/v1/feature-templates/categories", featureTemplateHandler.GetCategoryList)
 			auth.GET("/v1/feature-templates/:id", featureTemplateHandler.GetFeatureTemplate)
 			auth.PUT("/v1/feature-templates/:id", featureTemplateHandler.UpdateFeatureTemplate)
@@ -138,32 +140,33 @@ func SetupRouter() *gin.Engine {
 			auth.DELETE("/v1/feature-template-categories/:id", featureTemplateHandler.DeleteCategory)
 
 			// 审计日志
-			auth.GET("/v1/audit-logs", auditLogHandler.GetAuditLogList)
-			auth.GET("/v1/audit-logs/statistics", auditLogHandler.GetStatistics)
+			auth.GET("/v1/audit-logs", middleware.RequirePermission("audit_log:read", permChecker), auditLogHandler.GetAuditLogList)
+			auth.GET("/v1/audit-logs/statistics", middleware.RequirePermission("audit_log:read", permChecker), auditLogHandler.GetStatistics)
 
-			// 菜单与权限
+			// 菜单与权限。/menus 无需权限：任何登录用户都要读自己的菜单
 			auth.GET("/v1/menus", rbacHandler.GetUserMenuTree)
-			auth.GET("/v1/menus/all", rbacHandler.GetAllMenuTree)
-			auth.POST("/v1/menus", rbacHandler.CreateMenu)
-			auth.PUT("/v1/menus/:id", rbacHandler.UpdateMenu)
-			auth.DELETE("/v1/menus/:id", rbacHandler.DeleteMenu)
 			auth.GET("/v1/permissions", rbacHandler.GetPermissionMatrix)
+			auth.GET("/v1/menus/all", middleware.RequirePermission("menu:read", permChecker), rbacHandler.GetAllMenuTree)
+			auth.POST("/v1/menus", middleware.RequirePermission("menu:create", permChecker), rbacHandler.CreateMenu)
+			auth.PUT("/v1/menus/:id", middleware.RequirePermission("menu:update", permChecker), rbacHandler.UpdateMenu)
+			auth.DELETE("/v1/menus/:id", middleware.RequirePermission("menu:delete", permChecker), rbacHandler.DeleteMenu)
 
 			// 角色管理
-			auth.GET("/v1/roles", rbacHandler.GetRoleList)
-			auth.POST("/v1/roles", rbacHandler.CreateRole)
-			auth.GET("/v1/roles/:id", rbacHandler.GetRole)
-			auth.PUT("/v1/roles/:id", rbacHandler.UpdateRole)
-			auth.DELETE("/v1/roles/:id", rbacHandler.DeleteRole)
+			auth.GET("/v1/roles", middleware.RequirePermission("role:read", permChecker), rbacHandler.GetRoleList)
+			auth.POST("/v1/roles", middleware.RequirePermission("role:create", permChecker), rbacHandler.CreateRole)
+			auth.GET("/v1/roles/:id", middleware.RequirePermission("role:read", permChecker), rbacHandler.GetRole)
+			auth.PUT("/v1/roles/:id", middleware.RequirePermission("role:update", permChecker), rbacHandler.UpdateRole)
+			auth.DELETE("/v1/roles/:id", middleware.RequirePermission("role:delete", permChecker), rbacHandler.DeleteRole)
 
 			// 用户角色绑定
-			auth.GET("/v1/users/:userId/roles", rbacHandler.GetUserRoles)
-			auth.PUT("/v1/users/:userId/roles", rbacHandler.SetUserRoles)
+			auth.GET("/v1/users/:userId/roles", middleware.RequirePermission("user:read", permChecker), rbacHandler.GetUserRoles)
+			auth.PUT("/v1/users/:userId/roles", middleware.RequirePermission("user:update", permChecker), rbacHandler.SetUserRoles)
 
 			// 授权码管理
 			auth.GET("/v1/authorization-codes", authCodeHandler.GetAuthorizationCodeList)
-			auth.POST("/v1/authorization-codes", authCodeHandler.CreateAuthorizationCode)
-			auth.POST("/v1/authorization-codes/batch", authCodeHandler.BatchCreateAuthorizationCodes)
+			auth.POST("/v1/authorization-codes", middleware.RequirePermission("authorization_code:create", permChecker), authCodeHandler.CreateAuthorizationCode)
+			// 批量创建上限 100 条，按单次创建权限管控
+			auth.POST("/v1/authorization-codes/batch", middleware.RequirePermission("authorization_code:create", permChecker), authCodeHandler.BatchCreateAuthorizationCodes)
 			auth.GET("/v1/authorization-codes/:id", authCodeHandler.GetAuthorizationCode)
 			auth.GET("/v1/authorization-codes/:id/download", authCodeHandler.DownloadAuthorizationFile)
 			auth.PUT("/v1/authorization-codes/:id", authCodeHandler.UpdateAuthorizationCode)
@@ -191,7 +194,10 @@ func SetupRouter() *gin.Engine {
 
 		// 管理员接口
 		admin := api.Group("/v1/admin")
-		admin.Use(middleware.AuthMiddleware(), middleware.AdminOnlyMiddleware())
+		// 修复：原实现比对 "administrator"，而角色实际取值为 admin/operator/viewer，
+		// 导致该分组内接口无人可通过。改由权限码校验。
+		admin.Use(middleware.AuthMiddleware(),
+			middleware.RequirePermission("system_config:read", permChecker))
 		{
 			admin.GET("/system/info", systemHandler.GetSystemInfo)
 		}
