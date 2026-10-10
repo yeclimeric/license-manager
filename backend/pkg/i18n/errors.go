@@ -105,7 +105,7 @@ func getHTTPStatusByCode(code string) int {
 		return StatusOK
 	case "900001": // 请求参数无效
 		return StatusBadRequest
-	case "100001", "100002", "100003", "100004": // 认证相关错误
+	case "100001", "100002", "100003", "100004", "100007": // 认证相关错误
 		return StatusUnauthorized
 	case "100005", "100006": // 权限不足 / 无资源访问权限
 		return StatusForbidden
