@@ -107,3 +107,49 @@ func TestSplitAndTrim(t *testing.T) {
 		t.Errorf("解析结果 = %v, 期望 [a b c]", got)
 	}
 }
+
+// dedupeStrings 去重并保持首次出现的顺序。
+//
+// 角色名去重关系到是否会重复关联：同一角色提交两次不应产生两条关联记录。
+func TestDedupeStrings(t *testing.T) {
+	cases := []struct {
+		name  string
+		input []string
+		want  []string
+	}{
+		{name: "空输入", input: nil, want: []string{}},
+		{name: "无重复", input: []string{"a", "b", "c"}, want: []string{"a", "b", "c"}},
+		{name: "相邻重复", input: []string{"a", "a", "b"}, want: []string{"a", "b"}},
+		{name: "非相邻重复保留首次位置", input: []string{"a", "b", "a"}, want: []string{"a", "b"}},
+		{name: "空白项被剔除", input: []string{"a", "", "b"}, want: []string{"a", "b"}},
+		{name: "纯空白项被剔除", input: []string{"  ", "a"}, want: []string{"a"}},
+		{name: "前后空白被裁剪", input: []string{" a ", "b"}, want: []string{"a", "b"}},
+		{name: "裁剪后相同视为重复", input: []string{"a", " a "}, want: []string{"a"}},
+		{name: "全为空白", input: []string{"", "  "}, want: []string{}},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := dedupeStrings(tc.input)
+			if len(got) != len(tc.want) {
+				t.Fatalf("dedupeStrings(%v) = %v, want %v", tc.input, got, tc.want)
+			}
+			for i := range got {
+				if got[i] != tc.want[i] {
+					t.Errorf("第 %d 项 = %q, want %q", i, got[i], tc.want[i])
+				}
+			}
+		})
+	}
+}
+
+// 去重后的数量决定比对结果：len(roles) 必须等于去重后的期望数
+func TestDedupeStringsDrivesRoleLookup(t *testing.T) {
+	// 仓储层据此判断是否缺少角色：重复项不应被算作多个期望值
+	if got := dedupeStrings([]string{"viewer", "viewer"}); len(got) != 1 {
+		t.Errorf("重复角色名去重后应为 1 项, got %d", len(got))
+	}
+	if got := dedupeStrings([]string{"viewer", "operator"}); len(got) != 2 {
+		t.Errorf("不同角色名应保留 2 项, got %d", len(got))
+	}
+}
