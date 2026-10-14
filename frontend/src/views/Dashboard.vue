@@ -26,21 +26,6 @@
         </section>
       </section>
 
-      <section class="cloud-promo" :aria-label="t('dashboard.cloudPromo.title')">
-        <div class="cloud-promo__copy">
-          <div class="cloud-promo__badge">
-            <el-icon><Cloudy /></el-icon>
-            <span>{{ t('dashboard.cloudPromo.eyebrow') }}</span>
-          </div>
-          <strong>{{ t('dashboard.cloudPromo.title') }}</strong>
-          <p>{{ t('dashboard.cloudPromo.description') }}</p>
-        </div>
-        <div class="cloud-promo__actions">
-          <a href="https://cedar-v.com/products/cedar-license-cloud/index.html" target="_blank" rel="noopener noreferrer">{{ t('dashboard.cloudPromo.learnMore') }}</a>
-          <a class="cloud-promo__primary" href="https://lic.cedar-v.com" target="_blank" rel="noopener noreferrer">{{ t('dashboard.cloudPromo.tryFree') }}</a>
-        </div>
-      </section>
-
       <section class="panel expiry-panel">
         <div class="panel-header panel-header--stacked"><div><h2>{{ t('dashboard.expiry.title') }}</h2><p>{{ t('dashboard.expiry.description') }}</p></div></div>
         <div class="expiry-grid">
@@ -113,7 +98,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
-import { Cloudy, Coin, Document, InfoFilled, Monitor, Refresh, WarningFilled } from '@element-plus/icons-vue'
+import { Coin, Document, InfoFilled, Monitor, Refresh, WarningFilled } from '@element-plus/icons-vue'
 import Layout from '@/components/common/layout/Layout.vue'
 import DashboardTrendChart from '@/components/dashboard/DashboardTrendChart.vue'
 import { getDashboardBusinessTrends, getDashboardHome, type DashboardBusinessTrendsData, type DashboardHomeData, type DashboardTrendPoint, type RecentActivationItem, type RecentAuthorizationItem } from '@/api/dashboard'
@@ -185,13 +170,11 @@ onMounted(refreshAll)
 .metric-card--brand,.metric-card--info,.metric-card--warning { --metric:#087765; }
 .metric-card__header { min-height:36px; display:flex; align-items:center; justify-content:space-between; gap:16px; }.metric-icon { width:36px; height:36px; display:inline-flex; align-items:center; justify-content:center; flex:0 0 36px; background:#edf8f4; color:var(--metric); font-size:20px; }.metric-label { color:var(--dashboard-regular); font-size:14px; font-weight:600; }.metric-value { margin-top:8px; color:var(--metric); font-size:34px; font-weight:700; line-height:1; font-variant-numeric:tabular-nums; }.metric-help { margin-top:9px; overflow:hidden; color:var(--dashboard-secondary); font-size:13px; line-height:1.5; text-overflow:ellipsis; white-space:nowrap; }.metric-skeleton { width:48%; margin-top:8px; }
 .panel-header--stacked { justify-content:flex-start; }.expiry-grid { padding:14px 16px 16px; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }.expiry-card { --expiry:#d84d4d; --expiry-bg:#fff7f5; min-width:0; min-height:96px; padding:15px 18px; display:flex; justify-content:center; flex-direction:column; box-sizing:border-box; background:var(--expiry-bg); }.expiry-card--danger { --expiry:#d84d4d; --expiry-bg:#fff7f5; }.expiry-card--warning { --expiry:#bd7600; --expiry-bg:#fffaf0; }.expiry-card--expired { --expiry:#b83232; --expiry-bg:#feeeeb; }.expiry-card__top { display:flex; align-items:center; justify-content:space-between; gap:16px; color:var(--dashboard-regular); font-size:14px; }.expiry-card__top>span { font-weight:600; }.expiry-card__top strong { color:var(--expiry); font-size:28px; font-weight:700; line-height:1; font-variant-numeric:tabular-nums; }.expiry-card--expired .expiry-card__top strong { min-width:46px; height:46px; display:inline-flex; align-items:center; justify-content:center; background:var(--expiry); color:#fff; font-size:24px; }.expiry-card p { margin:9px 0 0; color:var(--dashboard-secondary); font-size:13px; line-height:1.5; }
-.cloud-promo { min-height:76px; padding:14px 18px; display:flex; align-items:center; justify-content:space-between; gap:24px; background:linear-gradient(100deg,#075f50,#087b67); color:#fff; box-shadow:var(--app-card-shadow); }.cloud-promo__copy { min-width:0; display:grid; grid-template-columns:auto auto minmax(0,1fr); align-items:center; gap:8px 14px; }.cloud-promo__badge { display:inline-flex; align-items:center; gap:8px; color:#8debcf; font-size:11px; font-weight:700; letter-spacing:.1em; white-space:nowrap; }.cloud-promo__badge .el-icon { flex:0 0 auto; color:#b9f5e3; font-size:20px; transition:transform .18s ease,color .18s ease; }.cloud-promo:hover .cloud-promo__badge .el-icon { transform:translateY(-2px); color:#fff; }.cloud-promo__copy strong { font-size:17px; }.cloud-promo__copy p { margin:0; overflow:hidden; color:rgba(255,255,255,.72); font-size:13px; text-overflow:ellipsis; white-space:nowrap; }.cloud-promo__actions { display:flex; gap:8px; flex-shrink:0; }.cloud-promo__actions a { min-height:34px; padding:0 13px; display:inline-flex; align-items:center; border:1px solid rgba(255,255,255,.36); color:#fff; font-size:13px; text-decoration:none; }.cloud-promo__actions a:hover { border-color:#fff; background:rgba(255,255,255,.08); }.cloud-promo__actions a:focus-visible { outline:2px solid #fff; outline-offset:3px; }.cloud-promo__actions .cloud-promo__primary { border-color:#fff; background:#fff; color:#076451; font-weight:600; }
 .trend-header { align-items:flex-start; }.trend-controls { display:flex; align-items:center; justify-content:flex-end; gap:10px; flex-wrap:wrap; }.panel-body { min-height:120px; }.chart-body { min-height:285px; }.trend-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); }.trend-card { min-width:0; padding:16px 18px 8px; }.trend-card+.trend-card { border-left:1px solid var(--dashboard-border); }.trend-card h3 { margin:0 0 6px; color:var(--dashboard-regular); font-size:15px; font-weight:600; line-height:1.45; }
 .recent-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; }.recent-panel { min-width:0; }.table-wrap { padding:0 14px 10px; overflow-x:auto; }.table-wrap :deep(.el-table) { font-size:14px; }.table-wrap :deep(.el-table__row) { cursor:pointer; }.table-wrap :deep(.el-table__header th.el-table__cell) { background:color-mix(in srgb,var(--dashboard-surface) 82%,#cdeee1); color:var(--dashboard-regular); font-weight:600; }.state-block { min-height:260px; display:flex; align-items:center; justify-content:center; gap:8px; color:var(--dashboard-secondary); }.state-block--compact { min-height:118px; }
 .dashboard-page :deep(.el-button),.dashboard-page :deep(.el-input__wrapper),.dashboard-page :deep(.el-radio-button__inner),.dashboard-page :deep(.el-loading-mask) { border-radius: $border-radius-base; }:global([data-theme="dark"]) .dashboard-page { --dashboard-border:var(--app-border-color); --dashboard-surface:var(--app-content-bg); --dashboard-regular:#c1d0ca; --dashboard-secondary:#93a69e; }:global([data-theme="dark"]) .metric-icon { background:color-mix(in srgb,var(--app-content-bg) 76%,#087765); }:global([data-theme="dark"]) .expiry-card--danger { --expiry-bg:color-mix(in srgb,var(--app-content-bg) 88%,#d84d4d); }:global([data-theme="dark"]) .expiry-card--warning { --expiry-bg:color-mix(in srgb,var(--app-content-bg) 88%,#bd7600); }:global([data-theme="dark"]) .expiry-card--expired { --expiry-bg:color-mix(in srgb,var(--app-content-bg) 82%,#b83232); }
 @media (max-width:1023px) { .recent-grid,.trend-grid { grid-template-columns:1fr; }.trend-card+.trend-card { border-top:1px solid var(--dashboard-border); border-left:0; } }
-@media (max-width:767px) { .dashboard-page { padding:14px; }.page-header,.trend-header { align-items:flex-start; flex-direction:column; }.header-actions,.trend-controls { width:100%; justify-content:space-between; }.overview-grid,.expiry-grid { grid-template-columns:1fr; }.metric-card { border-right:0; border-bottom:1px solid var(--dashboard-border); }.metric-card:last-child { border-bottom:0; }.cloud-promo { align-items:flex-start; flex-direction:column; gap:12px; }.cloud-promo__copy { grid-template-columns:1fr; gap:3px; }.cloud-promo__copy p { white-space:normal; }.cloud-promo__actions { width:100%; }.cloud-promo__actions a { flex:1; justify-content:center; }.trend-controls :deep(.el-date-editor) { width:100%; }.recent-grid { gap:14px; } }
-@media (prefers-reduced-motion:reduce) { .cloud-promo__badge .el-icon { transition:none; }.cloud-promo:hover .cloud-promo__badge .el-icon { transform:none; } }
+@media (max-width:767px) { .dashboard-page { padding:14px; }.page-header,.trend-header { align-items:flex-start; flex-direction:column; }.header-actions,.trend-controls { width:100%; justify-content:space-between; }.overview-grid,.expiry-grid { grid-template-columns:1fr; }.metric-card { border-right:0; border-bottom:1px solid var(--dashboard-border); }.metric-card:last-child { border-bottom:0; }.trend-controls :deep(.el-date-editor) { width:100%; }.recent-grid { gap:14px; } }
 .validity-marked {
   display: inline-flex;
   align-items: center;
