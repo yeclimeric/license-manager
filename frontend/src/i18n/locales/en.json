@@ -54,13 +54,6 @@
     "title": "Dashboard",
     "heading": "License Overview",
     "description": "Monitor authorization capacity, device activations, expiry risks, and business trends.",
-    "cloudPromo": {
-      "eyebrow": "MANAGED CLOUD · FREE PLAN",
-      "title": "Cedar License Cloud",
-      "description": "No deployment or maintenance—manage license delivery, device activation, and renewals in one place, with one-click AI integration.",
-      "learnMore": "Explore the product",
-      "tryFree": "Get started free"
-    },
     "updatedAt": "Updated at {time}",
     "refresh": "Refresh",
     "overviewTitle": "License statistics",

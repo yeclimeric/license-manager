@@ -54,13 +54,6 @@
     "title": "仪表盘",
     "heading": "授权概览",
     "description": "集中查看授权容量、设备激活、到期风险和业务趋势。",
-    "cloudPromo": {
-      "eyebrow": "云端托管 · 免费版",
-      "title": "雪松授权云",
-      "description": "免部署、免运维，统一管理授权发放、设备激活与续期运营，支持 AI 一键接入。",
-      "learnMore": "查看产品介绍",
-      "tryFree": "免费开始使用"
-    },
     "updatedAt": "更新于 {time}",
     "refresh": "刷新",
     "overviewTitle": "授权统计",

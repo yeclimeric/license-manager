@@ -54,13 +54,6 @@
     "title": "ダッシュボード",
     "heading": "ライセンス概要",
     "description": "認可容量、デバイス有効化、期限リスク、業務推移を確認します。",
-    "cloudPromo": {
-      "eyebrow": "クラウド運用 · 無料プラン",
-      "title": "雪松ライセンスクラウド",
-      "description": "導入・運用不要。ライセンス発行、端末アクティベーション、更新運用を一元管理し、AI ワンクリック導入にも対応します。",
-      "learnMore": "製品を見る",
-      "tryFree": "無料で始める"
-    },
     "updatedAt": "{time} に更新",
     "refresh": "更新",
     "overviewTitle": "ライセンス統計",
