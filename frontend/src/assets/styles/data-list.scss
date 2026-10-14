@@ -87,6 +87,12 @@
   align-items: center;
   justify-content: start;
   gap: 12px;
+  /* 默认横向排列。
+     未定义 grid-template-columns 时 grid 会退化成单列，
+     筛选控件竖着堆在左侧、右侧留大片空白。轨道用 fr 而非固定宽度，
+     窄视口下可收缩，不会像之前那样把右侧按钮挤出边界。
+     各页可用同名的 .filter-grid 覆盖列数。 */
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
 }
 
 .data-list-filter__actions {
