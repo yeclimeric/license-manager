@@ -18,6 +18,9 @@
             :aria-expanded="isGroupOpen(entry.id)"
             @click="toggleGroup(entry.id)"
           >
+            <span class="nav-icon">
+              <SidebarIcon v-if="entry.icon" :name="entry.icon" />
+            </span>
             <span class="nav-group__label">{{ entry.label }}</span>
             <el-icon class="nav-group__arrow" :class="{ 'is-open': isGroupOpen(entry.id) }">
               <ArrowDown />
@@ -208,20 +211,23 @@ const toggleGroup = (id: string) => {
   .sidebar__brand { justify-content: flex-start; }
   .sidebar--collapsed .nav-item { justify-content: flex-start; padding: 0 14px; }
 }
+/* 分组标题是目录名，不是可点击项。
+   缩进与菜单项左侧对齐（同样 15px），否则比子项还浅，看上去像错了一级；
+   字号沿用菜单项的 13px，11px 太小。uppercase 对中文无效却会让英文菜单名变形，故去掉。 */
 .nav-group__title {
   width: 100%;
+  min-height: 40px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 8px 16px 4px;
+  padding: 8px 15px 4px;
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 11px;
+  font-size: 15px;
   font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  letter-spacing: normal;
   color: var(--app-text-secondary);
 
   &:hover {
@@ -229,6 +235,9 @@ const toggleGroup = (id: string) => {
   }
 
   &__label {
+    /* 占满图标与文字之间的剩余宽度，把箭头推到最右 */
+    flex: 1;
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
