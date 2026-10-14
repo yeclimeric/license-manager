@@ -400,6 +400,11 @@ onMounted(loadProducts)
 </script>
 
 <style lang="scss" scoped>
+/* 仅关键字 + 状态下拉 + 操作按钮，比默认少一列 */
+.filter-grid {
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) auto;
+}
+
 .product-link {
   font-weight: 500;
 }

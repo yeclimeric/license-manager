@@ -401,6 +401,11 @@ onMounted(async () => {
 </script>
 
 <style lang="scss" scoped>
+/* 分类 + 状态 + 关键字 + 操作按钮，与共享默认列一致 */
+.filter-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+}
+
 .template-link {
   font-weight: 500;
 }
