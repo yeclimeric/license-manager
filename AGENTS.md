@@ -3,6 +3,39 @@
 Software license management system: Go/Gin backend + Vue 3/TypeScript frontend.
 Chinese primary language (zh-CN), with English and Japanese i18n.
 
+## Git workflow
+
+Every round of work goes on its own branch, then merges back into `main`. Do not commit straight to `main` — a bug found mid-task would then sit in the history of the branch that shipped it.
+
+### Branch naming
+
+| Prefix | Use for |
+| --- | --- |
+| `feature/<slug>` | new capability |
+| `fix/<slug>` | defect repair |
+| `test/<slug>` | test-only work |
+
+Existing branches follow `feature/s<n>-<slug>` for staged delivery (S0–S10) and plain slugs for ad-hoc work (`fix/ui-alignment`, `test/unit-coverage`). Match whichever fits the task.
+
+### Cycle
+
+```bash
+git checkout -b fix/<slug>      # from up-to-date main
+# ... work, verifying as you go ...
+git add <files>                 # only what this task touched
+git commit                      # logical commits, imperative mood
+git checkout main
+git merge --no-ff fix/<slug>
+```
+
+`--no-ff` keeps the branch as a node in the history. Commits are in **Chinese**, matching the existing history; the merge message explains **why** the change was made rather than restating the diff.
+
+### Never push
+
+**Commit locally; leave `origin` alone.** The maintainer pushes and handles remote authentication. Do not run `git push`, do not open PRs.
+
+Before committing, `git status` to confirm the staged set: do not sweep in `.env*.local`, `production/`, or other untracked files that happen to be lying around.
+
 ## Commands
 
 ### Quick start (both services)
