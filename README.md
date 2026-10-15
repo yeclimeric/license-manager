@@ -163,7 +163,7 @@ go build -o license-manager
 4. 1panel「网站 → 创建网站 → 反向代理」，目标 `http://127.0.0.1:18880`，再一键申请 Let's Encrypt HTTPS。
 5. 启动前先按下方「上线前必改」修改 `config.prod.yaml`，并生成专属 RSA 密钥（见下）。
 
-### 方式二：使用预构建镜像（推荐，无需改源码）
+### 方式二：使用预构建镜像（可选，适合已有 CI/registry 的团队）
 
 如需快速部署且无需修改源码，可直接使用预构建的 GitHub Container Registry 镜像：
 
@@ -177,8 +177,8 @@ go build -o license-manager
 # 开发环境（首次建议带 --build）
 docker compose up -d --build
 
-# 生产环境（需先 build 并推送镜像，详见 README-Docker.md）
-docker compose -f docker-compose.prod.yml up -d
+# 生产环境（从源码构建，更新代码后务必带 --build）
+docker compose -f docker-compose.prod.yml up -d --build
 
 # 验证后端健康
 curl http://localhost:18888/health

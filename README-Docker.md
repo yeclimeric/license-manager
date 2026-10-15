@@ -28,8 +28,8 @@ docker compose down
 使用 `docker-compose.prod.yml`：
 
 ```bash
-# 启动生产环境
-docker compose -f docker-compose.prod.yml up -d
+# 启动生产环境（从源码构建，首次及更新代码后务必带 --build）
+docker compose -f docker-compose.prod.yml up -d --build
 
 # 查看服务状态
 docker compose -f docker-compose.prod.yml ps
@@ -41,6 +41,8 @@ docker compose -f docker-compose.prod.yml ps
   - 生产：`backend/configs/config.prod.yaml` → 容器内 `/app/backend/cmd/config.yaml`
 - 前端 Nginx 反向代理已指向容器网络内的 `backend:18888`，无需依赖 `host.docker.internal`。
 - 健康检查统一使用 `curl`，后端镜像已内置 `curl`。
+- 生产 `docker-compose.prod.yml` 已从源码构建后端/前端镜像（不再依赖预构建镜像或 registry）；更新代码后须用 `docker compose -f docker-compose.prod.yml up -d --build` 重新构建。
+- 前端默认映射到宿主机高位端口 `18880`，避免与 1panel/OpenResty 的 `80` 冲突；正式访问请用反向代理 + HTTPS。
 - 如需隐藏后端对外端口，可在生产 compose 中移除后端端口映射，仅通过前端或网关暴露。
 
 ## 生产环境上线前必改项
@@ -82,12 +84,12 @@ docker compose -f docker-compose.prod.yml ps
 - 日志：标准输出 + `./logs` 挂载目录
 
 ### 前端服务
-- 端口：80（生产）/ 18080（开发映射）
+- 端口：18880（生产）/ 18080（开发映射）
 - 反向代理：`/api/` → `backend:18888`
 - 静态资源：启用 Gzip 与长缓存
 
-### Redis（可选，仅生产）
-- 端口：6379，AOF 持久化
+### Redis（已省略）
+- 本项目代码未实际使用 Redis，生产编排已移除该服务以降低攻击面与资源占用；如确有依赖，可参照历史版本自行添加 redis 服务与 `redis_data` 卷。
 
 ## 常用命令
 
