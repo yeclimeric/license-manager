@@ -6,13 +6,11 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"os"
 	"path/filepath"
 	"strings"
 	"time"
 
 	"license-manager/internal/api/middleware"
-	"license-manager/internal/config"
 	"license-manager/internal/models"
 	"license-manager/internal/service"
 	"license-manager/pkg/i18n"
@@ -390,19 +388,9 @@ func (h *LicenseHandler) DownloadLicenseFile(c *gin.Context) {
 		return
 	}
 
-	cfg := config.GetConfig()
-	if cfg == nil || cfg.License.RSA.PublicKeyPath == "" {
-		status, errCode, message := i18n.NewI18nErrorResponse("900004", lang)
-		c.JSON(status, models.ErrorResponse{
-			Code:      errCode,
-			Message:   message,
-			Timestamp: time.Now().Format(time.RFC3339),
-		})
-		return
-	}
-
-	publicKeyPath := filepath.Clean(cfg.License.RSA.PublicKeyPath)
-	publicKeyData, err := os.ReadFile(publicKeyPath)
+	// 公钥必须与实际签发该许可证的私钥配对：产品项有独立密钥对时返回产品项公钥，
+	// 否则回退全局配置公钥。直接读全局公钥会导致产品项签发的授权文件验签失败。
+	publicKeyData, err := h.licenseService.GetLicenseSigningPublicKey(ctx, id)
 	if err != nil {
 		status, errCode, message := i18n.NewI18nErrorResponse("900004", lang)
 		c.JSON(status, models.ErrorResponse{
@@ -467,10 +455,10 @@ func (h *LicenseHandler) DownloadLicenseFile(c *gin.Context) {
 		return
 	}
 
-	packageFileName := fmt.Sprintf("license_package_%s.zip", strings.TrimSpace(licenseKey))
+	packageFileName := fmt.Sprintf("license_package_%s.lic", strings.TrimSpace(licenseKey))
 	if strings.TrimSpace(licenseKey) == "" {
 		baseName := strings.TrimSuffix(fileName, filepath.Ext(fileName))
-		packageFileName = fmt.Sprintf("%s_package.zip", baseName)
+		packageFileName = fmt.Sprintf("%s_package.lic", baseName)
 	}
 
 	// 设置响应头，指示这是一个文件下载

@@ -179,6 +179,7 @@ type LicenseService interface {
 	RevokeLicense(ctx context.Context, id string, req *models.LicenseRevokeRequest) (*models.License, error)
 	DeleteLicense(ctx context.Context, id string) error
 	GenerateLicenseFile(ctx context.Context, id string) ([]byte, string, string, error)
+	GetLicenseSigningPublicKey(ctx context.Context, id string) ([]byte, error)
 
 	// 客户端激活和心跳接口
 	ActivateLicense(ctx context.Context, req *models.ActivateRequest, clientIP string) (*models.ActivateResponse, error)
