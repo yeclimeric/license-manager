@@ -42,9 +42,11 @@ services:
         max-size: "10m"
         max-file: "3"
 
-  # 后端服务 - 生产环境
+  # 后端服务 - 生产环境（从源码构建）
   backend:
-    image: ${BACKEND_IMAGE:-license-manager-backend:latest}
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
     container_name: license-manager-backend-prod
     restart: unless-stopped
     environment:
@@ -80,15 +82,17 @@ services:
         reservations:
           memory: 256M
 
-  # 前端服务 - 生产环境
+  # 前端服务 - 生产环境（从源码构建）
   frontend:
-    image: ${FRONTEND_IMAGE:-license-manager-frontend:latest}
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
     container_name: license-manager-frontend-prod
     restart: unless-stopped
     environment:
       - TZ=Asia/Shanghai
     ports:
-      - "${FRONTEND_PORT:-80}:80"
+      - "${FRONTEND_PORT:-18880}:80"
     depends_on:
       backend:
         condition: service_healthy
@@ -112,34 +116,11 @@ services:
         reservations:
           memory: 128M
 
-  # Redis缓存 (可选，用于session存储和缓存)
-  redis:
-    image: redis:7-alpine
-    container_name: license-manager-redis-prod
-    restart: unless-stopped
-    ports:
-      - "${REDIS_PORT:-6379}:6379"
-    volumes:
-      - redis_data:/data
-    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-redis@123}
-    healthcheck:
-      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
-    networks:
-      - license-manager-network
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+  # Redis 缓存：本项目代码未实际使用，已省略以减少攻击面与资源占用。
+  # 如确有需要，可在此自行添加 redis 服务与 redis_data 卷。
 
 volumes:
   mysql_data:
-    driver: local
-  redis_data:
     driver: local
 
 networks:

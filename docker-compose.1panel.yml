@@ -1,0 +1,95 @@
+version: '3.8'
+
+# 1panel 专用编排：从源码构建，避开 1panel(OpenResty) 占用的 80 端口。
+# 在 1panel「Docker → 编排」中创建，编排目录指向仓库根（本文件所在目录）。
+# 启动前请先修改 backend/configs/config.prod.yaml 中的 auth.jwt.secret 与 database.password。
+
+services:
+  # MySQL 8 数据库
+  mysql:
+    image: mysql:8.0
+    container_name: license-manager-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-change-me-root}
+      MYSQL_DATABASE: license_manager
+      MYSQL_USER: license_user
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-change-me-user}
+      TZ: Asia/Shanghai
+    ports:
+      - "13306:3306"   # 宿主机映射，仅内网维护用；公网无需暴露
+    volumes:
+      - mysql_data:/var/lib/mysql
+    command: >
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --sql_mode=STRICT_TRANS_TABLES,NO_ZERO_DATE,NO_ZERO_IN_DATE,ERROR_FOR_DIVISION_BY_ZERO
+      --max_connections=1000
+      --innodb_buffer_pool_size=256M
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    networks:
+      - lm-net
+
+  # 后端服务（从源码构建）
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: license-manager-backend
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Shanghai
+      - GIN_MODE=release
+    # 仅 compose 内网，不暴露到宿主机；如需调试可加 "18888:18888"
+    volumes:
+      - ./backend/configs:/app/backend/configs:ro
+      - ./backend/configs/config.prod.yaml:/app/backend/cmd/config.yaml:ro
+      - ./logs:/app/logs
+    depends_on:
+      mysql:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:18888/health || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 6
+      start_period: 60s
+    networks:
+      - lm-net
+
+  # 前端服务（Nginx 静态 + /api、/files 反代到 backend）
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: license-manager-frontend
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Shanghai
+    ports:
+      - "18880:80"   # 高位端口，避开 1panel 的 80；再由 1panel「网站」反代到域名 + HTTPS
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - lm-net
+
+volumes:
+  mysql_data:
+    driver: local
+
+networks:
+  lm-net:
+    driver: bridge
