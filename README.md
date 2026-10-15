@@ -175,6 +175,10 @@ curl http://localhost:18888/health
 
 完整部署说明（反向代理、健康检查、配置挂载等）请参见 `README-Docker.md`。
 
+> ⚠️ **上线前必改**：部署到公网前务必修改 `auth.jwt.secret`、数据库口令、重新生成 RSA 密钥对、变更默认管理员 `admin / admin@123`，并避免占用 1panel 的 `80` 端口。详见 `README-Docker.md` 的「生产环境上线前必改项」。
+>
+> 若服务器装有 1panel，可直接使用仓库内的 `docker-compose.1panel.yml` 一键编排（从源码构建，前端走 `18880` 高位端口），再经 1panel「网站」反代 + HTTPS。
+
 ## 开源许可证
 
 本项目采用 **GNU General Public License v3.0 (GPL-3.0)** 开源许可证。

@@ -1,6 +1,8 @@
 package config
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"fmt"
 	"log"
 
@@ -110,7 +112,43 @@ func Load(configPath string) error {
 		return fmt.Errorf("failed to unmarshal config: %w", err)
 	}
 
+	// 若 JWT 密钥仍为默认/占位值，自动生成随机密钥，避免生产环境使用可预测密钥
+	if isDefaultJWTSecret(AppConfig.Auth.JWT.Secret) {
+		generated, err := generateRandomJWTSecret()
+		if err != nil {
+			return fmt.Errorf("failed to generate random jwt secret: %w", err)
+		}
+		AppConfig.Auth.JWT.Secret = generated
+		log.Println("[WARN] auth.jwt.secret 为默认/占位值，已自动生成随机密钥。" +
+			"该随机密钥仅存在于内存，服务重启后所有已签发令牌将失效；生产环境请在配置文件中显式设置强随机值。")
+	}
+
 	return nil
+}
+
+// defaultJWTSecrets 为历史上作为默认/占位出现的 JWT 密钥。
+// 命中任一（或为空）即视为未正确配置，Load 时会自动替换为随机值。
+var defaultJWTSecrets = map[string]struct{}{
+	"license-manager-default-secret-key": {}, // viper 默认值
+	"please-change-in-prod":              {}, // 生产配置占位值
+}
+
+// isDefaultJWTSecret 判断 JWT 密钥是否为默认/占位值（含空值）。
+func isDefaultJWTSecret(secret string) bool {
+	if secret == "" {
+		return true
+	}
+	_, ok := defaultJWTSecrets[secret]
+	return ok
+}
+
+// generateRandomJWTSecret 生成 32 字节的十六进制随机密钥。
+func generateRandomJWTSecret() (string, error) {
+	b := make([]byte, 32)
+	if _, err := rand.Read(b); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(b), nil
 }
 
 func setDefaults() {
