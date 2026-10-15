@@ -8,6 +8,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -717,6 +719,36 @@ func (s *licenseService) loadRSAPrivateKey() (*utils.RSAPrivateKey, error) {
 
 	s.rsaPrivateKey = key
 	return key, nil
+}
+
+// GetLicenseSigningPublicKey 返回该许可证实际签发私钥所配对的公钥 PEM。
+// 密钥选择逻辑与 signWithProductKey 保持镜像一致：
+// 产品项配置了签名密钥对时返回产品项公钥，否则回退全局配置公钥文件。
+// 客户端下载的授权 zip 必须携带此公钥，否则离线验签必然失败。
+func (s *licenseService) GetLicenseSigningPublicKey(ctx context.Context, id string) ([]byte, error) {
+	if id == "" {
+		return nil, fmt.Errorf("license id is empty")
+	}
+
+	license, err := s.licenseRepo.GetLicenseByID(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("查询许可证失败: %w", err)
+	}
+
+	if s.productRepo != nil && license.AuthorizationCode != nil &&
+		license.AuthorizationCode.ProductOfferingID != nil && *license.AuthorizationCode.ProductOfferingID != "" {
+		offering, err := s.productRepo.GetProductOfferingByID(ctx, *license.AuthorizationCode.ProductOfferingID)
+		if err == nil && offering.SigningPrivateKey != "" && offering.SigningPublicKey != "" {
+			return []byte(offering.SigningPublicKey), nil
+		}
+		// 产品项存在但密钥不完整（升级前创建）时回退全局公钥，与签名兜底一致
+	}
+
+	cfg := config.GetConfig()
+	if cfg == nil || cfg.License.RSA.PublicKeyPath == "" {
+		return nil, fmt.Errorf("RSA public key path not configured")
+	}
+	return os.ReadFile(filepath.Clean(cfg.License.RSA.PublicKeyPath))
 }
 
 // signLicenseFile 使用RSA数字签名许可证文件
