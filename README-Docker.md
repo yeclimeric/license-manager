@@ -50,7 +50,7 @@ docker compose -f docker-compose.prod.yml ps
 1. **JWT 密钥**：`backend/configs/config.prod.yaml` 的 `auth.jwt.secret` 默认值为 `please-change-in-prod`，**生产必须改为强随机串**（如 `openssl rand -hex 32`）。
    - 若仍为默认值，后端启动时会**自动生成随机密钥**并打印 `[WARN]` 日志；但该密钥仅存于内存，**服务重启即失效、所有已签发令牌作废**，仅作兜底，不可依赖。
 2. **数据库口令**：同步修改 compose 环境变量 `MYSQL_PASSWORD` / `MYSQL_ROOT_PASSWORD` 与 `config.prod.yaml` 的 `database.password`（两者必须一致）。
-3. **RSA 密钥对**：仓库自带的 `rsa_private_key.pem` / `rsa_public_key.pem` 私钥已随仓库公开，**生产必须重新生成专属密钥对并替换**，否则授权签名可被伪造。
+3. **RSA 密钥对**：仓库自带的 `rsa_private_key.pem` / `rsa_public_key.pem` 私钥已随仓库公开，**生产必须重新生成专属密钥对并替换**，否则授权签名可被伪造。运行 `./scripts/gen-rsa-keys.sh`（或仓库内置 Go 工具 `backend/cmd/gen-rsa-keys`）生成，默认输出到 `backend/configs`，覆盖需加 `--force`。
 4. **默认管理员**：首次启动自动 seeding 的 `admin / admin@123`，登录后立即修改密码。
 5. **端口冲突**：1panel 自带 OpenResty 占用宿主机 `80/443`。本仓库提供的 `docker-compose.1panel.yml` 前端映射到高位端口 `18880`，**不要**改回 `80`；正式访问请用 1panel「网站」做反向代理 + Let's Encrypt HTTPS。
 6. **暴露面**：公网仅暴露前端（经反代），后端 `18888` 不映射到宿主机。
