@@ -2,7 +2,8 @@ version: '3.8'
 
 # 1panel 专用编排：从源码构建，避开 1panel(OpenResty) 占用的 80 端口。
 # 在 1panel「Docker → 编排」中创建，编排目录指向仓库根（本文件所在目录）。
-# 启动前请先修改 backend/configs/config.prod.yaml 中的 auth.jwt.secret 与 database.password。
+# 启动前请先运行 scripts/deploy-prepare.sh 生成 .env 与 RSA 密钥，并确认 .env 中的 MYSQL_PASSWORD/JWT_SECRET；
+# 敏感配置经环境变量注入后端（DATABASE_PASSWORD/AUTH_JWT_SECRET），无需手动改 config.prod.yaml。
 
 services:
   # MySQL 8 数据库
@@ -46,6 +47,9 @@ services:
     environment:
       - TZ=Asia/Shanghai
       - GIN_MODE=release
+      # 敏感配置由 .env 经环境变量注入，无需再改 config.prod.yaml
+      - DATABASE_PASSWORD=${MYSQL_PASSWORD}
+      - AUTH_JWT_SECRET=${JWT_SECRET}
     # 仅 compose 内网，不暴露到宿主机；如需调试可加 "18888:18888"
     volumes:
       - ./backend/configs:/app/backend/configs:ro

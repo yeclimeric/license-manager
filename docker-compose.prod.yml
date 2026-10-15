@@ -52,6 +52,9 @@ services:
     environment:
       - TZ=Asia/Shanghai
       - GIN_MODE=release
+      # 敏感配置由 .env 经环境变量注入，无需再改 config.prod.yaml
+      - DATABASE_PASSWORD=${MYSQL_PASSWORD}
+      - AUTH_JWT_SECRET=${JWT_SECRET}
     ports:
       - "${BACKEND_PORT:-18888}:18888"
     volumes:

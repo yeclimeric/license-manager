@@ -151,7 +151,7 @@ go build -o license-manager
 ```
 ## Docker 部署
 
-提供三种部署方式，按场景选择。
+提供三种部署方式，按场景选择。无论选哪种，首次部署先运行 `bash scripts/deploy-prepare.sh` 一键生成 `.env` 与 RSA 密钥——部署配置已收敛到 `.env` 单点真相，无需再手动改 `config.prod.yaml`。
 
 ### 方式一：1panel 部署（推荐，适合已装 1panel 的服务器）
 
@@ -161,7 +161,7 @@ go build -o license-manager
 2. 1panel「Docker → 编排 → 创建编排」，编排目录选该仓库根目录，compose 文件选 `docker-compose.1panel.yml`（或直接粘贴内容）。
 3. 创建并启动，1panel 会自动执行 `docker compose up -d --build` 从源码构建镜像。
 4. 1panel「网站 → 创建网站 → 反向代理」，目标 `http://127.0.0.1:18880`，再一键申请 Let's Encrypt HTTPS。
-5. 启动前先按下方「上线前必改」修改 `config.prod.yaml`，并生成专属 RSA 密钥（见下）。
+5. 启动前先运行 `bash scripts/deploy-prepare.sh` 一键准备 `.env` 与 RSA 密钥，并按下方「上线前必改」确认 `.env` 中的口令/密钥（无需手动改 `config.prod.yaml`）。
 
 ### 方式二：使用预构建镜像（可选，适合已有 CI/registry 的团队）
 
@@ -190,9 +190,8 @@ curl http://localhost:18888/health
 
 部署到公网前必须逐项确认，否则存在密钥泄露 / 授权被伪造风险：
 
-1. **JWT 密钥**：`backend/configs/config.prod.yaml` 的 `auth.jwt.secret` 默认 `please-change-in-prod`，必须改为强随机串（`openssl rand -hex 32`）。
-   - 若仍为默认值，后端启动会自动生成随机密钥并打 `[WARN]`；但该密钥仅存内存，**重启即失效、所有令牌作废**，仅作兜底不可依赖。
-2. **数据库口令**：同步修改 compose 环境变量 `MYSQL_PASSWORD` / `MYSQL_ROOT_PASSWORD` 与 `config.prod.yaml` 的 `database.password`（两者必须一致）。
+1. **JWT 密钥**：敏感配置收敛到 `.env`（单点真相）。在 `.env` 设 `JWT_SECRET` 为强随机串（`openssl rand -hex 32`），或由 `scripts/deploy-prepare.sh` 自动生成；经环境变量 `AUTH_JWT_SECRET` 注入后端，覆盖 `config.prod.yaml`，**无需改 yaml**。
+2. **数据库口令**：只需在 `.env` 设 `MYSQL_PASSWORD` / `MYSQL_ROOT_PASSWORD`；经环境变量 `DATABASE_PASSWORD` 注入后端，自动与 `config.prod.yaml` 的 `database.password` 一致，**无需两处分别改**。
 3. **RSA 密钥对**：仓库自带私钥已随仓库公开，**生产必须重新生成**。运行 `./scripts/gen-rsa-keys.sh` 生成专属密钥对并替换 `backend/configs/rsa_private_key.pem`、`rsa_public_key.pem`（也可用仓库内置 Go 工具 `backend/cmd/gen-rsa-keys`）。
 4. **默认管理员**：首次启动自动 seeding 的 `admin / admin@123`，登录后立即改密码。
 5. **端口冲突**：1panel 占用 `80/443`，1panel 编排前端用 `18880`；不要改回 `80`。正式访问用 1panel「网站」反代 + HTTPS。
