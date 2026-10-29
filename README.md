@@ -153,6 +153,8 @@ go build -o license-manager
 
 提供三种部署方式，按场景选择。无论选哪种，首次部署先运行 `bash scripts/deploy-prepare.sh` 一键生成 `.env` 与 RSA 密钥——部署配置已收敛到 `.env` 单点真相，无需再手动改 `config.prod.yaml`。
 
+> 📘 **完整部署教程**（架构概览、1panel/通用/裸机三种方式、反向代理 + HTTPS、升级回滚、备份恢复、故障排查）：[docs/20261029-部署教程.md](docs/20261029-部署教程.md)
+
 ### 方式一：1panel 部署（推荐，适合已装 1panel 的服务器）
 
 若服务器已安装 1panel，使用仓库内置的 `docker-compose.1panel.yml`（从源码构建，前端走 `18880` 高位端口以避开 1panel/OpenResty 占用的 `80`）：
@@ -184,7 +186,7 @@ docker compose -f docker-compose.prod.yml up -d --build
 curl http://localhost:18888/health
 ```
 
-完整部署说明（反向代理、健康检查、配置挂载等）请参见 `README-Docker.md`。
+完整部署说明（反向代理、健康检查、配置挂载等）请参见 [`README-Docker.md`](README-Docker.md) 与[完整部署教程](docs/20261029-部署教程.md)。
 
 ### 上线前必改（公网部署安全清单）
 
