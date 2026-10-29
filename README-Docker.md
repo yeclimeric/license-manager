@@ -69,7 +69,7 @@ docker compose -f docker-compose.prod.yml ps
 2. 1panel「Docker → 编排 → 创建编排」，编排目录选该仓库根目录，compose 文件选 `docker-compose.1panel.yml`（或把内容粘贴进去）。
 3. 创建并启动，1panel 会执行 `docker compose up -d --build` 从源码构建镜像。
 4. 1panel「网站 → 创建网站 → 反向代理」，目标 `http://127.0.0.1:18880`，再一键申请 HTTPS。
-5. 启动前先按上方「生产环境上线前必改项」修改 `config.prod.yaml`。
+5. 启动前先按上方「生产环境上线前必改项」编辑 `.env`（至少修改 `MYSQL_ROOT_PASSWORD` / `MYSQL_PASSWORD`；`JWT_SECRET` 已由 `deploy-prepare.sh` 自动生成，**无需改** `config.prod.yaml`）。
 
 ## 服务说明
 
