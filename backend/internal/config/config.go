@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/spf13/viper"
 )
@@ -101,6 +102,11 @@ func Load(configPath string) error {
 
 	// 支持环境变量
 	viper.AutomaticEnv()
+	// 部署敏感配置可由环境变量覆盖，将单点真相收敛到 .env：
+	// DATABASE_PASSWORD 覆盖 database.password，AUTH_JWT_SECRET 覆盖 auth.jwt.secret。
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+	_ = viper.BindEnv("database.password", "DATABASE_PASSWORD")
+	_ = viper.BindEnv("auth.jwt.secret", "AUTH_JWT_SECRET")
 
 	if err := viper.ReadInConfig(); err != nil {
 		return fmt.Errorf("failed to read config file: %w", err)

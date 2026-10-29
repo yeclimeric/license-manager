@@ -8,7 +8,7 @@ database:
   host: "mysql"
   port: 3306
   username: "license_user"
-  password: "license@123"
+  password: "license@123"   # 由环境变量 DATABASE_PASSWORD（来自 .env 的 MYSQL_PASSWORD）覆盖；部署者只需在 .env 设置，无需改此文件
   database: "license_manager"
   charset: "utf8mb4"
   parse_time: true
@@ -20,7 +20,7 @@ database:
 
 auth:
   jwt:
-    secret: "please-change-in-prod"
+    secret: "please-change-in-prod"   # 由环境变量 AUTH_JWT_SECRET（来自 .env 的 JWT_SECRET）覆盖；部署者只需在 .env 设置，无需改此文件
     expire_hours: 1
     refresh_threshold_minutes: 30
   security:
