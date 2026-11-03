@@ -1,13 +1,14 @@
 <template>
   <Layout app-name="Cedar-V" :page-title="pageTitle">
-    <div class="template-form data-list-page">
-      <header class="data-list-header">
-        <div>
-          <h1>{{ pageTitle }}</h1>
-        </div>
-      </header>
+    <div class="form-page">
+      <SubpageHeader
+        :title="pageTitle"
+        :back-label="t('featureTemplates.actions.backToList')"
+        :back-disabled="saving"
+        @back="handleCancel"
+      />
 
-      <section class="data-list-workspace">
+      <el-form ref="formRef" :model="form" :rules="rules" class="form-content">
         <div class="form-card">
           <el-alert
             v-if="loadError"
@@ -160,14 +161,16 @@
             </el-form>
           </section>
 
-          <footer class="form-actions">
-            <el-button @click="handleCancel">{{ t('featureTemplates.actions.cancel') }}</el-button>
-            <el-button type="primary" :loading="saving" :disabled="isSystemTemplate" @click="handleSave">
-              {{ t('featureTemplates.actions.save') }}
-            </el-button>
-          </footer>
+          <FormActionBar
+            :cancel-label="t('featureTemplates.actions.cancel')"
+            :submit-label="t('featureTemplates.actions.save')"
+            :loading="saving"
+            :disabled="isSystemTemplate"
+            @cancel="handleCancel"
+            @submit="handleSave"
+          />
         </div>
-      </section>
+      </el-form>
     </div>
   </Layout>
 </template>
@@ -178,6 +181,8 @@ import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'elem
 import { useI18n } from 'vue-i18n'
 import { Lock, Plus, ArrowUp, ArrowDown, Delete } from '@element-plus/icons-vue'
 import Layout from '@/components/common/layout/Layout.vue'
+import SubpageHeader from '@/components/common/SubpageHeader.vue'
+import FormActionBar from '@/components/common/FormActionBar.vue'
 import {
   createFeatureTemplate,
   getFeatureTemplateDetail,
@@ -424,13 +429,6 @@ onMounted(loadTemplate)
 </script>
 
 <style lang="scss" scoped>
-.form-card {
-  background: var(--app-content-bg);
-  border: 1px solid var(--app-border-light);
-  border-radius: $border-radius-base;
-  padding: 24px 28px;
-}
-
 .form-alert {
   margin-bottom: 16px;
 }
@@ -515,14 +513,6 @@ onMounted(loadTemplate)
     gap: 2px;
     flex-shrink: 0;
   }
-}
-
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  padding-top: 20px;
-  border-top: 1px solid var(--app-border-light);
 }
 
 :deep(.el-form-item) {
