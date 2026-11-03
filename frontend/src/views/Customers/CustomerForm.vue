@@ -1,5 +1,5 @@
 <template>
-  <div class="customer-form-page">
+  <div class="form-page">
     <SubpageHeader
       :title="isEdit ? t('customers.editCustomer') : t('customers.addCustomer')"
       :back-label="t('customers.actions.backToList')"
@@ -253,12 +253,9 @@ onMounted(() => { loadEnums(); loadCustomer() })
 </script>
 
 <style scoped>
-.customer-form-page,.form-sections { display:flex; flex-direction:column; gap:16px; }
-.customer-form-page { min-width:0; padding:var(--layout-content-padding); box-sizing:border-box; }
-.form-card,.state-card { padding:20px; background:var(--app-content-bg); border:1px solid var(--app-border-color); border-radius:var(--app-card-radius); box-shadow:var(--app-card-shadow); }
+/* 外壳类（form-page/form-sections/form-card/form-grid/state-card/full-width）
+   已提升为全局样式（assets/styles/form-page.scss），此处只保留本页特有样式。 */
 .form-card h2 { margin:0 0 18px; color:var(--app-text-primary); font-size:16px; }
-.form-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 20px; }
-.full-width { grid-column:1 / -1; }
 :deep(.el-select) { width:100%; }
 .customer-level-rate { height:22px; }
 .customer-level-rate :deep(.el-rate__item) { margin-right:3px; }
@@ -266,9 +263,7 @@ onMounted(() => { loadEnums(); loadCustomer() })
 .customer-level-rate :deep(.el-rate__icon:not(.is-active)) { color:#e8eeeb; }
 
 @media (max-width:768px) {
-  .customer-form-page { padding:12px; }
-  .form-grid { grid-template-columns:1fr; }
-  .full-width { grid-column:auto; }
+  .form-page { padding:12px; }
   .form-card { padding:16px; }
 }
 </style>

@@ -483,29 +483,8 @@ onMounted(async () => {
 </script>
 
 <style scoped lang="scss">
-.form-page {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  min-width: 0;
-  padding: var(--layout-content-padding);
-  box-sizing: border-box;
-}
-
-.form-content {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.form-card {
-  padding: 20px;
-  border: 1px solid var(--app-border-color);
-  border-radius: var(--app-card-radius);
-  background: var(--app-content-bg);
-  box-shadow: var(--app-card-shadow);
-}
-
+/* 外壳类（form-page/form-content/form-card）已提升为全局样式
+   （assets/styles/form-page.scss），此处只保留本页特有样式。 */
 .section-heading {
   margin-bottom: 18px;
 

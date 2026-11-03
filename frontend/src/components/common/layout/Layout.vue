@@ -53,7 +53,7 @@ const staticFallback: FallbackEntry[] = [
   { id: 'licenses', href: '/licenses', icon: 'licenses', labelKey: 'navigation.menu.licenses' },
   { id: 'customers', href: '/customers', icon: 'customers', labelKey: 'navigation.menu.customers' },
   { id: 'products', href: '/products', icon: 'products', labelKey: 'navigation.menu.productOfferings' },
-  { id: 'feature-templates', href: '/feature-templates', icon: 'licenses', labelKey: 'navigation.menu.featureTemplates' },
+  { id: 'feature-templates', href: '/feature-templates', icon: 'templates', labelKey: 'navigation.menu.featureTemplates' },
   { id: 'audit-logs', href: '/audit-logs', icon: 'audit', labelKey: 'navigation.menu.auditLogs' },
   { id: 'roles', href: '/roles', icon: 'users', labelKey: 'rbac.page.roleTitle' },
   { id: 'menus', href: '/menus', icon: 'menu', labelKey: 'rbac.page.menuTitle' }
@@ -70,24 +70,51 @@ interface SourceMenu {
 
 const remoteMenus = ref<SourceMenu[] | null>(null)
 
+const iconNames = new Set([
+  'dashboard', 'licenses', 'customers', 'products', 'templates', 'users', 'menu', 'audit', 'settings', 'api-keys'
+])
+
+// 后端种子菜单（rbac_seed.go）的 Icon 存的是 Element Plus 图标名。
+// 这里做一层显式映射，落到前端 SVG 图标集的键上；
+// User 同名用于客户与用户两个菜单，需结合 id 区分。
+const epIconMap: Record<string, string> = {
+  DataLine: 'dashboard',
+  Lock: 'licenses',
+  Box: 'products',
+  Goods: 'products',
+  Files: 'templates',
+  Setting: 'settings',
+  UserFilled: 'users',
+  Menu: 'menu',
+  Document: 'audit',
+  Key: 'api-keys'
+}
+
 const iconFor = (icon: string, id: string): string => {
   if (icon && iconNames.has(icon)) return icon
-  // 种子数据使用 Material Symbols 名称，回退到既有图标集
-  return id.includes('role') || id.includes('user') ? 'users' : id.includes('menu') ? 'menu' : iconFallback(id)
+  if (icon && epIconMap[icon]) {
+    // User 图标客户/用户菜单共用，按 id 区分
+    if (icon === 'User') return id.includes('customer') ? 'customers' : 'users'
+    return epIconMap[icon]
+  }
+  // 按 id 精确回退。注意所有种子菜单 id 都以 menu- 开头，
+  // 必须先匹配更具体的业务词，menu 自身放最后。
+  return iconFallback(id)
 }
 
 const iconFallback = (id: string): string => {
   if (id.includes('dashboard')) return 'dashboard'
   if (id.includes('license')) return 'licenses'
   if (id.includes('customer')) return 'customers'
-  if (id.includes('product')) return 'products'
-  if (id.includes('audit') || id.includes('feature')) return 'licenses'
+  if (id.includes('template')) return 'templates'
+  if (id.includes('api-key')) return 'api-keys'
+  if (id.includes('setting') || id.includes('config')) return 'settings'
+  if (id.includes('audit') || id.includes('log')) return 'audit'
+  if (id.includes('role') || id.includes('user')) return 'users'
+  if (id.includes('product') || id.includes('offering')) return 'products'
+  if (id === 'menu' || id.endsWith('-menu') || id.startsWith('menu-')) return 'menu'
   return 'dashboard'
 }
-
-const iconNames = new Set([
-  'dashboard', 'licenses', 'customers', 'products', 'users', 'menu', 'audit'
-])
 
 // 分组目录本身没有路径，不能作为可点击项，但仍需保留其子菜单。
 // 因此过滤条件是"有路径 或 有子菜单"，而不是只看路径。

@@ -1,14 +1,15 @@
 <template>
   <Layout app-name="Cedar-V" :page-title="pageTitle">
-    <div class="product-form data-list-page">
-      <header class="data-list-header">
-        <div>
-          <h1>{{ pageTitle }}</h1>
-        </div>
-      </header>
+    <div class="form-page">
+      <SubpageHeader
+        :title="pageTitle"
+        :back-label="t('products.actions.backToList')"
+        :back-disabled="saving || loading"
+        @back="handleCancel"
+      />
 
-      <section class="data-list-workspace">
-        <div class="wizard-card">
+      <div class="form-content">
+        <div class="form-card wizard-card">
           <div class="wizard-steps">
             <div
               v-for="(step, index) in steps"
@@ -178,27 +179,22 @@
             </el-form>
           </section>
 
-          <footer class="wizard-actions">
-            <el-button @click="handleCancel">{{ t('products.actions.cancel') }}</el-button>
-            <div class="wizard-actions__right">
-              <el-button v-if="currentStep > 0" @click="currentStep -= 1">
+          <FormActionBar
+            :cancel-label="t('products.actions.cancel')"
+            :submit-label="currentStep < steps.length - 1 ? t('products.actions.next') : t('products.actions.save')"
+            :loading="saving"
+            :disabled="loading"
+            @cancel="handleCancel"
+            @submit="currentStep < steps.length - 1 ? goNext() : handleSave()"
+          >
+            <template #extra>
+              <el-button v-if="currentStep > 0" :disabled="saving" @click="currentStep -= 1">
                 {{ t('products.actions.previous') }}
               </el-button>
-              <el-button v-if="currentStep < steps.length - 1" type="primary" @click="goNext">
-                {{ t('products.actions.next') }}
-              </el-button>
-              <el-button
-                v-else
-                type="primary"
-                :loading="saving"
-                @click="handleSave"
-              >
-                {{ t('products.actions.save') }}
-              </el-button>
-            </div>
-          </footer>
+            </template>
+          </FormActionBar>
         </div>
-      </section>
+      </div>
     </div>
   </Layout>
 </template>
@@ -209,6 +205,8 @@ import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import { Lock } from '@element-plus/icons-vue'
 import Layout from '@/components/common/layout/Layout.vue'
+import SubpageHeader from '@/components/common/SubpageHeader.vue'
+import FormActionBar from '@/components/common/FormActionBar.vue'
 import {
   createProductOffering,
   getProductOfferingDetail,
@@ -433,11 +431,9 @@ onMounted(loadProduct)
 </script>
 
 <style lang="scss" scoped>
+/* 卡片内边距与全局 form-card（20px）对齐，仅纵向留白稍大以容纳步骤条 */
 .wizard-card {
-  background: var(--app-content-bg);
-  border: 1px solid var(--app-border-light);
-  border-radius: $border-radius-base;
-  padding: 24px 28px;
+  padding: 24px 20px;
 }
 
 .wizard-steps {
@@ -447,7 +443,7 @@ onMounted(loadProduct)
   flex-wrap: wrap;
   padding-bottom: 20px;
   margin-bottom: 24px;
-  border-bottom: 1px solid var(--app-border-light);
+  border-bottom: 1px solid var(--app-border-color);
 }
 
 .wizard-step {
@@ -530,20 +526,6 @@ onMounted(loadProduct)
 
 .wizard-alert {
   margin-bottom: 16px;
-}
-
-.wizard-actions {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 28px;
-  padding-top: 20px;
-  border-top: 1px solid var(--app-border-light);
-
-  &__right {
-    display: flex;
-    gap: 8px;
-  }
 }
 
 :deep(.el-form-item) {

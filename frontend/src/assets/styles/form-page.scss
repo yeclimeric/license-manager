@@ -1,0 +1,52 @@
+/* 页面级表单统一外壳。
+   所有页面级表单（CustomerForm / LicenseForm / ProductForm / TemplateForm）
+   共用同一结构：SubpageHeader + .form-page > .form-content > .form-card
+   + FormActionBar（底部固定操作栏）。此前四个页面各自在 scoped 样式里
+   重复定义这些类且数值略有出入，导致表单页间距、圆角、边框不一致。 */
+.form-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+  padding: var(--layout-content-padding);
+  box-sizing: border-box;
+}
+
+.form-content,
+.form-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.form-card,
+.state-card {
+  padding: 20px;
+  background: var(--app-content-bg);
+  border: 1px solid var(--app-border-color);
+  border-radius: var(--app-card-radius);
+  box-shadow: var(--app-card-shadow);
+}
+
+/* 表单字段栅格：默认两列，窄视口收为单列。
+   .full-width 的字段跨满两列，收窄后取消跨列。 */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 20px;
+}
+
+.form-grid .full-width {
+  grid-column: span 2;
+}
+
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-grid .full-width {
+    grid-column: auto;
+  }
+}

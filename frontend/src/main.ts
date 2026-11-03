@@ -18,6 +18,7 @@ import './assets/styles/fonts.css' // 其他本地字体
 import './assets/styles/global.scss'
 import './assets/styles/element-theme.scss'
 import './assets/styles/data-list.scss'
+import './assets/styles/form-page.scss'
 
 // Pinia状态管理
 import pinia from './store'

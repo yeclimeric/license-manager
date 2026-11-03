@@ -17,10 +17,13 @@ import { computed } from 'vue'
 import AuditIcon from './svg/AuditIcon.vue'
 import CustomerIcon from './svg/CustomerIcon.vue'
 import DashboardIcon from './svg/DashboardIcon.vue'
+import KeyIcon from './svg/KeyIcon.vue'
 import LicensesIcon from './svg/LicensesIcon.vue'
 import MenuIcon from './svg/MenuIcon.vue'
 import OfferingIcon from './svg/OfferingIcon.vue'
 import RoleIcon from './svg/RoleIcon.vue'
+import SettingIcon from './svg/SettingIcon.vue'
+import TemplateIcon from './svg/TemplateIcon.vue'
 
 interface Props {
   name: string
@@ -35,9 +38,10 @@ const props = withDefaults(defineProps<Props>(), {
  * 图标映射。
  *
  * 键必须与 Layout.vue 中 iconFor / iconFallback 实际产出的名字一致
- * （dashboard / licenses / customers / products / users / menu / audit），
- * 区分大小写。之前这里用的是 DataLine/Lock/Menu 等 Element Plus 风格名，
- * 与上游完全对不上，导致所有菜单都回退到 DashboardIcon，图标全一样。
+ * （dashboard / licenses / customers / products / templates / users /
+ * menu / audit / settings / api-keys），区分大小写。之前这里用的是
+ * DataLine/Lock/Menu 等 Element Plus 风格名，与上游完全对不上，
+ * 导致所有菜单都回退到 DashboardIcon，图标全一样。
  * 新增菜单时按这里的键加一项。
  */
 const iconMap: Record<string, unknown> = {
@@ -45,9 +49,12 @@ const iconMap: Record<string, unknown> = {
   licenses: LicensesIcon,
   customers: CustomerIcon,
   products: OfferingIcon,
+  templates: TemplateIcon,
   users: RoleIcon,
   menu: MenuIcon,
-  audit: AuditIcon
+  audit: AuditIcon,
+  settings: SettingIcon,
+  'api-keys': KeyIcon
 }
 const iconComponent = computed(() => {
   return iconMap[props.name] || DashboardIcon
