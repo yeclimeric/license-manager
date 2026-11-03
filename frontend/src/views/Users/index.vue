@@ -6,35 +6,38 @@
           <h1>{{ t('users.title') }}</h1>
           <p>{{ t('users.description') }}</p>
         </div>
-        <el-button type="primary" :icon="Plus" @click="openCreate">
-          {{ t('users.actions.create') }}
-        </el-button>
       </header>
 
       <section class="data-list-workspace">
         <div class="data-list-toolbar">
-          <el-input
-            v-model="filters.search"
-            :placeholder="t('users.filter.search')"
-            clearable
-            class="filter-control"
-            @keyup.enter="loadUsers"
-          />
-          <el-select
-            v-model="filters.status"
-            :placeholder="t('users.filter.allStatus')"
-            clearable
-            class="filter-control status-filter"
-          >
-            <el-option value="active" :label="t('users.status.active')" />
-            <el-option value="locked" :label="t('users.status.locked')" />
-            <el-option value="inactive" :label="t('users.status.inactive')" />
-          </el-select>
-          <div class="filter-actions">
-            <el-button plain type="primary" :loading="loading" @click="loadUsers">
-              {{ t('users.filter.query') }}
-            </el-button>
-            <el-button @click="resetFilters">{{ t('users.filter.reset') }}</el-button>
+          <el-button type="primary" :icon="Plus" @click="openCreate">
+            {{ t('users.actions.create') }}
+          </el-button>
+          <span class="data-list-toolbar__divider" aria-hidden="true"></span>
+          <div class="data-list-toolbar__filters">
+            <div class="filter-grid data-list-filter__grid">
+              <el-input
+                v-model="filters.search"
+                :placeholder="t('users.filter.search')"
+                clearable
+                @keyup.enter="loadUsers"
+              />
+              <el-select
+                v-model="filters.status"
+                :placeholder="t('users.filter.allStatus')"
+                clearable
+              >
+                <el-option value="active" :label="t('users.status.active')" />
+                <el-option value="locked" :label="t('users.status.locked')" />
+                <el-option value="inactive" :label="t('users.status.inactive')" />
+              </el-select>
+              <div class="filter-actions data-list-filter__actions">
+                <el-button plain type="primary" :loading="loading" @click="loadUsers">
+                  {{ t('users.filter.query') }}
+                </el-button>
+                <el-button @click="resetFilters">{{ t('users.filter.reset') }}</el-button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -314,6 +317,9 @@ onMounted(async () => {
 </script>
 
 <style lang="scss" scoped>
+/* 关键词列稍宽，状态列与操作按钮占一列 */
+.filter-grid { grid-template-columns: minmax(220px, 1.6fr) minmax(0, 1fr) auto; }
+
 .role-tags {
   display: flex;
   gap: 4px;
@@ -323,5 +329,13 @@ onMounted(async () => {
 .user-empty {
   color: var(--app-text-secondary);
   font-size: 12px;
+}
+
+@media (max-width: 1200px) {
+  .filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 768px) {
+  .filter-grid { grid-template-columns: 1fr; }
 }
 </style>

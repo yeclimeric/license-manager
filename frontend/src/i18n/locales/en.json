@@ -1029,7 +1029,8 @@
       "save": "Save",
       "confirm": "Confirm",
       "previous": "Previous",
-      "next": "Next"
+      "next": "Next",
+      "backToList": "Back to Products"
     },
     "confirm": {
       "deleteTitle": "Delete Product",
@@ -1125,7 +1126,8 @@
       "addFeature": "Add Feature",
       "removeFeature": "Remove",
       "moveUp": "Move Up",
-      "moveDown": "Move Down"
+      "moveDown": "Move Down",
+      "backToList": "Back to Templates"
     },
     "form": {
       "basicInfo": "Basic Information",
@@ -1364,6 +1366,7 @@
     },
     "page": {
       "roleTitle": "Roles",
+      "roleDescription": "Manage system roles and control the menus and operations each role can access.",
       "menuTitle": "Menus",
       "create": "New Role"
     }

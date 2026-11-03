@@ -6,35 +6,38 @@
           <h1>{{ t('apiKeys.title') }}</h1>
           <p>{{ t('apiKeys.description') }}</p>
         </div>
-        <el-button type="primary" :icon="Plus" @click="openCreate">
-          {{ t('apiKeys.form.create') }}
-        </el-button>
       </header>
 
       <section class="data-list-workspace">
         <div class="data-list-toolbar">
-          <el-input
-            v-model="filters.keyword"
-            :placeholder="t('apiKeys.keyword')"
-            clearable
-            class="filter-control"
-            @keyup.enter="loadKeys"
-          />
-          <el-select
-            v-model="filters.status"
-            :placeholder="t('apiKeys.statusAll')"
-            clearable
-            class="filter-control status-filter"
-          >
-            <el-option value="active" :label="t('apiKeys.status.active')" />
-            <el-option value="inactive" :label="t('apiKeys.status.inactive')" />
-            <el-option value="expired" :label="t('apiKeys.status.expired')" />
-          </el-select>
-          <div class="filter-actions">
-            <el-button plain type="primary" :loading="loading" @click="loadKeys">
-              {{ t('rbac.filter.query') }}
-            </el-button>
-            <el-button @click="resetFilters">{{ t('rbac.filter.reset') }}</el-button>
+          <el-button type="primary" :icon="Plus" @click="openCreate">
+            {{ t('apiKeys.form.create') }}
+          </el-button>
+          <span class="data-list-toolbar__divider" aria-hidden="true"></span>
+          <div class="data-list-toolbar__filters">
+            <div class="filter-grid data-list-filter__grid">
+              <el-input
+                v-model="filters.keyword"
+                :placeholder="t('apiKeys.keyword')"
+                clearable
+                @keyup.enter="loadKeys"
+              />
+              <el-select
+                v-model="filters.status"
+                :placeholder="t('apiKeys.statusAll')"
+                clearable
+              >
+                <el-option value="active" :label="t('apiKeys.status.active')" />
+                <el-option value="inactive" :label="t('apiKeys.status.inactive')" />
+                <el-option value="expired" :label="t('apiKeys.status.expired')" />
+              </el-select>
+              <div class="filter-actions data-list-filter__actions">
+                <el-button plain type="primary" :loading="loading" @click="loadKeys">
+                  {{ t('rbac.filter.query') }}
+                </el-button>
+                <el-button @click="resetFilters">{{ t('rbac.filter.reset') }}</el-button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -284,6 +287,9 @@ onMounted(async () => {
 </script>
 
 <style lang="scss" scoped>
+/* 关键词列稍宽，状态列与操作按钮占一列 */
+.filter-grid { grid-template-columns: minmax(220px, 1.6fr) minmax(0, 1fr) auto; }
+
 .key-prefix {
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
   font-size: 12px;
@@ -308,5 +314,13 @@ onMounted(async () => {
     font-size: 13px;
     color: var(--app-text-primary);
   }
+}
+
+@media (max-width: 1200px) {
+  .filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 768px) {
+  .filter-grid { grid-template-columns: 1fr; }
 }
 </style>

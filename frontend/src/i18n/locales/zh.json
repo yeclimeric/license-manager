@@ -1029,7 +1029,8 @@
       "save": "保存",
       "confirm": "确定",
       "previous": "上一步",
-      "next": "下一步"
+      "next": "下一步",
+      "backToList": "返回产品项列表"
     },
     "confirm": {
       "deleteTitle": "删除产品项",
@@ -1125,7 +1126,8 @@
       "addFeature": "添加功能项",
       "removeFeature": "移除",
       "moveUp": "上移",
-      "moveDown": "下移"
+      "moveDown": "下移",
+      "backToList": "返回模板列表"
     },
     "form": {
       "basicInfo": "基本信息",
@@ -1364,6 +1366,7 @@
     },
     "page": {
       "roleTitle": "角色管理",
+      "roleDescription": "管理系统角色，控制各角色的可见菜单与可执行操作。",
       "menuTitle": "菜单管理",
       "create": "新建角色"
     }

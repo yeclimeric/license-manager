@@ -1029,7 +1029,8 @@
       "save": "保存",
       "confirm": "確定",
       "previous": "前へ",
-      "next": "次へ"
+      "next": "次へ",
+      "backToList": "製品一覧へ戻る"
     },
     "confirm": {
       "deleteTitle": "製品項目を削除",
@@ -1125,7 +1126,8 @@
       "addFeature": "機能項目を追加",
       "removeFeature": "削除",
       "moveUp": "上へ",
-      "moveDown": "下へ"
+      "moveDown": "下へ",
+      "backToList": "テンプレート一覧へ戻る"
     },
     "form": {
       "basicInfo": "基本情報",
@@ -1364,6 +1366,7 @@
     },
     "page": {
       "roleTitle": "ロール管理",
+      "roleDescription": "システムロールを管理し、各ロールが利用できるメニューと操作を制御します。",
       "menuTitle": "メニュー管理",
       "create": "ロールを作成"
     }

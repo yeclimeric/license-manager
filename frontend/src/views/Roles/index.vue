@@ -4,23 +4,31 @@
       <header class="data-list-header">
         <div>
           <h1>{{ t('rbac.page.roleTitle') }}</h1>
+          <p>{{ t('rbac.page.roleDescription') }}</p>
         </div>
       </header>
 
       <section class="data-list-workspace">
         <div class="data-list-toolbar">
-          <el-input
-            v-model="keyword"
-            :placeholder="t('rbac.filter.keyword')"
-            clearable
-            class="filter-control"
-            @keyup.enter="loadRoles"
-          />
-          <div class="filter-actions">
-            <el-button plain type="primary" :loading="loading" @click="loadRoles">
-              {{ t('rbac.filter.query') }}
-            </el-button>
-            <el-button @click="resetSearch">{{ t('rbac.filter.reset') }}</el-button>
+          <el-button type="primary" :icon="Plus" @click="openCreate">
+            {{ t('rbac.page.create') }}
+          </el-button>
+          <span class="data-list-toolbar__divider" aria-hidden="true"></span>
+          <div class="data-list-toolbar__filters">
+            <div class="filter-grid data-list-filter__grid">
+              <el-input
+                v-model="keyword"
+                :placeholder="t('rbac.filter.keyword')"
+                clearable
+                @keyup.enter="loadRoles"
+              />
+              <div class="filter-actions data-list-filter__actions">
+                <el-button plain type="primary" :loading="loading" @click="loadRoles">
+                  {{ t('rbac.filter.query') }}
+                </el-button>
+                <el-button @click="resetSearch">{{ t('rbac.filter.reset') }}</el-button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -95,6 +103,7 @@
 import { onMounted, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
+import { Plus } from '@element-plus/icons-vue'
 import Layout from '@/components/common/layout/Layout.vue'
 import RoleForm from './RoleForm.vue'
 import {
@@ -160,6 +169,12 @@ const openEdit = (row: Role) => {
   formVisible.value = true
 }
 
+const openCreate = () => {
+  currentRole.value = null
+  isEdit.value = false
+  formVisible.value = true
+}
+
 const removeRole = async (row: Role) => {
   if (!row.can_delete) return
   try {
@@ -192,6 +207,9 @@ onMounted(async () => {
 </script>
 
 <style lang="scss" scoped>
+/* 关键词列 + 操作按钮列 */
+.filter-grid { grid-template-columns: minmax(220px, 1.6fr) auto; }
+
 .role-tag {
   margin-left: 8px;
 }
@@ -212,5 +230,13 @@ onMounted(async () => {
   border: 1px solid var(--app-border-light);
   font-size: 12px;
   color: var(--app-text-secondary);
+}
+
+@media (max-width: 1200px) {
+  .filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 768px) {
+  .filter-grid { grid-template-columns: 1fr; }
 }
 </style>
