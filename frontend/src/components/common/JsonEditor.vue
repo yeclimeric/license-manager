@@ -16,33 +16,36 @@
       </el-button>
     </div>
 
-    <!-- JSON 树形结构 -->
-    <div class="json-tree">
-      <JsonNode
-        v-for="(node, index) in nodes"
-        :key="node.id"
-        :node="node"
-        :depth="0"
-        @update="handleNodeUpdate"
-        @delete="handleNodeDelete(index)"
-        @add-child="handleAddChild"
-        @toggle-expand="handleToggleExpand"
-      />
+    <!-- 树形编辑与 JSON 预览同行：左侧编辑、右侧实时预览 -->
+    <div class="json-editor-body">
+      <!-- JSON 树形结构 -->
+      <div class="json-tree">
+        <JsonNode
+          v-for="(node, index) in nodes"
+          :key="node.id"
+          :node="node"
+          :depth="0"
+          @update="handleNodeUpdate"
+          @delete="handleNodeDelete(index)"
+          @add-child="handleAddChild"
+          @toggle-expand="handleToggleExpand"
+        />
 
-      <div v-if="!nodes.length" class="json-empty">
-        {{ t('jsonEditor.emptyState') }}
+        <div v-if="!nodes.length" class="json-empty">
+          {{ t('jsonEditor.emptyState') }}
+        </div>
       </div>
-    </div>
 
-    <!-- JSON 预览 -->
-    <div class="json-preview">
-      <div class="json-preview-label">{{ t('jsonEditor.preview') }}</div>
-      <el-input
-        type="textarea"
-        :rows="4"
-        :model-value="jsonPreview"
-        readonly
-      />
+      <!-- JSON 预览 -->
+      <div class="json-preview">
+        <div class="json-preview-label">{{ t('jsonEditor.preview') }}</div>
+        <el-input
+          type="textarea"
+          :rows="6"
+          :model-value="jsonPreview"
+          readonly
+        />
+      </div>
     </div>
 
     <!-- 导入弹窗 -->
@@ -477,9 +480,22 @@ const emitUpdate = () => {
   border: 1px solid var(--app-border-color);
   border-radius: $border-radius-base;
   padding: 12px;
-  margin-bottom: 16px;
   min-height: 100px;
   background: var(--app-content-bg);
+}
+
+/* 树形编辑在左、JSON 预览在右，同行两栏；窄视口退化为上下堆叠 */
+.json-editor-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 992px) {
+  .json-editor-body {
+    grid-template-columns: 1fr;
+  }
 }
 
 .json-empty {
@@ -490,7 +506,7 @@ const emitUpdate = () => {
 }
 
 .json-preview {
-  margin-top: 16px;
+  min-width: 0;
 }
 
 .json-preview-label {
