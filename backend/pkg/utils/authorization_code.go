@@ -23,14 +23,17 @@ func GenerateLegacyAuthorizationCode(customerID string) (string, error) {
 	return fmt.Sprintf("LIC-%s-%s-%s", customerCode, randomStr, checksum), nil
 }
 
+// authCodeRandomChars 授权码随机段字符集：62 字符集剔除易混淆的 0/O/1/l/I，
+// 电话/工单口头转述不再有二义性；57 字符 × 12 位仍有约 2×10^21 种组合
+const authCodeRandomChars = "ABCDEFGHJKMNPQRSTUVWXYZ23456789abcdefghjkmnpqrstuvwxyz"
+
 func generateSecureRandomString(length int) (string, error) {
-	const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 	bytes := make([]byte, length)
 	if _, err := rand.Read(bytes); err != nil {
 		return "", err
 	}
 	for i, b := range bytes {
-		bytes[i] = chars[b%byte(len(chars))]
+		bytes[i] = authCodeRandomChars[b%byte(len(authCodeRandomChars))]
 	}
 	return string(bytes), nil
 }
