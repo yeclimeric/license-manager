@@ -1,5 +1,4 @@
 <template>
-  <Layout app-name="Cedar-V" :page-title="t('systemConfig.title')">
     <div class="config-page data-list-page">
       <header class="data-list-header">
         <div>
@@ -65,14 +64,12 @@
         </div>
       </section>
     </div>
-  </Layout>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
-import Layout from '@/components/common/layout/Layout.vue'
 import {
   batchUpdateConfigs,
   getSystemConfigs,

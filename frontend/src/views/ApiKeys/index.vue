@@ -1,5 +1,4 @@
 <template>
-  <Layout app-name="Cedar-V" :page-title="t('apiKeys.title')">
     <div class="key-page data-list-page">
       <header class="data-list-header">
         <div>
@@ -142,7 +141,6 @@
         </el-button>
       </template>
     </el-dialog>
-  </Layout>
 </template>
 
 <script setup lang="ts">
@@ -150,7 +148,6 @@ import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import { Plus } from '@element-plus/icons-vue'
-import Layout from '@/components/common/layout/Layout.vue'
 import ApiKeyForm from './ApiKeyForm.vue'
 import {
   deleteApiKey,

@@ -1,5 +1,4 @@
 <template>
-  <Layout app-name="Cedar-V" :page-title="t('auditLogs.title')">
     <div class="audit-page data-list-page">
       <header class="data-list-header">
         <div>
@@ -205,13 +204,11 @@
         <el-button @click="detailVisible = false">{{ t('auditLogs.close') }}</el-button>
       </template>
     </el-dialog>
-  </Layout>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import Layout from '@/components/common/layout/Layout.vue'
 import {
   getAuditLogs,
   getAuditStatistics,

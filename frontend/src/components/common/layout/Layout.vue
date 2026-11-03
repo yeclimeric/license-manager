@@ -9,7 +9,11 @@
     <Sidebar :nav-items="navItems" @nav-click="handleNavClick" />
     <div class="layout-main">
       <NavContent />
-      <main class="layout-content"><slot /></main>
+      <main class="layout-content">
+        <!-- 路由级父布局：子页面经 router children 渲染于此，
+             布局与侧边栏状态跨页面跳转保持，不再随页面重建 -->
+        <router-view />
+      </main>
     </div>
   </div>
 </template>
@@ -22,8 +26,6 @@ import { useAppStore } from '@/store/modules/app'
 import Sidebar from './Sidebar.vue'
 import NavContent from './NavContent.vue'
 import { getUserMenus } from '@/api/rbac'
-
-defineProps<{ appName?: string; pageTitle?: string }>()
 
 const { t } = useI18n()
 const route = useRoute()

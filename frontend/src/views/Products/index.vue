@@ -1,5 +1,4 @@
 <template>
-  <Layout app-name="Cedar-V" :page-title="pageTitle">
     <div v-if="viewMode === 'list'" class="product-page data-list-page">
       <header class="data-list-header">
         <div>
@@ -201,7 +200,6 @@
       @save="handleFormSaved"
       @cancel="showList"
     />
-  </Layout>
 </template>
 
 <script setup lang="ts">
@@ -209,7 +207,6 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import { Plus, Refresh } from '@element-plus/icons-vue'
-import Layout from '@/components/common/layout/Layout.vue'
 import ProductForm from './ProductForm.vue'
 import PublicKeyDialog from './PublicKeyDialog.vue'
 import {
@@ -246,13 +243,6 @@ const statusOptions = computed(() => [
   { value: 'active', label: t('products.filter.statusActive') },
   { value: 'inactive', label: t('products.filter.statusInactive') }
 ])
-
-const pageTitle = computed(() => {
-  if (viewMode.value === 'form') {
-    return isEditMode.value ? t('products.editProduct') : t('products.addProduct')
-  }
-  return t('products.title')
-})
 
 // 名称列优先展示别名，为空回落编码
 const displayName = (row: ProductOffering) => row.alias || row.code

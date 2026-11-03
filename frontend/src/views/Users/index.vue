@@ -1,5 +1,4 @@
 <template>
-  <Layout app-name="Cedar-V" :page-title="t('users.title')">
     <div class="user-page data-list-page">
       <header class="data-list-header">
         <div>
@@ -150,7 +149,6 @@
         </el-button>
       </template>
     </el-dialog>
-  </Layout>
 </template>
 
 <script setup lang="ts">
@@ -158,7 +156,6 @@ import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import { Plus } from '@element-plus/icons-vue'
-import Layout from '@/components/common/layout/Layout.vue'
 import UserForm from './UserForm.vue'
 import {
   deleteUser,
