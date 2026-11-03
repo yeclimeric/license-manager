@@ -17,6 +17,14 @@ frontend/test
 # 本地开发配置（含数据库口令，不进 Git）
 backend/configs/config.local.yaml
 
+# RSA 密钥说明：
+# 仓库中的 backend/configs/rsa_private_key.pem / rsa_public_key.pem 是公开示例密钥，
+# 已被 Git 追踪（供开发与 CI 首次构建使用）。
+# 生产部署必须用 scripts/gen-rsa-keys.sh 重新生成专属密钥对；
+# scripts/deploy-prepare.sh 会自动为这两个文件设置 git skip-worktree，
+# 使 git pull 不会用仓库示例覆盖生产私钥、git commit 也不会误提交生产私钥。
+# 因此这里无需（也不能）再用 ignore 规则——对已追踪文件 ignore 不生效。
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
