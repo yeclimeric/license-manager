@@ -5,8 +5,13 @@
         <path d="M26.3125 11.4814L22.25 19.5947V22.7148L27.1191 13.0576L29.7393 18.1777L18.7988 40H0L13.5938 22.8037H14L13.8125 23.1201L7.46875 33.541H17.8438V16.9111L7.1875 25.6475L18.0312 10.1406L11.625 14.4463V14.2588L20.4375 0L26.3125 11.4814Z" fill="#019C7C"/>
         <path d="M34.5498 39.9996H28.75L24.5938 32.8864L27.125 27.6246L34.5498 39.9996ZM41 39.9996H36.2705L27.9346 25.941L30.7188 20.1559L41 39.9996Z" fill="#146B59"/>
       </svg>
-      <!-- 站点名称来自系统配置 system.site_name，由 appStore 提供 -->
-      <span v-if="!isCollapsed || appStore.isMobile" class="brand-name">{{ appStore.siteName }}</span>
+      <!-- 站点名称来自系统配置 system.site_name，由 appStore 提供；
+           字号按名称长度自适应，放不下时最多两行 -->
+      <span
+        v-if="!isCollapsed || appStore.isMobile"
+        class="brand-name"
+        :style="{ fontSize: brandFontSize + 'px' }"
+      >{{ appStore.siteName }}</span>
     </div>
     <nav class="sidebar__nav" :aria-label="t('navigation.mainNavigation')">
       <template v-for="entry in navItems" :key="entry.id">
@@ -111,6 +116,21 @@ const isGroupOpen = (id: string) => appStore.navOpenGroups[id] === true
 const toggleGroup = (id: string) => {
   appStore.toggleNavGroup(id)
 }
+
+// 品牌字号自适应：估算名称显示宽度（CJK/全角约 1em，其余约 0.6em），
+// 在一行可用宽度内取最大可容纳字号（26px 封顶、14px 保底）。
+// 14px 仍放不下时靠 CSS 两行截断（.brand-name line-clamp）兜底。
+const brandFontSize = computed(() => {
+  const name = appStore.siteName || 'Cedar-V'
+  const widthEm = Array.from(name).reduce(
+    (w, ch) => w + (ch.charCodeAt(0) > 0x2e7f ? 1 : 0.6),
+    0
+  )
+  // 可用文本宽度 = 侧边栏宽 - 左右内边距 - Logo - 间距；移动端抽屉更宽
+  const avail = appStore.isMobile ? 180 : 150
+  const size = Math.floor(avail / Math.max(widthEm, 1))
+  return Math.max(14, Math.min(26, size))
+})
 </script>
 
 <style lang="scss" scoped>
@@ -138,16 +158,20 @@ const toggleGroup = (id: string) => {
   border-bottom: 1px solid var(--app-border-light);
 }
 .brand-logo { width: 34px; height: 34px; flex-shrink: 0; }
-/* 站点名可配置且可能很长：允许收缩并截断，不撑破侧边栏 */
+/* 站点名可配置：字号由 brandFontSize 按长度自适应（内联样式），
+   最长两行，超出截断；不撑破侧边栏 */
 .brand-name {
   font-family: 'Swis721 BlkCn BT', sans-serif;
-  font-size: 26px;
   color: var(--app-text-primary);
-  white-space: nowrap;
+  line-height: 1.15;
+  white-space: normal;
+  word-break: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
   flex: 0 1 auto;
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 .sidebar__nav {
   flex: 1;
