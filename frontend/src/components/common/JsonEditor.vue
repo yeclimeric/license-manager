@@ -484,12 +484,12 @@ const emitUpdate = () => {
   background: var(--app-content-bg);
 }
 
-/* 树形编辑在左、JSON 预览在右，同行两栏；窄视口退化为上下堆叠 */
+/* 树形编辑在左、JSON 预览在右，同行两栏；预览随左侧行高撑满 */
 .json-editor-body {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 16px;
-  align-items: start;
+  align-items: stretch;
 }
 
 @media (max-width: 992px) {
@@ -507,6 +507,18 @@ const emitUpdate = () => {
 
 .json-preview {
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.json-preview .el-textarea {
+  flex: 1;
+  min-height: 0;
+}
+
+.json-preview :deep(.el-textarea__inner) {
+  height: 100%;
+  min-height: 100px;
 }
 
 .json-preview-label {
