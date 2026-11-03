@@ -499,7 +499,17 @@ onMounted(async () => {
 </script>
 
 <style scoped lang="scss">
-.filter-grid { grid-template-columns:minmax(200px,1.4fr) minmax(200px,1.2fr) minmax(0,1fr) auto; }
+/* 筛选条件一行显示：5 个控件 + 操作按钮共 6 项，
+   各列用 minmax(0,xfr) 可收缩轨道，窄视口仍不撑破工具栏 */
+.filter-grid {
+  grid-template-columns:
+    minmax(120px, 1.4fr)
+    minmax(120px, 1.2fr)
+    minmax(100px, 1fr)
+    minmax(110px, 1fr)
+    minmax(100px, 1fr)
+    auto;
+}
 
 .context-back { margin:0 0 6px; padding:0; display:inline-flex; align-items:center; gap:5px; border:0; background:transparent; color:#526a60; font:inherit; font-size:13px; cursor:pointer; }
 .context-back:hover { color:var(--el-color-primary); }
@@ -569,13 +579,5 @@ onMounted(async () => {
 }
 .list-empty-cell {
   color: var(--app-text-secondary);
-}
-
-.filter-control.product-filter {
-  min-width: 160px;
-}
-
-.filter-control.deployment-filter {
-  min-width: 140px;
 }
 </style>
