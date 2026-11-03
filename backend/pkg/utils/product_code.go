@@ -5,19 +5,20 @@ import (
 	"fmt"
 )
 
-// productCodePrefix 产品项编码前缀
-const productCodePrefix = "po_"
+// productCodePrefix 产品项编码前缀：统一大写连字符风格，与授权码 LIC- 一致
+const productCodePrefix = "PO-"
 
 // productCodeLength 随机部分长度
 const productCodeLength = 12
 
-// productCodeChars 随机字符集：小写字母 + 数字
-const productCodeChars = "abcdefghijklmnopqrstuvwxyz0123456789"
+// productCodeChars 随机字符集：小写字母 + 数字，
+// 已剔除易混淆字符 0/o/1/l/i，人工转述与工单录入不再有二义性
+const productCodeChars = "23456789abcdefghjkmnpqrstuvwxyz"
 
-// GenerateProductCode 生成产品项编码：po_ + 12位随机小写字母数字。
+// GenerateProductCode 生成产品项编码：PO- + 12位无混淆随机字符。
 //
 // 编码由系统生成而非用户填写，创建后不可更改（D4 决策）。使用随机而非递增序列，
-// 避免从编码推测业务量级；唯一的 po_ 前缀保证与授权码（LC-）在日志和工单中可区分。
+// 避免从编码推测业务量级；PO- 前缀保证与授权码（LIC-）在日志和工单中可区分。
 func GenerateProductCode() (string, error) {
 	randomStr, err := generateRandomFromCharset(productCodeLength, productCodeChars)
 	if err != nil {
@@ -38,7 +39,7 @@ func generateRandomFromCharset(length int, chars string) (string, error) {
 	return string(bytes), nil
 }
 
-// ValidateProductCodeFormat 校验产品项编码格式：po_ + 12位小写字母数字。
+// ValidateProductCodeFormat 校验产品项编码格式：PO- + 12位无混淆小写字符。
 //
 // 仅用于服务端防御性校验，正常编码一律由 GenerateProductCode 生成。
 func ValidateProductCodeFormat(code string) error {
@@ -50,7 +51,7 @@ func ValidateProductCodeFormat(code string) error {
 	}
 	for _, c := range code[len(productCodePrefix):] {
 		if !containsRune(productCodeChars, c) {
-			return fmt.Errorf("产品项编码只能包含小写字母和数字")
+			return fmt.Errorf("产品项编码只能包含无混淆的小写字母和数字（不含 0/o/1/l/i）")
 		}
 	}
 	return nil

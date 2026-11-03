@@ -45,15 +45,20 @@ func TestValidateProductCodeFormat(t *testing.T) {
 		code    string
 		wantErr bool
 	}{
-		{"合法编码", "po_a1b2c3d4e5f6", false},
-		{"合法编码全数字", "po_0123456789ab", false},
-		{"长度不足", "po_a1b2", true},
-		{"长度超长", "po_a1b2c3d4e5f6g7", true},
-		{"前缀错误", "xx_a1b2c3d4e5f6", true},
-		{"缺少前缀", "a1b2c3d4e5f6", true},
-		{"含大写字母", "po_A1b2c3d4e5f6", true},
-		{"含连字符", "po_a1b2-c3d4e5", true},
-		{"含下划线", "po_a1b2_c3d4e5", true},
+		{"合法编码", "PO-a2b3c4d5e6f7", false},
+		{"合法编码全数字", "PO-234567892345", false},
+		{"长度不足", "PO-a2b3", true},
+		{"长度超长", "PO-a2b3c4d5e6f7g8", true},
+		{"旧前缀po_已废弃", "po_a2b3c4d5e6f7", true},
+		{"前缀错误", "XX-a2b3c4d5e6f7", true},
+		{"缺少前缀", "a2b3c4d5e6f7", true},
+		{"含大写字母", "PO-A2b3c4d5e6f7", true},
+		{"含易混字符0", "PO-a2b3c4d5e6f0", true},
+		{"含易混字符o", "PO-a2b3c4d5e6fo", true},
+		{"含易混字符l", "PO-a2b3c4d5e6fl", true},
+		{"含易混字符i", "PO-a2b3c4d5e6fi", true},
+		{"含连字符", "PO-a2b3-c4d5e6f", true},
+		{"含下划线", "PO-a2b3_c4d5e6f", true},
 		{"空字符串", "", true},
 	}
 
