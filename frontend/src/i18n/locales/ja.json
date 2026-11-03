@@ -156,11 +156,6 @@
       "docs": "ドキュメントを開く",
       "github": "GitHub を開く"
     },
-    "external": {
-      "docs": "ドキュメント",
-      "github": "GitHub",
-      "cloud": "ライセンスクラウド"
-    },
     "breadcrumb": {
       "dashboard": "ダッシュボード",
       "customers": "顧客管理",

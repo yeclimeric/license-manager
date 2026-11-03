@@ -16,11 +16,6 @@
     </div>
 
     <div class="topbar__right">
-      <div class="external-links">
-        <button v-for="link in externalLinks" :key="link.key" type="button" class="text-button" @click="openExternal(link.url)">
-          {{ t(`navigation.external.${link.key}`) }}
-        </button>
-      </div>
       <el-dropdown trigger="click" @command="handleLanguageChange">
         <button type="button" class="language-button" :aria-label="t('navigation.tooltip.language')">
           <NavIcon name="language" class="language-icon" />
@@ -73,10 +68,6 @@ const userStore = useUserStore()
 const { breadcrumbs, navigateTo } = useBreadcrumb()
 const userInfo = computed(() => userStore.userInfo)
 const userInitial = computed(() => userInfo.value?.username?.charAt(0).toUpperCase() || '?')
-const externalLinks = [
-  { key: 'docs', url: 'https://docs.lm.cedar-v.com/' },
-  { key: 'cloud', url: 'https://cedar-v.com/products/cedar-license-cloud/index.html' }
-] as const
 const languageOptions: Array<{ code: SupportedLocale; label: string }> = [
   { code: 'zh', label: '中文' },
   { code: 'en', label: 'English' },
@@ -86,7 +77,6 @@ const currentLanguage = ref(locale.value as SupportedLocale)
 const currentLanguageLabel = computed(() => languageOptions.find(option => option.code === currentLanguage.value)?.label || '')
 watch(locale, value => { currentLanguage.value = value as SupportedLocale })
 
-const openExternal = (url: string) => window.open(url, '_blank', 'noopener,noreferrer')
 const handleLanguageChange = (lang: SupportedLocale) => {
   if (lang === currentLanguage.value) return
   changeLanguage(lang)
@@ -131,9 +121,6 @@ const handleUserCommand = async (command: string) => {
 .breadcrumb-link:hover { color:var(--el-color-primary); }
 .breadcrumb-current { color:#1f372e; font-size:13px; font-weight:650; overflow:hidden; text-overflow:ellipsis; }
 .breadcrumb-separator { color:var(--topbar-secondary); }
-.external-links { height:32px; padding-right:8px; display:flex; align-items:center; gap:2px; border-right:1px solid #dce8e3; }
-.text-button { height:32px; padding:0 10px; border-radius:2px; color:#3f554d; }
-.text-button:hover { color:#017c63; background:#edf7f3; }
 .language-button,.user-button { height:36px; padding:0 10px; gap:8px; border-radius:2px; }
 .language-button { margin-left:8px; gap:6px; color:#017c63; font-size:14px; line-height:20px; }
 .language-button:hover { color:#019c7c; }
@@ -147,10 +134,8 @@ const handleUserCommand = async (command: string) => {
 .user-summary span { color:var(--app-text-secondary); font-size:12px; }
 :global([data-theme="dark"]) .topbar { --topbar-text:#c1d0ca; --topbar-secondary:#93a69e; }
 :global([data-theme="dark"]) .breadcrumb-current { color:var(--app-text-primary); }
-:global([data-theme="dark"]) .external-links { border-color:var(--app-border-color); }
-:global([data-theme="dark"]) .text-button:hover,
 :global([data-theme="dark"]) .user-button:hover { background:rgba(1,156,124,.14); color:#79e2bf; }
 :global([data-theme="dark"]) .language-button { color:#79e2bf; }
-@media (min-width:768px) and (max-width:1023px) { .topbar,.topbar--collapsed { left:var(--layout-sidebar-collapsed-width); } .external-links { display:none; } }
-@media (max-width:767px) { .topbar,.topbar--collapsed { left:0; padding:0 12px; } .external-links,.language-button span,.language-chevron,.user-name { display:none; } .language-icon { display:inline-flex; } .language-button,.user-button { margin-left:2px; padding:0 7px; } .breadcrumb { max-width:48vw; } }
+@media (min-width:768px) and (max-width:1023px) { .topbar,.topbar--collapsed { left:var(--layout-sidebar-collapsed-width); } }
+@media (max-width:767px) { .topbar,.topbar--collapsed { left:0; padding:0 12px; } .language-button span,.language-chevron,.user-name { display:none; } .language-icon { display:inline-flex; } .language-button,.user-button { margin-left:2px; padding:0 7px; } .breadcrumb { max-width:48vw; } }
 </style>
