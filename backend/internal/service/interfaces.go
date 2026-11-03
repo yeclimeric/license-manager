@@ -154,6 +154,8 @@ type ProductOfferingService interface {
 	DeleteProductOffering(ctx context.Context, id string) error
 	// GetProductOfferingPublicKey 获取产品项公钥
 	GetProductOfferingPublicKey(ctx context.Context, id string) (*models.ProductOfferingPublicKeyResponse, error)
+	// RotateSigningKey 轮换产品项签名密钥
+	RotateSigningKey(ctx context.Context, id string, req *models.ProductOfferingRotateKeyRequest) (*models.ProductOfferingPublicKeyResponse, error)
 	// UpdateProductOfferingStatus 启用/停用产品项
 	UpdateProductOfferingStatus(ctx context.Context, id string, status string) (*models.ProductOfferingResponse, error)
 }
@@ -180,6 +182,8 @@ type LicenseService interface {
 	DeleteLicense(ctx context.Context, id string) error
 	GenerateLicenseFile(ctx context.Context, id string) ([]byte, string, string, error)
 	GetLicenseSigningPublicKey(ctx context.Context, id string) ([]byte, error)
+	// GetLicenseSigningKeyChain 返回该许可证所属产品项的完整签名密钥链
+	GetLicenseSigningKeyChain(ctx context.Context, id string) ([]models.SigningKeyChainEntry, error)
 
 	// 客户端激活和心跳接口
 	ActivateLicense(ctx context.Context, req *models.ActivateRequest, clientIP string) (*models.ActivateResponse, error)

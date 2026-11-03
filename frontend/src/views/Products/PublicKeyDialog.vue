@@ -27,11 +27,29 @@
 
     <div v-else-if="publicKey.public_key" class="pk-body">
       <pre class="pk-content">{{ publicKey.public_key }}</pre>
+
+      <el-alert
+        v-if="retiredCount > 0"
+        :title="t('products.publicKey.retiredCount', { count: retiredCount })"
+        type="warning"
+        show-icon
+        :closable="false"
+        class="pk-alert pk-alert-retired"
+      />
     </div>
 
     <template #footer>
       <el-button @click="handleVisibleChange(false)">
         {{ t('products.actions.confirm') }}
+      </el-button>
+      <el-button
+        v-if="publicKey.public_key"
+        type="warning"
+        plain
+        :loading="rotating"
+        @click="handleRotate"
+      >
+        {{ t('products.publicKey.rotate') }}
       </el-button>
       <el-button
         v-if="publicKey.public_key"
@@ -46,11 +64,15 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, watch } from 'vue'
-import { ElMessage } from 'element-plus'
+import { computed, reactive, ref, watch } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import { DocumentCopy } from '@element-plus/icons-vue'
-import { getProductOfferingPublicKey } from '@/api/productSigning'
+import {
+  getProductOfferingPublicKey,
+  rotateProductOfferingSigningKey,
+  type SigningKeyChainEntry
+} from '@/api/productSigning'
 import { getErrorMessage } from '@/utils/error'
 
 const props = defineProps<{
@@ -66,11 +88,17 @@ const { t } = useI18n()
 
 const loading = ref(false)
 const loaded = ref(false)
+const rotating = ref(false)
 const publicKey = reactive({
   product_id: '',
   product_code: '',
-  public_key: ''
+  public_key: '',
+  public_keys: [] as string[],
+  key_chain: [] as SigningKeyChainEntry[]
 })
+
+// 已退役的密钥数量：链上除当前签发密钥外的条目数
+const retiredCount = computed(() => publicKey.key_chain.length)
 
 const handleVisibleChange = (value: boolean) => {
   emit('update:visible', value)
@@ -90,6 +118,8 @@ watch(
     publicKey.product_id = ''
     publicKey.product_code = ''
     publicKey.public_key = ''
+    publicKey.public_keys = []
+    publicKey.key_chain = []
 
     try {
       const res = await getProductOfferingPublicKey(productId)
@@ -97,6 +127,8 @@ watch(
         publicKey.product_id = res.data.product_id
         publicKey.product_code = res.data.product_code
         publicKey.public_key = res.data.public_key || ''
+        publicKey.public_keys = res.data.public_keys || []
+        publicKey.key_chain = res.data.key_chain || []
       }
     } catch (error) {
       ElMessage.error(
@@ -109,6 +141,36 @@ watch(
   },
   { immediate: true }
 )
+
+const handleRotate = async () => {
+  try {
+    await ElMessageBox.confirm(
+      t('products.publicKey.rotateConfirm'),
+      t('products.publicKey.rotate'),
+      { type: 'warning', confirmButtonText: t('products.actions.confirm'), cancelButtonText: t('products.actions.cancel') }
+    )
+  } catch {
+    // 用户取消
+    return
+  }
+
+  rotating.value = true
+  try {
+    const res = await rotateProductOfferingSigningKey(props.productId)
+    if (res.data) {
+      publicKey.public_key = res.data.public_key || ''
+      publicKey.public_keys = res.data.public_keys || []
+      publicKey.key_chain = res.data.key_chain || []
+    }
+    ElMessage.success(t('products.publicKey.rotateSuccess'))
+  } catch (error) {
+    ElMessage.error(
+      getErrorMessage(error, t('products.message.updateFailed'))
+    )
+  } finally {
+    rotating.value = false
+  }
+}
 
 const copyPublicKey = async () => {
   try {
@@ -128,6 +190,11 @@ const copyPublicKey = async () => {
 
 .pk-body {
   margin-top: 12px;
+}
+
+.pk-alert-retired {
+  margin-top: 12px;
+  margin-bottom: 0;
 }
 
 .pk-code {

@@ -40,6 +40,14 @@ type ProductOffering struct {
 	SigningPrivateKey string `gorm:"type:text" json:"-"`
 	SigningPublicKey  string `gorm:"type:text" json:"-"`
 
+	// SigningKeyChain 签名密钥链（按时间正序，最后一条为当前签发密钥）。
+	//
+	// 密钥轮换后旧公钥不能丢弃：已发放的许可证是旧私钥签的，客户端仍需
+	// 旧公钥才能验签通过。链上每条记录携带「前任私钥对本条公钥的签名」，
+	// 客户端用已内置的根公钥逐级验证，即可把整条链纳入信任——
+	// 服务端轮换密钥时，离线客户端无需重新发版。
+	SigningKeyChain JSON `gorm:"type:json" json:"-" swaggertype:"object"`
+
 	CreatedAt time.Time      `gorm:"not null;index" json:"created_at"`
 	UpdatedAt time.Time      `gorm:"not null" json:"updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
@@ -141,6 +149,32 @@ type ProductOfferingPublicKeyResponse struct {
 	ProductID   string `json:"product_id"`   // 产品项ID
 	ProductCode string `json:"product_code"` // 产品项编码
 	PublicKey   string `json:"public_key"`   // PEM 格式公钥
+	// PublicKeys 全部有效公钥（当前 + 轮换留档）。
+	//
+	// 客户端可一次性获取全部公钥并内置，密钥轮换后无需重新发版客户端——
+	// 只要新公钥随激活/心跳响应下发即可。顺序：当前公钥在前。
+	PublicKeys []string `json:"public_keys,omitempty"`
+	// KeyChain 完整签名密钥链（含每级的衔接签名）。
+	//
+	// 客户端以内置的根公钥为锚逐级验证 Signature，即可把整条链纳入信任，
+	// 从而在离线场景下也支持密钥轮换。
+	KeyChain []SigningKeyChainEntry `json:"key_chain,omitempty"`
+}
+
+// SigningKeyChainEntry 签名密钥链条目
+//
+// Signature 为「前任私钥对本条公钥 PEM 的签名」，算法固定 RSA-PSS-SHA256。
+// 客户端以已内置的根公钥为锚，逐级验证 Signature 从而信任整条链。
+type SigningKeyChainEntry struct {
+	PublicKey string     `json:"public_key"`          // 本条公钥 PEM
+	Signature string     `json:"signature,omitempty"` // 前任私钥对本公钥的签名（base64）
+	RetiredAt *time.Time `json:"retired_at,omitempty"` // 退役时间；当前签发密钥为 nil
+	Reason    string     `json:"reason,omitempty"`     // 轮换原因
+}
+
+// ProductOfferingRotateKeyRequest 轮换产品项签名密钥请求
+type ProductOfferingRotateKeyRequest struct {
+	Reason string `json:"reason" binding:"omitempty,max=200"` // 轮换原因（留档用）
 }
 
 // ListResponse 分页响应

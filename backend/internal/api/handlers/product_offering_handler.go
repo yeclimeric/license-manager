@@ -236,6 +236,42 @@ func (h *ProductOfferingHandler) GetProductOfferingPublicKey(c *gin.Context) {
 	respondSuccess(c, data)
 }
 
+// RotateProductOfferingSigningKey 轮换产品项签名密钥
+// @Summary 轮换产品签名密钥
+// @Description 生成新密钥对作为当前签发密钥，旧公钥留档以便客户端继续验签已发放的许可证
+// @Tags 产品项管理
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path string true "产品项ID"
+// @Param request body models.ProductOfferingRotateKeyRequest false "轮换参数"
+// @Success 200 {object} models.APIResponse{data=models.ProductOfferingPublicKeyResponse} "轮换成功"
+// @Failure 400 {object} models.ErrorResponse "请求参数无效"
+// @Failure 401 {object} models.ErrorResponse "未认证"
+// @Failure 404 {object} models.ErrorResponse "产品项不存在"
+// @Failure 500 {object} models.ErrorResponse "服务器内部错误"
+// @Router /api/v1/product-offerings/{id}/rotate-signing-key [post]
+func (h *ProductOfferingHandler) RotateProductOfferingSigningKey(c *gin.Context) {
+	id := c.Param("id")
+	if id == "" {
+		respondErrorWithCode(c, "900001")
+		return
+	}
+
+	var req models.ProductOfferingRotateKeyRequest
+	_ = c.ShouldBindJSON(&req)
+
+	ctx := middleware.WithLanguage(c.Request.Context(), c)
+
+	data, err := h.productOfferingService.RotateSigningKey(ctx, id, &req)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondSuccess(c, data)
+}
+
 // DeleteProductOffering 删除产品项
 // @Summary 删除产品项
 // @Description 删除产品项，产品项下存在授权码时不可删除

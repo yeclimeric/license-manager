@@ -3,6 +3,7 @@ package handlers
 import (
 	"archive/zip"
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -443,6 +444,20 @@ func (h *LicenseHandler) DownloadLicenseFile(c *gin.Context) {
 			Timestamp: time.Now().Format(time.RFC3339),
 		})
 		return
+	}
+
+	// 密钥链随包下发：离线客户端凭内置根公钥逐级验证即可把轮换后的新公钥
+	// 纳入信任，服务端轮换密钥无需重新发版客户端。
+	keyChain, err := h.licenseService.GetLicenseSigningKeyChain(ctx, id)
+	if err == nil && len(keyChain) > 0 {
+		chainData, marshalErr := json.Marshal(keyChain)
+		if marshalErr == nil {
+			const zipKeyChainFileName = "keychain.json"
+			chainWriter, createErr := zipWriter.Create(zipKeyChainFileName)
+			if createErr == nil {
+				_, _ = chainWriter.Write(chainData)
+			}
+		}
 	}
 
 	if err := zipWriter.Close(); err != nil {

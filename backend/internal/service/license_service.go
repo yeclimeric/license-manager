@@ -488,6 +488,8 @@ func (s *licenseService) ActivateLicense(ctx context.Context, req *models.Activa
 				LicenseFile:       licenseFile,
 				HeartbeatInterval: 300, // 5分钟
 				PublicKey:         s.productPublicKey(authCode),
+				PublicKeys:        s.productPublicKeys(authCode),
+				KeyChain:          s.productKeyChain(authCode),
 			}
 			return nil
 		} else if err != gorm.ErrRecordNotFound {
@@ -540,6 +542,8 @@ func (s *licenseService) ActivateLicense(ctx context.Context, req *models.Activa
 			LicenseFile:       licenseFile,
 			HeartbeatInterval: 300,
 			PublicKey:         s.productPublicKey(authCode),
+			PublicKeys:        s.productPublicKeys(authCode),
+			KeyChain:          s.productKeyChain(authCode),
 		}
 		return nil
 	})
@@ -637,6 +641,10 @@ func (s *licenseService) Heartbeat(ctx context.Context, req *models.HeartbeatReq
 		ConfigUpdated:     configUpdated,
 		LicenseFile:       licenseFile,
 		HeartbeatInterval: 300,
+		// 心跳顺带下发公钥集合与密钥链：密钥轮换后客户端在此获得新公钥，
+		// 无需重新发版客户端即可继续验签。
+		PublicKeys: s.productPublicKeys(license.AuthorizationCode),
+		KeyChain:   s.productKeyChain(license.AuthorizationCode),
 	}
 
 	return response, nil
@@ -751,6 +759,32 @@ func (s *licenseService) GetLicenseSigningPublicKey(ctx context.Context, id stri
 	return os.ReadFile(filepath.Clean(cfg.License.RSA.PublicKeyPath))
 }
 
+// GetLicenseSigningKeyChain 返回该许可证所属产品项的完整签名密钥链
+//
+// 离线客户端拿到链后，可凭内置的根公钥逐级验证衔接签名，把轮换后的新公钥
+// 纳入信任——服务端轮换密钥后，离线客户端无需重新发版。
+func (s *licenseService) GetLicenseSigningKeyChain(ctx context.Context, id string) ([]models.SigningKeyChainEntry, error) {
+	if id == "" {
+		return nil, fmt.Errorf("license id is empty")
+	}
+
+	license, err := s.licenseRepo.GetLicenseByID(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("查询许可证失败: %w", err)
+	}
+
+	if s.productRepo == nil || license.AuthorizationCode == nil ||
+		license.AuthorizationCode.ProductOfferingID == nil || *license.AuthorizationCode.ProductOfferingID == "" {
+		return nil, nil
+	}
+
+	offering, err := s.productRepo.GetProductOfferingByID(ctx, *license.AuthorizationCode.ProductOfferingID)
+	if err != nil {
+		return nil, nil
+	}
+	return ParseSigningKeyChain(offering.SigningKeyChain), nil
+}
+
 // signLicenseFile 使用RSA数字签名许可证文件
 //
 // 优先使用授权码所关联产品项的私钥：客户端只需内嵌对应产品的公钥，
@@ -809,6 +843,38 @@ func (s *licenseService) productPublicKey(authCode *models.AuthorizationCode) st
 		return ""
 	}
 	return offering.SigningPublicKey
+}
+
+// productPublicKeys 返回授权码所属产品项的全部有效公钥（当前 + 轮换留档）
+//
+// 客户端按顺序逐一尝试验签，任一通过即视为可信。密钥轮换后客户端无需
+// 重新发版：随激活/心跳响应下发新公钥即可。
+func (s *licenseService) productPublicKeys(authCode *models.AuthorizationCode) []string {
+	if s.productRepo == nil || authCode == nil ||
+		authCode.ProductOfferingID == nil || *authCode.ProductOfferingID == "" {
+		return nil
+	}
+	offering, err := s.productRepo.GetProductOfferingByID(context.Background(), *authCode.ProductOfferingID)
+	if err != nil {
+		return nil
+	}
+	return CollectSigningPublicKeys(offering)
+}
+
+// productKeyChain 返回授权码所属产品项的完整签名密钥链
+//
+// 链上每级带前任私钥的衔接签名，客户端可凭内置根公钥逐级验证，
+// 把整条链纳入信任——离线场景下也支持密钥轮换。
+func (s *licenseService) productKeyChain(authCode *models.AuthorizationCode) []models.SigningKeyChainEntry {
+	if s.productRepo == nil || authCode == nil ||
+		authCode.ProductOfferingID == nil || *authCode.ProductOfferingID == "" {
+		return nil
+	}
+	offering, err := s.productRepo.GetProductOfferingByID(context.Background(), *authCode.ProductOfferingID)
+	if err != nil {
+		return nil
+	}
+	return ParseSigningKeyChain(offering.SigningKeyChain)
 }
 
 // parseJSONField 将数据库中的 JSON 字段解析为 map，兼容被字符串包裹的情况

@@ -164,6 +164,22 @@ func (r *productOfferingRepository) UpdateProductOffering(ctx context.Context, o
 	return nil
 }
 
+// UpdateSigningKeys 更新产品项签名密钥
+//
+// 单独提供而非复用 UpdateProductOffering：后者用 Select 白名单限定可更新字段
+// （防误改 code），签名密钥不在该白名单内；密钥轮换需显式调用本方法。
+func (r *productOfferingRepository) UpdateSigningKeys(ctx context.Context, offering *models.ProductOffering) error {
+	err := r.db.WithContext(ctx).
+		Model(&models.ProductOffering{}).
+		Where("id = ?", offering.ID).
+		Select("signing_private_key", "signing_public_key", "signing_key_chain", "updated_at").
+		Updates(offering).Error
+	if err != nil {
+		return fmt.Errorf("failed to update signing keys: %w", err)
+	}
+	return nil
+}
+
 // DeleteProductOffering 删除产品项
 //
 // 若产品项下仍有授权码则拒绝删除，避免授权码成为孤儿。

@@ -133,6 +133,7 @@ func SetupRouter() *gin.Engine {
 			auth.POST("/v1/product-offerings", middleware.RequirePermission("product_offering:create", permChecker), productOfferingHandler.CreateProductOffering)
 			auth.GET("/v1/product-offerings/:id", productOfferingHandler.GetProductOffering)
 			auth.GET("/v1/product-offerings/:id/public-key", productOfferingHandler.GetProductOfferingPublicKey)
+			auth.POST("/v1/product-offerings/:id/rotate-signing-key", middleware.RequirePermission("product_offering:update", permChecker), productOfferingHandler.RotateProductOfferingSigningKey)
 			auth.PUT("/v1/product-offerings/:id", productOfferingHandler.UpdateProductOffering)
 			auth.DELETE("/v1/product-offerings/:id", productOfferingHandler.DeleteProductOffering)
 			auth.PATCH("/v1/product-offerings/:id/status", productOfferingHandler.UpdateProductOfferingStatus)

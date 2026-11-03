@@ -1077,7 +1077,11 @@
       "empty": "This product has no signing key yet",
       "copy": "Copy",
       "copied": "Copied",
-      "notice": "Clients embed this public key to verify license signatures."
+      "notice": "Clients embed this public key to verify license signatures.",
+      "rotate": "Rotate key",
+      "rotateConfirm": "Rotation generates a new signing key pair; the old public key is archived and vouches for the new one, so already issued licenses still verify. Continue?",
+      "rotateSuccess": "Signing key rotated",
+      "retiredCount": "This product has been rotated {count} time(s); archived public keys are kept for verifying older licenses."
     }
   },
   "featureTemplates": {

@@ -93,6 +93,9 @@ type ProductOfferingRepository interface {
 	// UpdateProductOffering 更新产品项，编码不可更改
 	UpdateProductOffering(ctx context.Context, offering *models.ProductOffering) error
 
+	// UpdateSigningKeys 更新产品项签名密钥（轮换用）
+	UpdateSigningKeys(ctx context.Context, offering *models.ProductOffering) error
+
 	// DeleteProductOffering 删除产品项，存在授权码时拒绝
 	DeleteProductOffering(ctx context.Context, id string) error
 

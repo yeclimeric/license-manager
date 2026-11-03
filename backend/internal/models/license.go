@@ -153,6 +153,15 @@ type ActivateResponse struct {
 	// PublicKey 产品签名公钥，客户端据此验证 license_file 签名。
 	// 随产品项分发，客户端无需内置即可完成验签。
 	PublicKey string `json:"public_key,omitempty"`
+	// PublicKeys 全部有效公钥（当前 + 轮换留档）。
+	//
+	// 客户端按顺序逐一尝试验签，任一通过即视为可信。密钥轮换后经此下发
+	// 新公钥，客户端无需重新发版。
+	PublicKeys []string `json:"public_keys,omitempty"`
+	// KeyChain 完整签名密钥链（含每级衔接签名）。
+	//
+	// 客户端以内置根公钥为锚逐级验证，即可把整条链纳入信任。
+	KeyChain []SigningKeyChainEntry `json:"key_chain,omitempty"`
 }
 
 // HeartbeatRequest 心跳检测请求结构
@@ -166,10 +175,14 @@ type HeartbeatRequest struct {
 
 // HeartbeatResponse 心跳检测响应结构
 type HeartbeatResponse struct {
-	Status            string  `json:"status"`             // 许可证状态
-	ConfigUpdated     bool    `json:"config_updated"`     // 配置是否有更新
-	LicenseFile       *string `json:"license_file"`       // base64编码的新许可证文件(如有更新)
-	HeartbeatInterval int     `json:"heartbeat_interval"` // 下次心跳间隔(秒)
+	Status            string   `json:"status"`             // 许可证状态
+	ConfigUpdated     bool     `json:"config_updated"`     // 配置是否有更新
+	LicenseFile       *string  `json:"license_file"`       // base64编码的新许可证文件(如有更新)
+	HeartbeatInterval int      `json:"heartbeat_interval"` // 下次心跳间隔(秒)
+	// PublicKeys 全部有效公钥（当前 + 轮换留档），供客户端更新信任库。
+	PublicKeys []string `json:"public_keys,omitempty"`
+	// KeyChain 完整签名密钥链（含每级衔接签名），供客户端更新信任库。
+	KeyChain []SigningKeyChainEntry `json:"key_chain,omitempty"`
 }
 
 // StatsOverviewResponse stats overview API response
