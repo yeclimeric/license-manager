@@ -5,6 +5,10 @@ import { DeviceType } from '@/utils/useDevice'
 export const useAppStore = defineStore('app', () => {
   // 状态
   const sidebarCollapsed = ref(false)
+  // 侧边栏分组展开状态（key 为菜单 id）。
+  // 必须放在 store：Layout 随页面组件在每次路由切换时重建，
+  // 组件局部状态会丢失，导致展开的分组跳转后自动折叠。
+  const navOpenGroups = ref<Record<string, boolean>>({})
   const deviceType = ref<DeviceType>(DeviceType.Desktop)
   const screenWidth = ref(window.innerWidth)
   const screenHeight = ref(window.innerHeight)
@@ -43,6 +47,14 @@ export const useAppStore = defineStore('app', () => {
 
   const setSidebarCollapsed = (collapsed: boolean) => {
     sidebarCollapsed.value = collapsed
+  }
+
+  const toggleNavGroup = (id: string) => {
+    navOpenGroups.value = { ...navOpenGroups.value, [id]: navOpenGroups.value[id] !== true }
+  }
+
+  const setNavGroupOpen = (id: string, open: boolean) => {
+    navOpenGroups.value = { ...navOpenGroups.value, [id]: open }
   }
 
   const setDeviceInfo = (info: {
@@ -113,6 +125,7 @@ export const useAppStore = defineStore('app', () => {
   return {
     // 状态
     sidebarCollapsed,
+    navOpenGroups,
     deviceType,
     screenWidth,
     screenHeight,
@@ -131,6 +144,8 @@ export const useAppStore = defineStore('app', () => {
     // 操作
     toggleSidebar,
     setSidebarCollapsed,
+    toggleNavGroup,
+    setNavGroupOpen,
     setDeviceInfo,
     setMobile,
     setTheme,
