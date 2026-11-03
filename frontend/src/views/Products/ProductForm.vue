@@ -141,40 +141,31 @@
             </el-form>
           </section>
 
-          <!-- 步骤 3：高级配置（可选） -->
+          <!-- 步骤 3：高级配置（可选）—— 可视化键值编辑，不再手写 JSON -->
           <section v-show="currentStep === 2" class="wizard-section">
             <h2 class="wizard-section__title">{{ t('products.form.advancedConfig') }}</h2>
             <p class="wizard-section__desc">{{ t('products.form.stepAdvancedDesc') }}</p>
 
             <el-form label-width="140px">
               <el-form-item :label="t('products.form.featureConfig')">
-                <el-input
-                  v-model="advancedForm.feature_config"
-                  type="textarea"
-                  :rows="4"
-                  :placeholder="t('products.form.featureConfigHint')"
-                />
-                <div class="wizard-hint">{{ t('products.form.featureConfigHint') }}</div>
+                <div class="wizard-json-field">
+                  <JsonEditor ref="featureEditor" v-model="featureConfig" />
+                  <div class="wizard-hint">{{ t('products.form.featureConfigHint') }}</div>
+                </div>
               </el-form-item>
 
               <el-form-item :label="t('products.form.usageLimits')">
-                <el-input
-                  v-model="advancedForm.usage_limits"
-                  type="textarea"
-                  :rows="4"
-                  :placeholder="t('products.form.usageLimitsHint')"
-                />
-                <div class="wizard-hint">{{ t('products.form.usageLimitsHint') }}</div>
+                <div class="wizard-json-field">
+                  <JsonEditor ref="limitEditor" v-model="usageLimits" />
+                  <div class="wizard-hint">{{ t('products.form.usageLimitsHint') }}</div>
+                </div>
               </el-form-item>
 
               <el-form-item :label="t('products.form.customParameters')">
-                <el-input
-                  v-model="advancedForm.custom_parameters"
-                  type="textarea"
-                  :rows="4"
-                  :placeholder="t('products.form.customParametersHint')"
-                />
-                <div class="wizard-hint">{{ t('products.form.customParametersHint') }}</div>
+                <div class="wizard-json-field">
+                  <JsonEditor ref="parameterEditor" v-model="customParameters" />
+                  <div class="wizard-hint">{{ t('products.form.customParametersHint') }}</div>
+                </div>
               </el-form-item>
             </el-form>
           </section>
@@ -205,6 +196,7 @@ import { useI18n } from 'vue-i18n'
 import { Lock } from '@element-plus/icons-vue'
 import SubpageHeader from '@/components/common/SubpageHeader.vue'
 import FormActionBar from '@/components/common/FormActionBar.vue'
+import JsonEditor from '@/components/common/JsonEditor.vue'
 import {
   createProductOffering,
   getProductOfferingDetail,
@@ -251,11 +243,16 @@ const policyForm = reactive({
   trial_days: 15 as number | undefined
 })
 
-const advancedForm = reactive({
-  feature_config: '',
-  usage_limits: '',
-  custom_parameters: ''
-})
+// 高级配置：可视化键值编辑（JsonEditor），对象即数据，不再手写 JSON 字符串
+const featureEditor = ref<InstanceType<typeof JsonEditor>>()
+const limitEditor = ref<InstanceType<typeof JsonEditor>>()
+const parameterEditor = ref<InstanceType<typeof JsonEditor>>()
+const featureConfig = ref<Record<string, any> | null>(null)
+const usageLimits = ref<Record<string, any> | null>(null)
+const customParameters = ref<Record<string, any> | null>(null)
+
+const editorsAreValid = () => [featureEditor, limitEditor, parameterEditor]
+  .every(editor => editor.value?.validate() ?? true)
 
 const steps = computed(() => [
   { key: 'basic', label: t('products.form.stepBasic') },
@@ -317,27 +314,16 @@ const loadProduct = async () => {
     generatedCode.value = p.code
     policyForm.max_activations = p.max_activations ?? 1
     policyForm.duration_days = p.duration_days ?? 365
-    policyForm.deployment_mode = p.deployment_mode || 'online'
+    policyForm.deployment_mode = p.deployment_mode || 'hybrid'
     policyForm.is_trial_product = p.is_trial_product
     policyForm.trial_days = p.trial_days ?? 15
-    advancedForm.feature_config = JSON.stringify(p.feature_config || {}, null, 2)
-    advancedForm.usage_limits = JSON.stringify(p.usage_limits || {}, null, 2)
-    advancedForm.custom_parameters = JSON.stringify(p.custom_parameters || {}, null, 2)
+    featureConfig.value = p.feature_config || null
+    usageLimits.value = p.usage_limits || null
+    customParameters.value = p.custom_parameters || null
   } catch (error) {
     loadError.value = getErrorMessage(error, t('products.message.detailFailed'))
   } finally {
     loading.value = false
-  }
-}
-
-// 解析 JSON 文本，空串返回 undefined 以便后端保留原值
-const parseJsonField = (raw: string): Record<string, any> | undefined => {
-  const text = raw.trim()
-  if (!text) return undefined
-  try {
-    return JSON.parse(text)
-  } catch {
-    throw new Error(t('products.validation.jsonInvalid'))
   }
 }
 
@@ -365,16 +351,9 @@ const handleSave = async () => {
     currentStep.value = 1
     return
   }
-
-  let featureConfig: Record<string, any> | undefined
-  let usageLimits: Record<string, any> | undefined
-  let customParameters: Record<string, any> | undefined
-  try {
-    featureConfig = parseJsonField(advancedForm.feature_config)
-    usageLimits = parseJsonField(advancedForm.usage_limits)
-    customParameters = parseJsonField(advancedForm.custom_parameters)
-  } catch (error) {
-    ElMessage.error((error as Error).message)
+  if (!editorsAreValid()) {
+    currentStep.value = 2
+    ElMessage.error(t('products.validation.jsonInvalid'))
     return
   }
 
@@ -391,9 +370,9 @@ const handleSave = async () => {
         deployment_mode: policyForm.deployment_mode,
         is_trial_product: policyForm.is_trial_product,
         trial_days: policyForm.is_trial_product ? policyForm.trial_days : undefined,
-        feature_config: featureConfig,
-        usage_limits: usageLimits,
-        custom_parameters: customParameters
+        feature_config: featureConfig.value || undefined,
+        usage_limits: usageLimits.value || undefined,
+        custom_parameters: customParameters.value || undefined
       }
       await updateProductOffering(props.productId, payload)
       ElMessage.success(t('products.message.updated'))
@@ -407,9 +386,9 @@ const handleSave = async () => {
         deployment_mode: policyForm.deployment_mode,
         is_trial_product: policyForm.is_trial_product,
         trial_days: policyForm.is_trial_product ? policyForm.trial_days : undefined,
-        feature_config: featureConfig,
-        usage_limits: usageLimits,
-        custom_parameters: customParameters
+        feature_config: featureConfig.value || undefined,
+        usage_limits: usageLimits.value || undefined,
+        custom_parameters: customParameters.value || undefined
       }
       await createProductOffering(payload)
       ElMessage.success(t('products.message.created'))
@@ -525,6 +504,11 @@ onMounted(loadProduct)
 
 .wizard-alert {
   margin-bottom: 16px;
+}
+
+/* JsonEditor 占满表单项内容区 */
+.wizard-json-field {
+  width: 100%;
 }
 
 :deep(.el-form-item) {
