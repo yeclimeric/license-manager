@@ -16,7 +16,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 # 配置选择：命令行参数优先，其次环境变量，最后 dev
-CONFIG_FILE="${1:-${LM_CONFIG:-config.dev.yaml}}"
+CONFIG_FILE="${1:-${LM_CONFIG:-config.local.yaml}}"
 CONFIG_PATH="$ROOT_DIR/backend/configs/$CONFIG_FILE"
 
 if [ ! -f "$CONFIG_PATH" ]; then
