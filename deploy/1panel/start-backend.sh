@@ -37,6 +37,21 @@ fi
 cd "$PROJECT_ROOT"
 echo "[start] 项目根: $PROJECT_ROOT"
 
+# ---- 1.5 运行时诊断信息 ----
+# 打印容器内关键路径，便于排查「缓存目录没有内容」「日志不刷新」这类问题。
+echo "[start] ---- 运行环境诊断 ----"
+echo "[start] 容器内工作目录(启动时): $(pwd)"
+echo "[start] 源码是否挂载: $([ -f backend/go.mod ] && echo '是 (/app 为 CODE_DIR 挂载点)' || echo '否')"
+if [ -d /go/pkg/mod ]; then
+  echo "[start] 官方 mod 缓存挂载点: /go/pkg/mod ($(du -sh /go/pkg/mod 2>/dev/null | cut -f1))"
+else
+  echo "[start] 官方 mod 缓存挂载点: /go/pkg/mod (不存在)"
+fi
+echo "[start] 项目内 .cache: $([ -d .cache ] && du -sh .cache 2>/dev/null | cut -f1 || echo '不存在')"
+echo "[start] 预编译产物: $([ -x bin/license-manager ] && ls -lh bin/license-manager | awk '{print $5}' || echo '不存在')"
+echo "[start] 启动时间: $(date '+%Y-%m-%d %H:%M:%S')"
+echo "[start] ------------------------"
+
 # ---- 2. 环境变量兜底（1panel 表单未填时给出明确提示）----
 # 敏感配置通过环境变量注入，覆盖 config 文件中的占位值：
 #   DATABASE_PASSWORD -> database.password
@@ -59,17 +74,30 @@ if [ ! -f "$CONFIG_FILE" ]; then
 fi
 
 # ---- 4. 准备可执行文件（优先用预编译产物，缺失时现场编译）----
-# Go 缓存目录重定向到项目内的 .cache/：
-#   容器可写层（如 /root/go/pkg/mod、/root/.cache/go-build）在容器重建后会丢失，
-#   重定向到【挂载目录】后可跨容器重建保留，避免每次重启都重新下载依赖。
-#   宿主机预编译时无需本机制（不产生缓存）。
-CACHE_DIR="$PROJECT_ROOT/.cache"
+# Go 缓存说明（依据 1panel 官方 Go 运行环境模板 apps/go/<版本>/docker-compose.yml）：
+#   官方已持久化挂载 mod 缓存：  ./mod:/go/pkg/mod
+#   即容器内 /go/pkg/mod 映射到运行环境目录下的 mod/，随运行环境持久化，容器重建不丢。
+#   因此【不要】改写 GOMODCACHE——那会绕开官方已挂载的持久目录，造成两份 mod 缓存。
+#   只有编译缓存 GOCACHE 默认在容器可写层（/root/.cache/go-build），重建后会丢，
+#   故把它指向项目内 .cache/build（项目目录是挂载目录，同样持久）。
 if command -v go >/dev/null 2>&1; then
-  mkdir -p "$CACHE_DIR/mod" "$CACHE_DIR/build"
-  GOMODCACHE="$CACHE_DIR/mod"
-  GOCACHE="$CACHE_DIR/build"
-  export GOMODCACHE GOCACHE
-  echo "[start] Go 缓存目录: ${CACHE_DIR} (mod + build, 跨容器重建保留)"
+  BUILD_CACHE_DIR="$PROJECT_ROOT/.cache/build"
+  if mkdir -p "$BUILD_CACHE_DIR" 2>/dev/null; then
+    GOCACHE="$BUILD_CACHE_DIR"
+    export GOCACHE
+    echo "[start] Go 编译缓存: ${BUILD_CACHE_DIR} (持久化)"
+  else
+    echo "[start] 提示: 无法创建 ${BUILD_CACHE_DIR}，编译缓存将写入容器可写层（重建后失效）"
+  fi
+  # GOMODCACHE 保持官方挂载位置，不覆盖
+  echo "[start] Go 依赖缓存: $(go env GOMODCACHE) (官方挂载，持久化)"
+
+  # 国内服务器直连 proxy.golang.org 常常很慢或超时，优先用 goproxy.cn
+  # （用户已在 1panel 环境变量中设置 GOPROXY 时不覆盖）
+  if [ -z "${GOPROXY:-}" ]; then
+    export GOPROXY="https://goproxy.cn,direct"
+    echo "[start] GOPROXY: ${GOPROXY} (国内加速，可在环境变量中覆盖)"
+  fi
 fi
 
 BIN="$PROJECT_ROOT/bin/license-manager"
@@ -77,10 +105,17 @@ if [ -x "$BIN" ]; then
   echo "[start] 使用已有可执行文件: $BIN"
 elif command -v go >/dev/null 2>&1; then
   echo "[start] 未找到预编译产物，开始编译（首次需下载依赖，约 1-3 分钟）..."
+  echo "[start] 依赖缓存目录: $(go env GOMODCACHE)"
   # 先单独下载依赖：便于区分「网络问题」与「编译问题」，也便于失败时单独重试
-  (cd "$PROJECT_ROOT/backend" && go mod download)
+  if ! (cd "$PROJECT_ROOT/backend" && go mod download); then
+    echo "[start] 错误: 依赖下载失败。若为网络问题，可设置环境变量 GOPROXY=https://goproxy.cn,direct" >&2
+    exit 1
+  fi
   echo "[start] 依赖下载完成，开始编译 ..."
-  (cd "$PROJECT_ROOT/backend" && go build -o "$BIN" cmd/main.go)
+  if ! (cd "$PROJECT_ROOT/backend" && go build -o "$BIN" cmd/main.go); then
+    echo "[start] 错误: 编译失败" >&2
+    exit 1
+  fi
   echo "[start] 编译完成: $BIN"
 else
   echo "[start] 错误: 无可执行文件且容器内无 go 工具链" >&2
