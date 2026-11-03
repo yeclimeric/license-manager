@@ -26,6 +26,7 @@ import { useAppStore } from '@/store/modules/app'
 import Sidebar from './Sidebar.vue'
 import NavContent from './NavContent.vue'
 import { getUserMenus } from '@/api/rbac'
+import { getPublicConfig } from '@/api/systemConfig'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -165,8 +166,20 @@ const loadMenus = async () => {
   }
 }
 
+// 站点名称来自系统配置 system.site_name（公开接口，未认证也可读）。
+// 供侧边栏品牌位展示；失败时保持 store 内置品牌。
+const loadSiteName = async () => {
+  try {
+    const res = await getPublicConfig()
+    appStore.setSiteName(res.data?.['system.site_name'] || '')
+  } catch {
+    // 保持内置品牌
+  }
+}
+
 onMounted(() => {
   loadMenus()
+  loadSiteName()
 })
 
 const closeMobileSidebar = () => appStore.setSidebarCollapsed(true)
