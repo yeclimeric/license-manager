@@ -78,7 +78,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 import { ArrowDown } from '@element-plus/icons-vue'
 import { useI18n } from 'vue-i18n'
 import { useAppStore } from '@/store/modules/app'
@@ -94,33 +94,18 @@ interface NavItem {
   children?: NavItem[]
 }
 
-const props = defineProps<{ navItems: NavItem[] }>()
+defineProps<{ navItems: NavItem[] }>()
 defineEmits<{ navClick: [item: NavItem, event: Event] }>()
 const { t } = useI18n()
 const appStore = useAppStore()
 const isCollapsed = computed(() => appStore.sidebarCollapsed)
 const isMobileOpen = computed(() => appStore.isMobile && !appStore.sidebarCollapsed)
 
-// 分组展开状态。默认展开：子菜单少时常驻可见，少一次点击。
+// 分组展开状态。默认全部折叠，由用户点击分组标题手动展开；
+// 路由变化不强制展开，保持用户上次的展开/折叠状态。
 const openGroups = ref<Record<string, boolean>>({})
 
-const isGroupOpen = (id: string) => openGroups.value[id] !== false
-
-// 当前路由所在分组始终展开，否则子菜单不可见
-watch(
-  () => props.navItems,
-  (items) => {
-    const next: Record<string, boolean> = { ...openGroups.value }
-    items.forEach((item) => {
-      if (!item.children?.length) return
-      const active = item.children.some((child) => child.active)
-      next[item.id] = next[item.id] ?? true
-      if (active) next[item.id] = true
-    })
-    openGroups.value = next
-  },
-  { immediate: true, deep: true }
-)
+const isGroupOpen = (id: string) => openGroups.value[id] === true
 
 const toggleGroup = (id: string) => {
   openGroups.value = { ...openGroups.value, [id]: !isGroupOpen(id) }
@@ -211,45 +196,50 @@ const toggleGroup = (id: string) => {
   .sidebar__brand { justify-content: flex-start; }
   .sidebar--collapsed .nav-item { justify-content: flex-start; padding: 0 14px; }
 }
-/* 分组标题是目录名，不是可点击项。
-   缩进与菜单项左侧对齐（同样 15px），否则比子项还浅，看上去像错了一级；
-   字号沿用菜单项的 13px，11px 太小。uppercase 对中文无效却会让英文菜单名变形，故去掉。 */
+/* 分组标题（产品管理/系统管理等带子菜单的目录项）。
+   行高、内边距、图标-文字间距与 .nav-item 完全一致，保证文字纵向对齐。
+   注意：此处不能用 SCSS 的 &__label 嵌套写法——那会编译成
+   .nav-group__title__label，与模板里的 nav-group__label 对不上，
+   flex:1 失效后 space-between 会把文字挤到中间（历史 bug）。 */
 .nav-group__title {
   width: 100%;
-  min-height: 40px;
+  min-height: 48px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 8px 15px 4px;
+  gap: 13px;
+  padding: 0 15px;
   background: none;
   border: none;
   cursor: pointer;
+  text-align: left;
+  font-family: inherit;
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 500;
+  line-height: 1;
   letter-spacing: normal;
   color: var(--app-text-secondary);
 
   &:hover {
     color: var(--app-text-primary);
   }
+}
 
-  &__label {
-    /* 占满图标与文字之间的剩余宽度，把箭头推到最右 */
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
+/* 占满图标与文字之间的剩余宽度，把箭头推到最右 */
+.nav-group__label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
-  &__arrow {
-    font-size: 12px;
-    transition: transform 0.2s ease;
+.nav-group__arrow {
+  font-size: 12px;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
 
-    &.is-open {
-      transform: rotate(180deg);
-    }
+  &.is-open {
+    transform: rotate(180deg);
   }
 }
 
