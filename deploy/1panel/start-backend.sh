@@ -59,11 +59,27 @@ if [ ! -f "$CONFIG_FILE" ]; then
 fi
 
 # ---- 4. 准备可执行文件（优先用预编译产物，缺失时现场编译）----
+# Go 缓存目录重定向到项目内的 .cache/：
+#   容器可写层（如 /root/go/pkg/mod、/root/.cache/go-build）在容器重建后会丢失，
+#   重定向到【挂载目录】后可跨容器重建保留，避免每次重启都重新下载依赖。
+#   宿主机预编译时无需本机制（不产生缓存）。
+CACHE_DIR="$PROJECT_ROOT/.cache"
+if command -v go >/dev/null 2>&1; then
+  mkdir -p "$CACHE_DIR/mod" "$CACHE_DIR/build"
+  GOMODCACHE="$CACHE_DIR/mod"
+  GOCACHE="$CACHE_DIR/build"
+  export GOMODCACHE GOCACHE
+  echo "[start] Go 缓存目录: ${CACHE_DIR} (mod + build, 跨容器重建保留)"
+fi
+
 BIN="$PROJECT_ROOT/bin/license-manager"
 if [ -x "$BIN" ]; then
   echo "[start] 使用已有可执行文件: $BIN"
 elif command -v go >/dev/null 2>&1; then
-  echo "[start] 未找到预编译产物，开始编译 ..."
+  echo "[start] 未找到预编译产物，开始编译（首次需下载依赖，约 1-3 分钟）..."
+  # 先单独下载依赖：便于区分「网络问题」与「编译问题」，也便于失败时单独重试
+  (cd "$PROJECT_ROOT/backend" && go mod download)
+  echo "[start] 依赖下载完成，开始编译 ..."
   (cd "$PROJECT_ROOT/backend" && go build -o "$BIN" cmd/main.go)
   echo "[start] 编译完成: $BIN"
 else
