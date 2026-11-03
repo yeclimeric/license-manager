@@ -1,5 +1,4 @@
 <template>
-  <Layout app-name="Cedar-V" :page-title="pageTitle">
     <div v-if="viewMode === 'list'" class="template-page data-list-page">
       <header class="data-list-header">
         <div>
@@ -197,7 +196,6 @@
       :categories="categories"
       @changed="loadCategories"
     />
-  </Layout>
 </template>
 
 <script setup lang="ts">
@@ -205,7 +203,6 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import { Plus, FolderOpened } from '@element-plus/icons-vue'
-import Layout from '@/components/common/layout/Layout.vue'
 import TemplateForm from './TemplateForm.vue'
 import CategoryManager from './CategoryManager.vue'
 import {
@@ -244,14 +241,6 @@ const statusOptions = computed(() => [
   { value: 'active', label: t('featureTemplates.filter.statusActive') },
   { value: 'inactive', label: t('featureTemplates.filter.statusInactive') }
 ])
-
-const pageTitle = computed(() =>
-  viewMode.value === 'form'
-    ? isEditMode.value
-      ? t('featureTemplates.editTemplate')
-      : t('featureTemplates.addTemplate')
-    : t('featureTemplates.title')
-)
 
 const loadCategories = async () => {
   try {

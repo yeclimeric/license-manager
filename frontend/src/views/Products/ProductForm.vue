@@ -1,5 +1,4 @@
 <template>
-  <Layout app-name="Cedar-V" :page-title="pageTitle">
     <div class="form-page">
       <SubpageHeader
         :title="pageTitle"
@@ -196,7 +195,6 @@
         </div>
       </div>
     </div>
-  </Layout>
 </template>
 
 <script setup lang="ts">
@@ -204,7 +202,6 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import { Lock } from '@element-plus/icons-vue'
-import Layout from '@/components/common/layout/Layout.vue'
 import SubpageHeader from '@/components/common/SubpageHeader.vue'
 import FormActionBar from '@/components/common/FormActionBar.vue'
 import {

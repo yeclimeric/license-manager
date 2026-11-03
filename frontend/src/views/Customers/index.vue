@@ -1,5 +1,4 @@
 <template>
-  <Layout app-name="Cedar-V" :page-title="pageTitle">
     <div v-if="viewMode === 'list'" class="customer-page data-list-page">
       <header class="data-list-header">
         <div>
@@ -143,16 +142,14 @@
       @cancel="showList"
     />
     <CustomerView v-else :customer-id="currentCustomerId" @back="showList" />
-  </Layout>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { Plus } from '@element-plus/icons-vue'
-import Layout from '@/components/common/layout/Layout.vue'
 import CustomerForm from './CustomerForm.vue'
 import CustomerView from './CustomerView.vue'
 import {
@@ -190,12 +187,6 @@ const pagination = reactive({ page: 1, pageSize: 10, total: 0 })
 const customerTypeOptions = ref<RawEnumItem[]>([])
 const customerLevelOptions = ref<RawEnumItem[]>([])
 const statusOptions = ref<RawEnumItem[]>([])
-
-const pageTitle = computed(() => {
-  if (viewMode.value === 'detail') return t('customers.viewCustomer')
-  if (viewMode.value === 'form') return isEditMode.value ? t('customers.editCustomer') : t('customers.addCustomer')
-  return t('customers.title')
-})
 
 const loadEnums = async () => {
   enumError.value = ''

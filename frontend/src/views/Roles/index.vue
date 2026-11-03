@@ -1,5 +1,4 @@
 <template>
-  <Layout app-name="Cedar-V" :page-title="t('rbac.page.roleTitle')">
     <div class="role-page data-list-page">
       <header class="data-list-header">
         <div>
@@ -96,7 +95,6 @@
       :menus="menuTree"
       @saved="loadRoles"
     />
-  </Layout>
 </template>
 
 <script setup lang="ts">
@@ -104,7 +102,6 @@ import { onMounted, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import { Plus } from '@element-plus/icons-vue'
-import Layout from '@/components/common/layout/Layout.vue'
 import RoleForm from './RoleForm.vue'
 import {
   deleteRole,

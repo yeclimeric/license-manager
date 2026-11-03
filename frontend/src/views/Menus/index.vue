@@ -1,5 +1,4 @@
 <template>
-  <Layout app-name="Cedar-V" :page-title="t('rbac.page.menuTitle')">
     <div class="menu-page data-list-page">
       <header class="data-list-header">
         <div>
@@ -98,14 +97,12 @@
       :parents="parentOptions"
       @saved="loadMenus"
     />
-  </Layout>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
-import Layout from '@/components/common/layout/Layout.vue'
 import MenuForm from './MenuForm.vue'
 import { deleteMenu, getAllMenus, type MenuItem } from '@/api/rbac'
 import { getErrorMessage } from '@/utils/error'

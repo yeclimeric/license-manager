@@ -1,5 +1,4 @@
 <template>
-  <Layout app-name="Cedar-V" :page-title="t('dashboard.title')">
     <div class="dashboard-page">
       <section class="overview-panel">
         <header class="page-header">
@@ -91,7 +90,6 @@
       </section>
 
     </div>
-  </Layout>
 </template>
 
 <script setup lang="ts">
@@ -99,7 +97,6 @@ import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { Coin, Document, InfoFilled, Monitor, Refresh, WarningFilled } from '@element-plus/icons-vue'
-import Layout from '@/components/common/layout/Layout.vue'
 import DashboardTrendChart from '@/components/dashboard/DashboardTrendChart.vue'
 import { getDashboardBusinessTrends, getDashboardHome, type DashboardBusinessTrendsData, type DashboardHomeData, type DashboardTrendPoint, type RecentActivationItem, type RecentAuthorizationItem } from '@/api/dashboard'
 import { formatDate } from '@/utils/date'
