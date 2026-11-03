@@ -11,6 +11,11 @@ import (
 // featureTemplateIdentifierMaxLength 标识符最大长度，与 DB varchar(100) 对齐
 const featureTemplateIdentifierMaxLength = 100
 
+// identifierSuffixChars 标识符随机后缀字符集：小写去混淆（不含 0/o/1/l/i）。
+// 独立定义，不复用 productCodeChars——产品编码已改全大写，
+// 而标识符必须保持小写（编程语言变量命名约定），共用会随其一变化而互相污染。
+const identifierSuffixChars = "23456789abcdefghjkmnpqrstuvwxyz"
+
 // GenerateFeatureTemplateIdentifier 从模板名称生成标识符。
 //
 // 模板标识符会被客户端 SDK 读取并写入许可证，因此必须稳定且符合编程语言
@@ -28,7 +33,7 @@ func GenerateFeatureTemplateIdentifier(name string) (string, error) {
 
 	if len(converted) > featureTemplateIdentifierMaxLength {
 		// 保留前缀并追加随机后缀，避免长名称截断后互相冲突
-		suffix, err := generateRandomFromCharset(8, productCodeChars)
+		suffix, err := generateRandomFromCharset(8, identifierSuffixChars)
 		if err != nil {
 			return "", fmt.Errorf("生成标识符后缀失败: %w", err)
 		}

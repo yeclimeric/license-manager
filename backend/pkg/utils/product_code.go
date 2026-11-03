@@ -13,11 +13,11 @@ const productCodePrefix = "PE-"
 // productCodeLength 随机部分长度
 const productCodeLength = 12
 
-// productCodeChars 随机字符集：小写字母 + 数字，
-// 已剔除易混淆字符 0/o/1/l/i，人工转述与工单录入不再有二义性
-const productCodeChars = "23456789abcdefghjkmnpqrstuvwxyz"
+// productCodeChars 随机字符集：大写字母 + 数字，
+// 已剔除易混淆字符 0/O/1/I/L，整体全大写，人工转述与工单录入不再有二义性
+const productCodeChars = "23456789ABCDEFGHJKMNPQRSTUVWXYZ"
 
-// GenerateProductCode 生成产品项编码：PE- + 12位无混淆随机字符。
+// GenerateProductCode 生成产品项编码：PE- + 12位无混淆大写随机字符。
 //
 // 编码由系统生成而非用户填写，创建后不可更改（D4 决策）。使用随机而非递增序列，
 // 避免从编码推测业务量级；PE- 前缀保证与授权码（LIC-）在日志和工单中可区分。
@@ -41,7 +41,7 @@ func generateRandomFromCharset(length int, chars string) (string, error) {
 	return string(bytes), nil
 }
 
-// ValidateProductCodeFormat 校验产品项编码格式：PO- + 12位无混淆小写字符。
+// ValidateProductCodeFormat 校验产品项编码格式：PE- + 12位无混淆大写字符。
 //
 // 仅用于服务端防御性校验，正常编码一律由 GenerateProductCode 生成。
 func ValidateProductCodeFormat(code string) error {
@@ -53,7 +53,7 @@ func ValidateProductCodeFormat(code string) error {
 	}
 	for _, c := range code[len(productCodePrefix):] {
 		if !containsRune(productCodeChars, c) {
-			return fmt.Errorf("产品项编码只能包含无混淆的小写字母和数字（不含 0/o/1/l/i）")
+			return fmt.Errorf("产品项编码只能包含无混淆的大写字母和数字（不含 0/O/1/I/L）")
 		}
 	}
 	return nil
