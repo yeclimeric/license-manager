@@ -204,7 +204,7 @@ curl http://localhost:18888/health
 
 1. **JWT 密钥**：敏感配置收敛到 `.env`（单点真相）。在 `.env` 设 `JWT_SECRET` 为强随机串（`openssl rand -hex 32`），或由 `scripts/deploy-prepare.sh` 自动生成；经环境变量 `AUTH_JWT_SECRET` 注入后端，覆盖 `config.prod.yaml`，**无需改 yaml**。
 2. **数据库口令**：只需在 `.env` 设 `MYSQL_PASSWORD` / `MYSQL_ROOT_PASSWORD`；经环境变量 `DATABASE_PASSWORD` 注入后端，自动与 `config.prod.yaml` 的 `database.password` 一致，**无需两处分别改**。
-3. **RSA 密钥对**：仓库自带私钥已随仓库公开，**生产必须重新生成**。运行 `./scripts/gen-rsa-keys.sh` 生成专属密钥对并替换 `backend/configs/rsa_private_key.pem`、`rsa_public_key.pem`（也可用仓库内置 Go 工具 `backend/cmd/gen-rsa-keys`）。
+3. **RSA 密钥对**：仓库自带私钥已随仓库公开，**生产必须重新生成**。运行 `bash scripts/deploy-prepare.sh` 会比对私钥指纹，若是示例密钥则自动重新生成并设置 `git skip-worktree`（防止 `git pull` 覆盖生产私钥）；也可手动执行 `bash scripts/gen-rsa-keys.sh backend/configs 2048 --force`（也可用仓库内置 Go 工具 `backend/cmd/gen-rsa-keys`）。
 4. **默认管理员**：首次启动自动 seeding 的 `admin / admin@123`，登录后立即改密码。
 5. **端口冲突**：1panel 占用 `80/443`，1panel 编排前端用 `18880`；不要改回 `80`。正式访问用 1panel「网站」反代 + HTTPS。
 6. **暴露面**：公网仅暴露前端（经反代），后端 `18888` 不映射宿主机。

@@ -54,7 +54,7 @@ docker compose -f docker-compose.prod.yml ps
    - 该值通过环境变量 `AUTH_JWT_SECRET` 注入后端，覆盖 `config.prod.yaml` 的 `auth.jwt.secret`，**无需再手动改 yaml**。
    - 若 `.env` 未设置 `JWT_SECRET`，后端会用 yaml 默认值触发**自动生成随机密钥**并打印 `[WARN]`；该密钥仅内存态，**重启即失效、令牌作废**，仅兜底，不可依赖。
 2. **数据库口令**：只需在 `.env` 设置 `MYSQL_PASSWORD`（及 `MYSQL_ROOT_PASSWORD`）。它通过环境变量 `DATABASE_PASSWORD` 注入后端，自动与 `config.prod.yaml` 的 `database.password` 保持一致，**无需在两处分别修改**。
-3. **RSA 密钥对**：仓库自带的 `rsa_private_key.pem` / `rsa_public_key.pem` 私钥已随仓库公开，**生产必须重新生成专属密钥对并替换**，否则授权签名可被伪造。`scripts/deploy-prepare.sh` 会在密钥缺失时自动生成；也可手动运行 `./scripts/gen-rsa-keys.sh`（或仓库内置 Go 工具 `backend/cmd/gen-rsa-keys`），默认输出到 `backend/configs`，覆盖需加 `--force`。
+3. **RSA 密钥对**：仓库自带的 `rsa_private_key.pem` / `rsa_public_key.pem` 私钥已随仓库公开，**生产必须重新生成专属密钥对并替换**，否则授权签名可被伪造。`scripts/deploy-prepare.sh` 会比对私钥指纹，若是示例密钥则自动重新生成并设置 `git skip-worktree`（防止 `git pull` 覆盖生产私钥）；也可手动运行 `bash scripts/gen-rsa-keys.sh backend/configs 2048 --force`（或仓库内置 Go 工具 `backend/cmd/gen-rsa-keys`），默认输出到 `backend/configs`。
 4. **默认管理员**：首次启动自动 seeding 的 `admin / admin@123`，登录后立即修改密码。
 5. **端口冲突**：1panel 自带 OpenResty 占用宿主机 `80/443`。本仓库提供的 `docker-compose.1panel.yml` 前端映射到高位端口 `18880`，**不要**改回 `80`；正式访问请用 1panel「网站」做反向代理 + Let's Encrypt HTTPS。
 6. **暴露面**：公网仅暴露前端（经反代），后端 `18888` 不映射到宿主机。
