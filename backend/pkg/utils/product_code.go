@@ -5,8 +5,10 @@ import (
 	"fmt"
 )
 
-// productCodePrefix 产品项编码前缀：统一大写连字符风格，与授权码 LIC- 一致
-const productCodePrefix = "PO-"
+// productCodePrefix 产品项编码前缀：Product Element 缩写，
+// 大写连字符风格与授权码 LIC- 一致；刻意避开含 O 的缩写，
+// 防止与数字 0 混淆
+const productCodePrefix = "PE-"
 
 // productCodeLength 随机部分长度
 const productCodeLength = 12
@@ -15,10 +17,10 @@ const productCodeLength = 12
 // 已剔除易混淆字符 0/o/1/l/i，人工转述与工单录入不再有二义性
 const productCodeChars = "23456789abcdefghjkmnpqrstuvwxyz"
 
-// GenerateProductCode 生成产品项编码：PO- + 12位无混淆随机字符。
+// GenerateProductCode 生成产品项编码：PE- + 12位无混淆随机字符。
 //
 // 编码由系统生成而非用户填写，创建后不可更改（D4 决策）。使用随机而非递增序列，
-// 避免从编码推测业务量级；PO- 前缀保证与授权码（LIC-）在日志和工单中可区分。
+// 避免从编码推测业务量级；PE- 前缀保证与授权码（LIC-）在日志和工单中可区分。
 func GenerateProductCode() (string, error) {
 	randomStr, err := generateRandomFromCharset(productCodeLength, productCodeChars)
 	if err != nil {
