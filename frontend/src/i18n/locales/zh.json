@@ -156,11 +156,6 @@
       "docs": "查看文档",
       "github": "打开 GitHub"
     },
-    "external": {
-      "docs": "文档",
-      "github": "GitHub",
-      "cloud": "授权云"
-    },
     "breadcrumb": {
       "dashboard": "仪表盘",
       "customers": "客户管理",
