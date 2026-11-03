@@ -7,6 +7,9 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# 构建产物（后端二进制，体积大且与平台绑定）
+bin/
+
 # Go 构建缓存（1panel/容器内编译时重定向到项目目录，避免每次重建容器重下依赖）
 # 体积可达数百 MB，严禁提交
 .cache/
