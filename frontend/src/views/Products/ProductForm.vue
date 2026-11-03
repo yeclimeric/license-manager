@@ -108,7 +108,8 @@
               </el-form-item>
 
               <el-form-item :label="t('products.form.deploymentMode')">
-                <el-select v-model="policyForm.deployment_mode" class="wizard-select">
+                <!-- 部署模式固定为混合授权（hybrid），业务上不随产品项区分，禁止修改 -->
+                <el-select v-model="policyForm.deployment_mode" class="wizard-select" disabled>
                   <el-option
                     v-for="mode in deploymentModes"
                     :key="mode.value"
@@ -244,7 +245,8 @@ const basicForm = reactive({
 const policyForm = reactive({
   max_activations: 1 as number | undefined,
   duration_days: 365 as number | undefined,
-  deployment_mode: 'online' as DeploymentMode,
+  // 部署模式固定混合授权，不可更改（业务决策）
+  deployment_mode: 'hybrid' as DeploymentMode,
   is_trial_product: false,
   trial_days: 15 as number | undefined
 })
