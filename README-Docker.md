@@ -63,6 +63,11 @@ docker compose -f docker-compose.prod.yml ps
 
 ## 1panel 部署（推荐）
 
+> 两种 1panel 部署方式，按你的偏好选：
+> - **A. Docker 编排**（下方步骤）：用 `docker-compose.1panel.yml`，三个服务容器化，最完整。
+> - **B. 运行环境 + 静态网站**：不用 Docker，后端用 1panel「运行环境（Go）」托管、前端用「静态网站」。
+>   需要**启动命令**与站点 `/api` 反代配置，详见 → [docs/20261103-1panel运行环境部署指南.md](docs/20261103-1panel运行环境部署指南.md)
+
 若服务器已安装 1panel，可直接用本项目提供的 `docker-compose.1panel.yml`：
 
 1. 将仓库 clone 到服务器某目录（如 `/opt/1panel/docker/compose/license-manager`）。
