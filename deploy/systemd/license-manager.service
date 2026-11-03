@@ -1,0 +1,45 @@
+# 裸机部署用 systemd unit 模板
+#
+# 使用：
+#   1) 复制到 /etc/systemd/system/license-manager.service
+#   2) 替换 /path/to/license-manager 为实际克隆目录（用 pwd 取绝对路径）
+#   3) 创建 /etc/license-manager/license-manager.env（见文件内注释）
+#   4) sudo systemctl daemon-reload && sudo systemctl enable --now license-manager
+#
+# 关键点：WorkingDirectory 必须是 backend/ 目录。
+# 后端配置中的 i18n.config_path 与 license.rsa.*_key_path 是相对当前工作目录解析的，
+# 从 backend/ 启动时对应 configs/i18n/errors 与 configs/rsa_private_key.pem。
+
+[Unit]
+Description=License Manager API
+After=network.target mysql.service
+Wants=mysql.service
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+
+# 必须为 backend/ 目录（相对路径解析依赖）
+WorkingDirectory=/path/to/license-manager/backend
+ExecStart=/path/to/license-manager/bin/license-manager -config configs/config.local.yaml
+
+# 敏感配置：数据库口令与 JWT 密钥由环境变量注入后端，覆盖 yaml 中的占位值
+# 创建方式（权限 600）：
+#   sudo mkdir -p /etc/license-manager
+#   sudo tee /etc/license-manager/license-manager.env >/dev/null <<EOF
+#   DATABASE_PASSWORD=你的数据库强口令
+#   AUTH_JWT_SECRET=$(openssl rand -hex 32)
+#   EOF
+#   sudo chmod 600 /etc/license-manager/license-manager.env
+EnvironmentFile=/etc/license-manager/license-manager.env
+Environment=TZ=Asia/Shanghai
+Environment=GIN_MODE=release
+
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
