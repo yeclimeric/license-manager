@@ -1,11 +1,12 @@
 <template>
   <aside class="sidebar" :class="{ 'sidebar--collapsed': isCollapsed, 'sidebar--mobile-open': isMobileOpen }">
-    <div class="sidebar__brand" aria-label="Cedar-V">
+    <div class="sidebar__brand" :aria-label="appStore.siteName">
       <svg class="brand-logo" viewBox="0 0 41 40" fill="none" aria-hidden="true">
         <path d="M26.3125 11.4814L22.25 19.5947V22.7148L27.1191 13.0576L29.7393 18.1777L18.7988 40H0L13.5938 22.8037H14L13.8125 23.1201L7.46875 33.541H17.8438V16.9111L7.1875 25.6475L18.0312 10.1406L11.625 14.4463V14.2588L20.4375 0L26.3125 11.4814Z" fill="#019C7C"/>
         <path d="M34.5498 39.9996H28.75L24.5938 32.8864L27.125 27.6246L34.5498 39.9996ZM41 39.9996H36.2705L27.9346 25.941L30.7188 20.1559L41 39.9996Z" fill="#146B59"/>
       </svg>
-      <span v-if="!isCollapsed || appStore.isMobile" class="brand-name">Cedar-V</span>
+      <!-- 站点名称来自系统配置 system.site_name，由 appStore 提供 -->
+      <span v-if="!isCollapsed || appStore.isMobile" class="brand-name">{{ appStore.siteName }}</span>
     </div>
     <nav class="sidebar__nav" :aria-label="t('navigation.mainNavigation')">
       <template v-for="entry in navItems" :key="entry.id">
@@ -137,7 +138,17 @@ const toggleGroup = (id: string) => {
   border-bottom: 1px solid var(--app-border-light);
 }
 .brand-logo { width: 34px; height: 34px; flex-shrink: 0; }
-.brand-name { font-family: 'Swis721 BlkCn BT', sans-serif; font-size: 26px; color: var(--app-text-primary); white-space: nowrap; }
+/* 站点名可配置且可能很长：允许收缩并截断，不撑破侧边栏 */
+.brand-name {
+  font-family: 'Swis721 BlkCn BT', sans-serif;
+  font-size: 26px;
+  color: var(--app-text-primary);
+  white-space: nowrap;
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .sidebar__nav {
   flex: 1;
   overflow-y: auto;

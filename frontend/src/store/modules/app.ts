@@ -21,6 +21,9 @@ export const useAppStore = defineStore('app', () => {
 
   const language = ref<'zh' | 'en' | 'ja'>('zh')
   const loading = ref(false)
+  // 站点名称：来自系统配置 system.site_name（经公开配置接口拉取），
+  // 侧边栏品牌位展示。取不到时保持内置品牌。
+  const siteName = ref('Cedar-V')
 
   // 计算属性
   const isMobile = computed(() => deviceType.value === DeviceType.Mobile)
@@ -103,6 +106,10 @@ export const useAppStore = defineStore('app', () => {
     loading.value = isLoading
   }
 
+  const setSiteName = (name: string) => {
+    if (name) siteName.value = name
+  }
+
   // 初始化主题
   const initTheme = () => {
     const actualTheme = theme.value === 'auto'
@@ -134,6 +141,7 @@ export const useAppStore = defineStore('app', () => {
     theme,
     language,
     loading,
+    siteName,
     // 计算属性
     isMobile,
     isTablet,
@@ -151,6 +159,7 @@ export const useAppStore = defineStore('app', () => {
     setTheme,
     setLanguage,
     setLoading,
+    setSiteName,
     initTheme
   }
 })
