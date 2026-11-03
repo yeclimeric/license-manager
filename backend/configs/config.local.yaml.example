@@ -20,7 +20,13 @@ database:
 
 auth:
   jwt:
-    secret: "license-manager-dev-secret-key-32-bytes"
+    # 本文件是【生产部署模板】（1panel 运行环境 / 裸机部署），此密钥随仓库公开，绝不可直接使用。
+    # 三选一：
+    #   1) 由环境变量 AUTH_JWT_SECRET 注入强随机值（推荐，可用 openssl rand -hex 32 生成）
+    #   2) 在此填入自己的强随机密钥
+    #   3) 留空或保持占位符 —— 后端启动时自动生成随机密钥并打 [WARN]，
+    #      但该密钥仅存于内存，重启即失效、所有已签发令牌作废，不可作为生产常态
+    secret: "please-change-in-prod"
     expire_hours: 1
     refresh_threshold_minutes: 30
   security:

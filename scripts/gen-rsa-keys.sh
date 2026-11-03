@@ -88,7 +88,7 @@ chmod 644 "$PUBLIC"
 # 落盘后自检：确认两个文件确实存在于预期路径且格式正确，
 # 避免再次出现「参数被误当作目录、密钥落在意外位置」而无人察觉。
 if [ ! -s "$PRIVATE" ] || [ ! -s "$PUBLIC" ]; then
-  echo "错误: 密钥文件生成异常（$PRIVATE / $PUBLIC）" >&2
+  echo "错误: 密钥文件生成异常 (${PRIVATE} / ${PUBLIC})" >&2
   exit 1
 fi
 # 私钥接受 PKCS#1（首选，与 Go 工具一致）与 PKCS#8（后端可自动回退解析）

@@ -119,7 +119,7 @@ func Load(configPath string) error {
 	}
 
 	// 若 JWT 密钥仍为默认/占位值，自动生成随机密钥，避免生产环境使用可预测密钥
-	if isDefaultJWTSecret(AppConfig.Auth.JWT.Secret) {
+	if shouldReplaceJWTSecret(AppConfig) {
 		generated, err := generateRandomJWTSecret()
 		if err != nil {
 			return fmt.Errorf("failed to generate random jwt secret: %w", err)
@@ -137,6 +137,26 @@ func Load(configPath string) error {
 var defaultJWTSecrets = map[string]struct{}{
 	"license-manager-default-secret-key": {}, // viper 默认值
 	"please-change-in-prod":              {}, // 生产配置占位值
+}
+
+// devJWTSecret 为开发环境配置文件（config.yaml / config.dev.yaml / config.local.yaml.example）
+// 中预置的固定密钥。它随仓库公开，泄露即可伪造令牌，因此在生产模式（release）下必须替换；
+// 但在开发模式（debug）下保留，避免每次重启都导致已签发令牌失效而影响本地调试。
+const devJWTSecret = "license-manager-dev-secret-key-32-bytes"
+
+// shouldReplaceJWTSecret 判断当前 JWT 密钥是否需要被替换为随机强密钥。
+// 规则：
+//   - 空值或已知占位值（please-change-in-prod / viper 默认值）：任何模式都替换。
+//   - 开发环境固定密钥（devJWTSecret）：仅在 release 模式下替换。
+func shouldReplaceJWTSecret(cfg *Config) bool {
+	secret := cfg.Auth.JWT.Secret
+	if isDefaultJWTSecret(secret) {
+		return true
+	}
+	if secret == devJWTSecret && cfg.Server.Mode == "release" {
+		return true
+	}
+	return false
 }
 
 // isDefaultJWTSecret 判断 JWT 密钥是否为默认/占位值（含空值）。
