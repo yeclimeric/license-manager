@@ -78,7 +78,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import { ArrowDown } from '@element-plus/icons-vue'
 import { useI18n } from 'vue-i18n'
 import { useAppStore } from '@/store/modules/app'
@@ -101,14 +101,14 @@ const appStore = useAppStore()
 const isCollapsed = computed(() => appStore.sidebarCollapsed)
 const isMobileOpen = computed(() => appStore.isMobile && !appStore.sidebarCollapsed)
 
-// 分组展开状态。默认全部折叠，由用户点击分组标题手动展开；
-// 路由变化不强制展开，保持用户上次的展开/折叠状态。
-const openGroups = ref<Record<string, boolean>>({})
-
-const isGroupOpen = (id: string) => openGroups.value[id] === true
+// 分组展开状态存在 appStore（navOpenGroups），不放组件局部 ref：
+// Layout 随页面组件在每次路由切换时重建，局部状态会丢失，
+// 导致点开二级菜单跳转后分组自动折叠。默认全部折叠，
+// 由用户点击分组标题手动展开，跨页面跳转保持已展开状态。
+const isGroupOpen = (id: string) => appStore.navOpenGroups[id] === true
 
 const toggleGroup = (id: string) => {
-  openGroups.value = { ...openGroups.value, [id]: !isGroupOpen(id) }
+  appStore.toggleNavGroup(id)
 }
 </script>
 
