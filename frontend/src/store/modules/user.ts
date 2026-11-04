@@ -25,10 +25,29 @@ export const useUserStore = defineStore('user', () => {
   const isLoggedIn = ref(false)
 
   // 计算属性
-  const isAdmin = computed(() => userInfo.value?.role === 'admin')
-  const hasPermission = computed(() => (permission: string) => {
-    return userInfo.value?.permissions?.includes(permission) || false
+  // 后端内置角色为 super_admin / operator / viewer（见 database/rbac_seed.go）；
+  // 历史 users.role 可能仍是 admin（迁移时 backfill 把 admin 映射为 super_admin），
+  // 两个名字都视为超级管理员。旧实现只认 admin，对 super_admin 恒 false。
+  const isAdmin = computed(() => {
+    const role = userInfo.value?.role
+    return role === 'super_admin' || role === 'admin'
   })
+
+  /**
+   * 权限判断单一真源。
+   *
+   * 注意：后端登录响应（models.LoginData.UserInfo）目前只含 username + role，
+   * 不含 permissions，且 /v1/menus 返回的是「可见菜单所需权限」而非「用户
+   * 拥有的权限集合」（例如 operator 有 authorization_code:create，但菜单树上
+   * 没有该码）。因此这里不能作为路由守卫的严格依据——会把合法用户误挡。
+   * 当前语义：超级管理员通配放行；其余角色仅在后端将来补充 permissions 后生效。
+   */
+  const hasPermission = (permission: string): boolean => {
+    if (isAdmin.value) return true
+    const permissions = userInfo.value?.permissions
+    if (!permissions || permissions.length === 0) return false
+    return permissions.includes('*') || permissions.includes(permission)
+  }
 
   // 操作
   const setToken = (newToken: string | null) => {

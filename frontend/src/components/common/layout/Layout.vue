@@ -49,17 +49,16 @@ interface FallbackEntry {
   labelKey: string
 }
 
-// 菜单树由后端按角色返回，标签存 i18n 键，切换语言时随之变化。
-// 取不到时退回静态清单：登录页等未认证场景也要能渲染侧边栏。
+// 菜单树由后端按角色返回（/v1/menus），标签存 i18n 键，切换语言时随之变化。
+//
+// 接口失败时的兜底只保留公共页。绝不静态兜底 products / feature-templates /
+// audit-logs / roles / menus 等管理端菜单：接口失败时无法确认当前角色，
+// 展示管理端入口等于把越权可见的菜单主动送给普通用户。后端菜单树才是权威源，
+// 接口恢复后会自动按角色重新渲染完整菜单。
 const staticFallback: FallbackEntry[] = [
   { id: 'dashboard', href: '/dashboard', icon: 'dashboard', labelKey: 'navigation.menu.dashboard' },
   { id: 'licenses', href: '/licenses', icon: 'licenses', labelKey: 'navigation.menu.licenses' },
-  { id: 'customers', href: '/customers', icon: 'customers', labelKey: 'navigation.menu.customers' },
-  { id: 'products', href: '/products', icon: 'products', labelKey: 'navigation.menu.productOfferings' },
-  { id: 'feature-templates', href: '/feature-templates', icon: 'templates', labelKey: 'navigation.menu.featureTemplates' },
-  { id: 'audit-logs', href: '/audit-logs', icon: 'audit', labelKey: 'navigation.menu.auditLogs' },
-  { id: 'roles', href: '/roles', icon: 'users', labelKey: 'rbac.page.roleTitle' },
-  { id: 'menus', href: '/menus', icon: 'menu', labelKey: 'rbac.page.menuTitle' }
+  { id: 'customers', href: '/customers', icon: 'customers', labelKey: 'navigation.menu.customers' }
 ]
 
 interface SourceMenu {
