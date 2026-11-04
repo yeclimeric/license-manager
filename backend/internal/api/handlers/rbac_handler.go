@@ -359,7 +359,7 @@ func (h *RBACHandler) DeleteRole(c *gin.Context) {
 // @Failure 500 {object} models.ErrorResponse "服务器内部错误"
 // @Router /api/v1/users/{userId}/roles [get]
 func (h *RBACHandler) GetUserRoles(c *gin.Context) {
-	userID := c.Param("userId")
+	userID := c.Param("id")
 	if userID == "" {
 		respondErrorWithCode(c, "900001")
 		return
@@ -392,7 +392,7 @@ func (h *RBACHandler) GetUserRoles(c *gin.Context) {
 // @Failure 500 {object} models.ErrorResponse "服务器内部错误"
 // @Router /api/v1/users/{userId}/roles [put]
 func (h *RBACHandler) SetUserRoles(c *gin.Context) {
-	userID := c.Param("userId")
+	userID := c.Param("id")
 	if userID == "" {
 		respondErrorWithCode(c, "900001")
 		return
