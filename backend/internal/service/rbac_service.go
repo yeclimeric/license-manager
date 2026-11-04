@@ -25,6 +25,29 @@ func NewRBACService(repo repository.RBACRepository, userRepo repository.UserRepo
 	return &rbacService{repo: repo, userRepo: userRepo}
 }
 
+// GetCurrentUserPermissions 返回当前用户的全部权限码。
+//
+// 与菜单树不同，这里返回的是「用户拥有的权限集合」而非「可见菜单所需权限」，
+// 供前端做路由/按钮级判断。权限实时从关联表读取，不放进 JWT，
+// 避免改角色后旧 token 仍持有撤掉的权限。
+func (s *rbacService) GetCurrentUserPermissions(ctx context.Context) ([]string, error) {
+	lang := pkgcontext.GetLanguageFromContext(ctx)
+
+	userID := pkgcontext.GetUserIDFromContext(ctx)
+	if userID == "" {
+		return []string{}, nil
+	}
+
+	permissions, err := s.repo.GetUserPermissions(ctx, userID)
+	if err != nil {
+		return nil, i18n.NewI18nError("900005", lang)
+	}
+	if permissions == nil {
+		permissions = []string{}
+	}
+	return permissions, nil
+}
+
 // GetUserMenuTree 获取当前用户可见的菜单树
 func (s *rbacService) GetUserMenuTree(ctx context.Context) (*models.MenuTreeResponse, error) {
 	lang := pkgcontext.GetLanguageFromContext(ctx)

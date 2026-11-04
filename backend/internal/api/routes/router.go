@@ -153,6 +153,9 @@ func SetupRouter() *gin.Engine {
 			auth.GET("/v1/audit-logs", middleware.RequirePermission("audit_log:read", permChecker), auditLogHandler.GetAuditLogList)
 			auth.GET("/v1/audit-logs/statistics", middleware.RequirePermission("audit_log:read", permChecker), auditLogHandler.GetStatistics)
 
+			// 当前用户权限集合：登录即可读自己的权限，实时查库不进 JWT。
+			// 前端路由守卫与按钮级判断依赖此接口（不能用菜单树替代）。
+			auth.GET("/v1/me/permissions", rbacHandler.GetMyPermissions)
 			// 菜单与权限。/menus 无需权限：任何登录用户都要读自己的菜单
 			auth.GET("/v1/menus", rbacHandler.GetUserMenuTree)
 			// 权限矩阵是角色配置页的数据，需 menu:read 才能管理角色权限

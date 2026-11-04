@@ -82,6 +82,9 @@ type UserManagementService interface {
 
 // RBACService 菜单权限角色服务接口
 type RBACService interface {
+	// GetCurrentUserPermissions 返回当前登录用户持有的全部权限码（含通配 "*"）。
+	// 实时查库、不进 JWT：改角色后旧 token 不会继续持有旧权限。
+	GetCurrentUserPermissions(ctx context.Context) ([]string, error)
 	// GetUserMenuTree 获取当前用户可见菜单树
 	GetUserMenuTree(ctx context.Context) (*models.MenuTreeResponse, error)
 	// GetAllMenuTree 获取全部菜单树

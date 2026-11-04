@@ -17,6 +17,28 @@ func NewRBACHandler(rbacService service.RBACService) *RBACHandler {
 	return &RBACHandler{rbacService: rbacService}
 }
 
+// GetMyPermissions 返回当前登录用户的权限码集合
+// @Summary 获取当前用户权限
+// @Description 实时返回当前用户持有的全部权限码（含通配 "*"），供前端做路由与按钮级判断
+// @Tags 菜单权限
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} models.APIResponse "查询成功"
+// @Failure 401 {object} models.ErrorResponse "未认证"
+// @Failure 500 {object} models.ErrorResponse "服务器内部错误"
+// @Router /api/v1/me/permissions [get]
+func (h *RBACHandler) GetMyPermissions(c *gin.Context) {
+	ctx := middleware.WithLanguage(c.Request.Context(), c)
+
+	permissions, err := h.rbacService.GetCurrentUserPermissions(ctx)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondSuccess(c, gin.H{"permissions": permissions})
+}
+
 // GetUserMenuTree 获取当前用户可见菜单树
 // @Summary 获取当前用户菜单
 // @Description 返回当前登录用户有权访问的菜单树，前端据此渲染侧边栏
