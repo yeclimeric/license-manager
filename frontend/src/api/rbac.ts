@@ -99,6 +99,18 @@ export function getUserMenus(): Promise<ApiResponse<{ list: MenuItem[]; total: n
 }
 
 /**
+ * 获取当前登录用户的权限码集合（含超管的通配 "*"）。
+ *
+ * 与 getUserMenus 的区别：菜单树是「可见菜单所需权限」，不能用来判断
+ * 用户是否持有某个权限（operator 有 authorization_code:create，但菜单树
+ * 里没有该码）。路由守卫与按钮级判断一律以此接口为准。
+ * 后端实时查库、不进 JWT，改角色后无需重新登录即可生效。
+ */
+export function getMyPermissions(): Promise<ApiResponse<{ permissions: string[] }>> {
+  return Axios.get('/api/v1/me/permissions')
+}
+
+/**
  * 获取全部菜单树（菜单管理界面用）
  */
 export function getAllMenus(): Promise<ApiResponse<{ list: MenuItem[]; total: number }>> {

@@ -8,6 +8,7 @@
  */
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { getMyPermissions } from '@/api/rbac'
 
 interface UserInfo {
   id?: string
@@ -15,7 +16,6 @@ interface UserInfo {
   email?: string
   avatar?: string
   role: string
-  permissions?: string[]
 }
 
 export const useUserStore = defineStore('user', () => {
@@ -23,6 +23,11 @@ export const useUserStore = defineStore('user', () => {
   const token = ref<string | null>(localStorage.getItem('token'))
   const userInfo = ref<UserInfo | null>(null)
   const isLoggedIn = ref(false)
+  // 权限码集合由 /api/v1/me/permissions 实时拉取，不写进 JWT、不缓存到 localStorage
+  const permissions = ref<string[]>([])
+  const permissionsLoaded = ref(false)
+  const permissionsLoadFailed = ref(false)
+  let permissionsRequest: Promise<void> | null = null
 
   // 计算属性
   // 后端内置角色为 super_admin / operator / viewer（见 database/rbac_seed.go）；
@@ -34,19 +39,42 @@ export const useUserStore = defineStore('user', () => {
   })
 
   /**
-   * 权限判断单一真源。
+   * 权限判断单一真源：permissions ref（由 loadPermissions 从后端实时拉取）。
    *
-   * 注意：后端登录响应（models.LoginData.UserInfo）目前只含 username + role，
-   * 不含 permissions，且 /v1/menus 返回的是「可见菜单所需权限」而非「用户
-   * 拥有的权限集合」（例如 operator 有 authorization_code:create，但菜单树上
-   * 没有该码）。因此这里不能作为路由守卫的严格依据——会把合法用户误挡。
-   * 当前语义：超级管理员通配放行；其余角色仅在后端将来补充 permissions 后生效。
+   * 超级管理员保留快速通道（role 来自登录响应），其权限集合本身也含 "*"。
+   * 不用菜单树判断权限：/v1/menus 返回的是「可见菜单所需权限」而非「用户
+   * 拥有的权限集合」，例如 operator 有 authorization_code:create 但菜单树无该码。
    */
   const hasPermission = (permission: string): boolean => {
     if (isAdmin.value) return true
-    const permissions = userInfo.value?.permissions
-    if (!permissions || permissions.length === 0) return false
-    return permissions.includes('*') || permissions.includes(permission)
+    if (permissions.value.includes('*')) return true
+    return permissions.value.includes(permission)
+  }
+
+  /**
+   * 拉取当前用户权限码集合。并发调用合并为一次请求。
+   *
+   * 失败时保持空集合并置 permissionsLoadFailed：后端每个端点都有
+   * RequirePermission 兜底，前端守卫此时 fail-open 不会造成越权写入，
+   * 但也不会因为后端抖动导致整站不可用。
+   */
+  const loadPermissions = (): Promise<void> => {
+    if (permissionsLoaded.value) return Promise.resolve()
+    if (permissionsRequest) return permissionsRequest
+
+    permissionsRequest = (async () => {
+      try {
+        const res = await getMyPermissions()
+        permissions.value = Array.isArray(res.data?.permissions) ? res.data.permissions : []
+      } catch {
+        permissions.value = []
+        permissionsLoadFailed.value = true
+      } finally {
+        permissionsLoaded.value = true
+        permissionsRequest = null
+      }
+    })()
+    return permissionsRequest
   }
 
   // 操作
@@ -79,6 +107,11 @@ export const useUserStore = defineStore('user', () => {
   const logout = () => {
     setToken(null)
     setUserInfo(null)
+    // 换账号后不能残留上一个账号的权限
+    permissions.value = []
+    permissionsLoaded.value = false
+    permissionsLoadFailed.value = false
+    permissionsRequest = null
   }
 
   const updateProfile = (profile: Partial<UserInfo>) => {
@@ -114,6 +147,9 @@ export const useUserStore = defineStore('user', () => {
     token,
     userInfo,
     isLoggedIn,
+    permissions,
+    permissionsLoaded,
+    permissionsLoadFailed,
     // 计算属性
     isAdmin,
     hasPermission,
@@ -123,6 +159,7 @@ export const useUserStore = defineStore('user', () => {
     setLoginData,
     logout,
     updateProfile,
-    initAuth
+    initAuth,
+    loadPermissions
   }
 })

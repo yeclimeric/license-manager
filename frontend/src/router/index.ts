@@ -8,6 +8,7 @@
  */
 import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
 import Layout from "@/components/common/layout/Layout.vue";
+import { useUserStore } from "@/store/modules/user";
 
 // 路由配置。
 // Layout 是路由级父布局：认证后的页面全部作为其 children，
@@ -26,18 +27,18 @@ const routes: Array<RouteRecordRaw> = [
       {
         path: "dashboard",
         component: () => import("@/views/Dashboard.vue"),
-        meta: { title: "仪表盘", requiresAuth: true }
+        meta: { title: "仪表盘", requiresAuth: true, permission: "dashboard:read" }
       },
       {
         path: "customers",
         component: () => import("@/views/Customers/index.vue"),
-        meta: { title: "客户管理", requiresAuth: true }
+        meta: { title: "客户管理", requiresAuth: true, permission: "customer:read" }
       },
       {
         // 无 component 的传递路由：children 直接渲染进 Layout 的 router-view
         path: "licenses",
         name: "licenses",
-        meta: { title: "授权管理", requiresAuth: true },
+        meta: { title: "授权管理", requiresAuth: true, permission: "license:read" },
         children: [
           {
             path: "",
@@ -75,49 +76,49 @@ const routes: Array<RouteRecordRaw> = [
         path: "products",
         name: "products",
         component: () => import("@/views/Products/index.vue"),
-        meta: { title: "产品项管理", requiresAuth: true }
+        meta: { title: "产品项管理", requiresAuth: true, permission: "product_offering:read" }
       },
       {
         path: "feature-templates",
         name: "feature-templates",
         component: () => import("@/views/FeatureTemplates/index.vue"),
-        meta: { title: "功能模板", requiresAuth: true }
+        meta: { title: "功能模板", requiresAuth: true, permission: "feature_template:read" }
       },
       {
         path: "system-config",
         name: "system-config",
         component: () => import("@/views/SystemConfig/index.vue"),
-        meta: { title: "系统配置", requiresAuth: true }
+        meta: { title: "系统配置", requiresAuth: true, permission: "system_config:read" }
       },
       {
         path: "api-keys",
         name: "api-keys",
         component: () => import("@/views/ApiKeys/index.vue"),
-        meta: { title: "API Key", requiresAuth: true }
+        meta: { title: "API Key", requiresAuth: true, permission: "api_key:read" }
       },
       {
         path: "users",
         name: "users",
         component: () => import("@/views/Users/index.vue"),
-        meta: { title: "用户管理", requiresAuth: true }
+        meta: { title: "用户管理", requiresAuth: true, permission: "user:read" }
       },
       {
         path: "roles",
         name: "roles",
         component: () => import("@/views/Roles/index.vue"),
-        meta: { title: "角色管理", requiresAuth: true }
+        meta: { title: "角色管理", requiresAuth: true, permission: "role:read" }
       },
       {
         path: "menus",
         name: "menus",
         component: () => import("@/views/Menus/index.vue"),
-        meta: { title: "菜单管理", requiresAuth: true }
+        meta: { title: "菜单管理", requiresAuth: true, permission: "menu:read" }
       },
       {
         path: "audit-logs",
         name: "audit-logs",
         component: () => import("@/views/AuditLogs/index.vue"),
-        meta: { title: "操作日志", requiresAuth: true }
+        meta: { title: "操作日志", requiresAuth: true, permission: "audit_log:read" }
       }
     ]
   },
@@ -125,6 +126,12 @@ const routes: Array<RouteRecordRaw> = [
     path: "/login",
     component: () => import("@/views/Login.vue"),
     meta: { title: "登录" }
+  },
+  {
+    path: "/403",
+    name: "forbidden",
+    component: () => import("@/views/Forbidden.vue"),
+    meta: { title: "无权访问" }
   },
   {
     path: "/:pathMatch(.*)*",
@@ -139,18 +146,39 @@ const router = createRouter({
   routes,
 });
 
-// 路由守卫
-router.beforeEach((to, _from, next) => {
-  // 设置页面标题
+// 路由守卫：认证 + 权限（权限码来自 /api/v1/me/permissions 实时查询）
+router.beforeEach(async (to, _from, next) => {
   document.title = typeof (to.meta.title) === "string" ? to.meta.title : "授权管理平台";
 
-  // 检查是否需要认�?
-  if (to.meta.requiresAuth) {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      next("/login");
-      return;
-    }
+  if (!to.meta.requiresAuth) {
+    next();
+    return;
+  }
+
+  const token = localStorage.getItem("token");
+  if (!token) {
+    next("/login");
+    return;
+  }
+
+  const userStore = useUserStore();
+  // 首屏或刷新后权限尚未加载，先等一次；并发导航由 store 内部合并为单请求
+  if (!userStore.permissionsLoaded) {
+    await userStore.loadPermissions();
+  }
+
+  // 权限请求若因 401 失败，axios 拦截器已同步清除 token，此时必须回登录页
+  if (userStore.permissionsLoadFailed && !localStorage.getItem("token")) {
+    next("/login");
+    return;
+  }
+
+  const required = typeof to.meta.permission === "string" ? to.meta.permission : "";
+  // 权限接口失败时 fail-open：后端每个端点都挂了 RequirePermission，
+  // 前端守卫只负责体验层（不展示无权页面），不因后端抖动让整站不可用。
+  if (required && !userStore.permissionsLoadFailed && !userStore.hasPermission(required)) {
+    next("/403");
+    return;
   }
 
   next();
