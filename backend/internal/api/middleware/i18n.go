@@ -26,11 +26,26 @@ type I18nConfig struct {
 }
 
 // I18nMiddleware 多语言检测中间件
+//
+// 同时把语言写入两处：
+//  1. gin.Context.Keys（handler/middleware 层经 GetLanguage 读取）
+//  2. request context（service 层经 pkgcontext.GetLanguageFromContext 读取）
+//
+// 第 2 处是关键：service 拿到的是 ctx.Request.Context()（*gin.Context 不是
+// 标准 context，ContextWithFallback=false 时 ctx.Value 取不到语言），只有写进
+// 标准 request context，service 层的 i18n 才能拿到正确语言，避免退化为默认中文。
+//
+// config 为 nil 或禁用时写默认语言，不再 panic。
 func I18nMiddleware(config *I18nConfig) gin.HandlerFunc {
-	// 如果未启用多语言，使用默认语言
-	if config == nil || !config.Enable {
+	if config == nil {
+		config = &I18nConfig{DefaultLang: DefaultLanguage}
+	}
+
+	if !config.Enable {
+		lang := config.DefaultLang
 		return func(c *gin.Context) {
-			c.Set(LanguageKey, config.DefaultLang)
+			c.Set(LanguageKey, lang)
+			c.Request = c.Request.WithContext(pkgcontext.WithLanguage(c.Request.Context(), lang))
 			c.Next()
 		}
 	}
@@ -38,6 +53,7 @@ func I18nMiddleware(config *I18nConfig) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		lang := detectLanguage(c, config)
 		c.Set(LanguageKey, lang)
+		c.Request = c.Request.WithContext(pkgcontext.WithLanguage(c.Request.Context(), lang))
 		c.Next()
 	}
 }

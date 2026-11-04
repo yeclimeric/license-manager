@@ -152,7 +152,10 @@ func OptionalAuthMiddleware() gin.HandlerFunc {
 	}
 }
 
-// AdminOnlyMiddleware 仅管理员访问中间件
+// AdminOnlyMiddleware 仅超级管理员访问中间件
+//
+// 内置角色为 super_admin / operator / viewer（见 database/rbac_seed.go），
+// 旧实现比对的 "administrator" 是社区版遗留值，对现有角色恒 403，从未生效。
 func AdminOnlyMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		role, exists := c.Get("role")
@@ -167,7 +170,7 @@ func AdminOnlyMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		if role != "administrator" {
+		if role != "super_admin" {
 			c.JSON(http.StatusForbidden, gin.H{
 				"code":      http.StatusForbidden,
 				"error":     "AUTH_004",

@@ -59,8 +59,7 @@ func (h *AuthorizationCodeHandler) CreateAuthorizationCode(c *gin.Context) {
 		return
 	}
 
-	// 直接传递 gin.Context
-	data, err := h.authCodeService.CreateAuthorizationCode(c, &req)
+	data, err := h.authCodeService.CreateAuthorizationCode(c.Request.Context(), &req)
 	if err != nil {
 		// 错误已经在Service层完全包装好了，直接使用
 		var i18nErr *i18n.I18nError
@@ -118,7 +117,7 @@ func (h *AuthorizationCodeHandler) BatchCreateAuthorizationCodes(c *gin.Context)
 		return
 	}
 
-	data, err := h.authCodeService.BatchCreateAuthorizationCodes(c, &req)
+	data, err := h.authCodeService.BatchCreateAuthorizationCodes(c.Request.Context(), &req)
 	if err != nil {
 		var i18nErr *i18n.I18nError
 		if errors.As(err, &i18nErr) {
@@ -182,8 +181,7 @@ func (h *AuthorizationCodeHandler) GetAuthorizationCodeList(c *gin.Context) {
 		return
 	}
 
-	// 直接传递 gin.Context
-	data, err := h.authCodeService.GetAuthorizationCodeList(c, &req)
+	data, err := h.authCodeService.GetAuthorizationCodeList(c.Request.Context(), &req)
 	if err != nil {
 		// 错误已经在Service层完全包装好了，直接使用
 		var i18nErr *i18n.I18nError
@@ -242,8 +240,7 @@ func (h *AuthorizationCodeHandler) GetAuthorizationCode(c *gin.Context) {
 		return
 	}
 
-	// 直接传递 gin.Context
-	data, err := h.authCodeService.GetAuthorizationCode(c, id)
+	data, err := h.authCodeService.GetAuthorizationCode(c.Request.Context(), id)
 	if err != nil {
 		// 错误已经在Service层完全包装好了，直接使用
 		var i18nErr *i18n.I18nError
@@ -457,8 +454,7 @@ func (h *AuthorizationCodeHandler) UpdateAuthorizationCode(c *gin.Context) {
 		return
 	}
 
-	// 直接传递 gin.Context
-	authCode, err := h.authCodeService.UpdateAuthorizationCode(c, id, &req)
+	authCode, err := h.authCodeService.UpdateAuthorizationCode(c.Request.Context(), id, &req)
 	if err != nil {
 		// 错误已经在Service层完全包装好了，直接使用
 		var i18nErr *i18n.I18nError
@@ -530,8 +526,7 @@ func (h *AuthorizationCodeHandler) LockUnlockAuthorizationCode(c *gin.Context) {
 		return
 	}
 
-	// 直接传递 gin.Context
-	data, err := h.authCodeService.LockUnlockAuthorizationCode(c, id, &req)
+	data, err := h.authCodeService.LockUnlockAuthorizationCode(c.Request.Context(), id, &req)
 	if err != nil {
 		// 错误已经在Service层完全包装好了，直接使用
 		var i18nErr *i18n.I18nError
@@ -590,8 +585,7 @@ func (h *AuthorizationCodeHandler) DeleteAuthorizationCode(c *gin.Context) {
 		return
 	}
 
-	// 直接传递 gin.Context
-	if err := h.authCodeService.DeleteAuthorizationCode(c, id); err != nil {
+	if err := h.authCodeService.DeleteAuthorizationCode(c.Request.Context(), id); err != nil {
 		// 错误已经在Service层完全包装好了，直接使用
 		var i18nErr *i18n.I18nError
 		if errors.As(err, &i18nErr) {
@@ -669,8 +663,7 @@ func (h *AuthorizationCodeHandler) GetAuthorizationChangeList(c *gin.Context) {
 		return
 	}
 
-	// 直接传递 gin.Context
-	data, err := h.authCodeService.GetAuthorizationChangeList(c, id, &req)
+	data, err := h.authCodeService.GetAuthorizationChangeList(c.Request.Context(), id, &req)
 	if err != nil {
 		// 错误已经在Service层完全包装好了，直接使用
 		var i18nErr *i18n.I18nError
