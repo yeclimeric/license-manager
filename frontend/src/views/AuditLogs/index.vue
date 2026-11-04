@@ -265,11 +265,11 @@ const resourceTypeOptions = computed(() => {
     return fromStats.map((value) => ({ value, label: value }))
   }
   return [
-    { value: 'authorization-codes', label: 'authorization-codes' },
-    { value: 'licenses', label: 'licenses' },
-    { value: 'customers', label: 'customers' },
-    { value: 'product-offerings', label: 'product-offerings' },
-    { value: 'feature-templates', label: 'feature-templates' }
+    { value: 'authorization-code', label: 'authorization-code' },
+    { value: 'license', label: 'license' },
+    { value: 'customer', label: 'customer' },
+    { value: 'product-offering', label: 'product-offering' },
+    { value: 'feature-template', label: 'feature-template' }
   ]
 })
 

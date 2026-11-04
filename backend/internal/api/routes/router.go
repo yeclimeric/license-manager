@@ -100,8 +100,12 @@ func SetupRouter() *gin.Engine {
 		{
 			public.POST("/v1/login", authHandler.Login)
 
-			// 许可证激活接口（客户端软件使用）
-			public.POST("/v1/activate", licenseHandler.ActivateLicense)
+		// 许可证激活接口（客户端软件使用）
+		// 核心写操作，纳入审计作用域；身份由上层 APIKeyAuthMiddleware 注入 user_id。
+		public.POST("/v1/activate",
+			middleware.AuditResponseCapture(),
+			middleware.AuditMiddleware(middleware.AuditConfig{DB: db}),
+			licenseHandler.ActivateLicense)
 			public.POST("/v1/heartbeat", licenseHandler.Heartbeat)
 		}
 

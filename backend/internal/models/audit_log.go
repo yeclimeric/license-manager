@@ -14,13 +14,23 @@ const (
 )
 
 // 审计资源类型
+//
+// 作为 resource_type 的单一真源：审计中间件 resolveAuditResource 把 URL 路径段
+// （复数/连字符形态，如 authorization-codes）映射到此处的规范值，保证按类型
+// 筛选与统计一致，避免路径风格变化产生的碎片化值。
 const (
-	AuditResourceAuthorizationCode = "authorization-code"
-	AuditResourceLicense           = "license"
-	AuditResourceCustomer          = "customer"
-	AuditResourceProductOffering   = "product-offering"
-	AuditResourceFeatureTemplate   = "feature-template"
-	AuditResourceUser              = "user"
+	AuditResourceAuthorizationCode       = "authorization-code"
+	AuditResourceLicense                 = "license"
+	AuditResourceCustomer                = "customer"
+	AuditResourceProductOffering         = "product-offering"
+	AuditResourceFeatureTemplate         = "feature-template"
+	AuditResourceFeatureTemplateCategory = "feature-template-category"
+	AuditResourceUser                    = "user"
+	AuditResourceApiKey                  = "api-key"
+	AuditResourceMenu                    = "menu"
+	AuditResourceRole                    = "role"
+	AuditResourceSystemConfig            = "system-config"
+	AuditResourceAuditLog                = "audit-log"
 )
 
 // AuditLog 审计日志模型

@@ -145,8 +145,8 @@ func buildAuditRecord(c *gin.Context, reqBody string, respBody string, elapsed t
 	detail := models.AuditLogDetail{
 		Path:     c.Request.URL.Path,
 		Method:   c.Request.Method,
-		ReqBody:  reqBody,
-		RespBody: truncateAuditBody(respBody),
+		ReqBody:  redactSensitive(reqBody),
+		RespBody: truncateAuditBody(redactSensitive(respBody)),
 	}
 
 	if detail.RespBody != "" {
@@ -173,6 +173,24 @@ func buildAuditRecord(c *gin.Context, reqBody string, respBody string, elapsed t
 	return record
 }
 
+// auditResourceAliases 将 URL 路径首段（复数/连字符形态，如 authorization-codes）
+// 映射到规范资源常量（单数，如 authorization-code），使 models.AuditResource*
+// 成为 resource_type 的单一真源，消除筛选落空与统计碎片化。
+var auditResourceAliases = map[string]string{
+	"authorization-codes":         models.AuditResourceAuthorizationCode,
+	"licenses":                    models.AuditResourceLicense,
+	"customers":                   models.AuditResourceCustomer,
+	"product-offerings":           models.AuditResourceProductOffering,
+	"feature-templates":           models.AuditResourceFeatureTemplate,
+	"feature-template-categories": models.AuditResourceFeatureTemplateCategory,
+	"users":                       models.AuditResourceUser,
+	"api-keys":                    models.AuditResourceApiKey,
+	"menus":                       models.AuditResourceMenu,
+	"roles":                       models.AuditResourceRole,
+	"system-configs":              models.AuditResourceSystemConfig,
+	"audit-logs":                  models.AuditResourceAuditLog,
+}
+
 // resolveAuditResource 从路径推断资源类型与资源ID
 //
 // 路径形如 /api/v1/authorization-codes/{id} 或
@@ -195,9 +213,16 @@ func resolveAuditResource(c *gin.Context) (resourceType string, resourceID strin
 	}
 
 	resourceType = segments[0]
+	// 规范化：路径段（复数/连字符）映射为规范资源常量
+	if canonical, ok := auditResourceAliases[resourceType]; ok {
+		resourceType = canonical
+	}
 
-	// 下一段若是 UUID 形态则为资源ID，否则视为子动作（如 batch）
-	if len(segments) >= 2 && isUUIDLike(segments[1]) {
+	// 资源ID优先从路由参数 :id 提取（兼容非 UUID 形态，如 API Key ak_xxx），
+	// 回退到首段 UUID 识别（原有逻辑）以覆盖未注册 :id 的边界路径。
+	if id := c.Param("id"); id != "" {
+		resourceID = id
+	} else if len(segments) >= 2 && isUUIDLike(segments[1]) {
 		resourceID = segments[1]
 	}
 
@@ -283,4 +308,62 @@ func truncateAuditBody(body string) string {
 		return body
 	}
 	return body[:auditBodyLimit] + "...[truncated]"
+}
+
+// sensitiveFieldKeys 命中即脱敏的字段名（小写子串匹配）。
+// 审计明文落库会暴露凭证，按字段名黑名单将值替换为 ***。
+var sensitiveFieldKeys = []string{
+	"password", "passwd", "pwd", "token", "secret",
+	"credential", "key", "sign", "private",
+}
+
+// redactSensitive 对 JSON 体做字段级脱敏，命中敏感字段名的值替换为 ***。
+// 非 JSON 内容原样返回，避免破坏无法解析的负载。
+func redactSensitive(body string) string {
+	trimmed := strings.TrimSpace(body)
+	if trimmed == "" || (trimmed[0] != '{' && trimmed[0] != '[') {
+		return body
+	}
+	var data interface{}
+	if err := json.Unmarshal([]byte(body), &data); err != nil {
+		return body
+	}
+	redactValue(&data)
+	out, err := json.Marshal(data)
+	if err != nil {
+		return body
+	}
+	return string(out)
+}
+
+// redactValue 递归遍历 JSON 值，将敏感字段的值替换为 ***。
+func redactValue(v *interface{}) {
+	switch val := (*v).(type) {
+	case map[string]interface{}:
+		for k, item := range val {
+			if isSensitiveKey(k) {
+				val[k] = "***"
+				continue
+			}
+			redactValue(&item)
+			val[k] = item
+		}
+	case []interface{}:
+		for i := range val {
+			elem := val[i]
+			redactValue(&elem)
+			val[i] = elem
+		}
+	}
+}
+
+// isSensitiveKey 判断字段名是否命中敏感黑名单（大小写不敏感子串匹配）。
+func isSensitiveKey(key string) bool {
+	lower := strings.ToLower(key)
+	for _, pat := range sensitiveFieldKeys {
+		if strings.Contains(lower, pat) {
+			return true
+		}
+	}
+	return false
 }

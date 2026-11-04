@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -12,50 +13,70 @@ func TestResolveAuditResource(t *testing.T) {
 	tests := []struct {
 		name     string
 		path     string
+		params   gin.Params
 		wantType string
 		wantID   string
 	}{
 		{
-			name:     "带资源ID的创建路径",
+			name:     "授权码列表路径规范化",
 			path:     "/api/v1/authorization-codes",
-			wantType: "authorization-codes",
+			wantType: "authorization-code",
 			wantID:   "",
 		},
 		{
 			name:     "UUID 段识别为资源ID",
 			path:     "/api/v1/authorization-codes/611d0891-c057-4470-bec6-f82dbaa1df00",
-			wantType: "authorization-codes",
+			wantType: "authorization-code",
 			wantID:   "611d0891-c057-4470-bec6-f82dbaa1df00",
 		},
 		{
 			name:     "子动作路径取第一段UUID",
 			path:     "/api/v1/authorization-codes/611d0891-c057-4470-bec6-f82dbaa1df00/lock",
-			wantType: "authorization-codes",
+			wantType: "authorization-code",
 			wantID:   "611d0891-c057-4470-bec6-f82dbaa1df00",
 		},
 		{
 			name:     "batch 不是资源ID",
 			path:     "/api/v1/authorization-codes/batch",
-			wantType: "authorization-codes",
+			wantType: "authorization-code",
 			wantID:   "",
 		},
 		{
-			name:     "产品项路径",
+			name:     "产品项路径规范化",
 			path:     "/api/v1/product-offerings",
-			wantType: "product-offerings",
+			wantType: "product-offering",
 			wantID:   "",
 		},
 		{
 			name:     "公钥路径取产品ID",
 			path:     "/api/v1/product-offerings/9f81c0de-1a2b-3c4d-5e6f-7a8b9c0d1e2f/public-key",
-			wantType: "product-offerings",
+			wantType: "product-offering",
 			wantID:   "9f81c0de-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
 		},
 		{
-			name:     "非 api 前缀路径",
+			name:     "客户路径规范化",
 			path:     "/v1/customers",
-			wantType: "customers",
+			wantType: "customer",
 			wantID:   "",
+		},
+		{
+			name:     "用户路径规范化",
+			path:     "/api/v1/users",
+			wantType: "user",
+			wantID:   "",
+		},
+		{
+			name:     "API Key 路径规范化",
+			path:     "/api/v1/api-keys",
+			wantType: "api-key",
+			wantID:   "",
+		},
+		{
+			name:     "非 UUID 资源ID由路由参数提取",
+			path:     "/api/v1/api-keys/ak_ab12cd34ef",
+			params:   gin.Params{{Key: "id", Value: "ak_ab12cd34ef"}},
+			wantType: "api-key",
+			wantID:   "ak_ab12cd34ef",
 		},
 		{
 			name:     "空路径",
@@ -70,6 +91,9 @@ func TestResolveAuditResource(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			c, _ := gin.CreateTestContext(httptest.NewRecorder())
 			c.Request = httptest.NewRequest(http.MethodPost, tt.path, nil)
+			if tt.params != nil {
+				c.Params = tt.params
+			}
 
 			gotType, gotID := resolveAuditResource(c)
 			if gotType != tt.wantType {
@@ -170,4 +194,59 @@ func TestTruncateAuditBody(t *testing.T) {
 	if len(got) != auditBodyLimit+len("...[truncated]") {
 		t.Errorf("截断后长度 = %d, want %d", len(got), auditBodyLimit+len("...[truncated]"))
 	}
+}
+
+func TestRedactSensitive(t *testing.T) {
+	// 敏感字段被替换为 ***，非敏感字段保留
+	checkObj := func(t *testing.T, body string, sensitive, preserved []string) {
+		t.Helper()
+		got := redactSensitive(body)
+		var data map[string]interface{}
+		if err := json.Unmarshal([]byte(got), &data); err != nil {
+			t.Fatalf("redactSensitive 结果非 JSON: %v (got %q)", err, got)
+		}
+		for _, k := range sensitive {
+			if v, ok := data[k]; !ok || v != "***" {
+				t.Errorf("敏感字段 %q 应被脱敏为 ***, got %v", k, v)
+			}
+		}
+		for _, k := range preserved {
+			if _, ok := data[k]; !ok {
+				t.Errorf("非敏感字段 %q 应保留, got %v", k, data)
+			}
+		}
+	}
+
+	t.Run("密码字段脱敏", func(t *testing.T) {
+		checkObj(t, `{"username":"a","password":"secret123"}`, []string{"password"}, []string{"username"})
+	})
+	t.Run("token 字段脱敏", func(t *testing.T) {
+		checkObj(t, `{"token":"abc.def.ghi"}`, []string{"token"}, nil)
+	})
+	t.Run("嵌套对象脱敏", func(t *testing.T) {
+		got := redactSensitive(`{"user":{"api_key":"k1"},"name":"x"}`)
+		var data map[string]interface{}
+		if err := json.Unmarshal([]byte(got), &data); err != nil {
+			t.Fatalf("解析失败: %v", err)
+		}
+		user, ok := data["user"].(map[string]interface{})
+		if !ok || user["api_key"] != "***" {
+			t.Errorf("嵌套 api_key 应脱敏, got %v", data)
+		}
+		if data["name"] != "x" {
+			t.Errorf("name 应保留, got %v", data["name"])
+		}
+	})
+	t.Run("非 JSON 原样返回", func(t *testing.T) {
+		if got := redactSensitive("not json"); got != "not json" {
+			t.Errorf("非 JSON 应原样返回, got %q", got)
+		}
+	})
+	t.Run("数组元素脱敏", func(t *testing.T) {
+		got := redactSensitive(`[{"password":"p"}]`)
+		var arr []map[string]interface{}
+		if err := json.Unmarshal([]byte(got), &arr); err != nil || len(arr) != 1 || arr[0]["password"] != "***" {
+			t.Errorf("数组内 password 应脱敏, got %q", got)
+		}
+	})
 }
