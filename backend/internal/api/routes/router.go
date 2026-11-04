@@ -117,37 +117,37 @@ func SetupRouter() *gin.Engine {
 			auth.POST("/v1/auth/refresh", authHandler.RefreshToken)
 
 			// 客户管理
-			auth.GET("/customers", customerHandler.GetCustomerList)
-			auth.GET("/customers/:id", customerHandler.GetCustomer)
+			auth.GET("/customers", middleware.RequirePermission("customer:read", permChecker), customerHandler.GetCustomerList)
+			auth.GET("/customers/:id", middleware.RequirePermission("customer:read", permChecker), customerHandler.GetCustomer)
 			auth.POST("/customers", middleware.RequirePermission("customer:create", permChecker), customerHandler.CreateCustomer)
 			auth.PUT("/customers/:id", middleware.RequirePermission("customer:update", permChecker), customerHandler.UpdateCustomer)
 			auth.DELETE("/customers/:id", middleware.RequirePermission("customer:delete", permChecker), customerHandler.DeleteCustomer)
-			auth.PATCH("/customers/:id/status", customerHandler.UpdateCustomerStatus)
+			auth.PATCH("/customers/:id/status", middleware.RequirePermission("customer:update", permChecker), customerHandler.UpdateCustomerStatus)
 
-			// 枚举管理
+			// 枚举管理（字典类，登录即可读）
 			auth.GET("/enums", enumHandler.GetAllEnums)
 			auth.GET("/enums/:type", enumHandler.GetEnumsByType)
 
 			// 产品项管理
-			auth.GET("/v1/product-offerings", productOfferingHandler.GetProductOfferingList)
+			auth.GET("/v1/product-offerings", middleware.RequirePermission("product_offering:read", permChecker), productOfferingHandler.GetProductOfferingList)
 			auth.POST("/v1/product-offerings", middleware.RequirePermission("product_offering:create", permChecker), productOfferingHandler.CreateProductOffering)
-			auth.GET("/v1/product-offerings/:id", productOfferingHandler.GetProductOffering)
-			auth.GET("/v1/product-offerings/:id/public-key", productOfferingHandler.GetProductOfferingPublicKey)
+			auth.GET("/v1/product-offerings/:id", middleware.RequirePermission("product_offering:read", permChecker), productOfferingHandler.GetProductOffering)
+			auth.GET("/v1/product-offerings/:id/public-key", middleware.RequirePermission("product_offering:read", permChecker), productOfferingHandler.GetProductOfferingPublicKey)
 			auth.POST("/v1/product-offerings/:id/rotate-signing-key", middleware.RequirePermission("product_offering:update", permChecker), productOfferingHandler.RotateProductOfferingSigningKey)
-			auth.PUT("/v1/product-offerings/:id", productOfferingHandler.UpdateProductOffering)
-			auth.DELETE("/v1/product-offerings/:id", productOfferingHandler.DeleteProductOffering)
-			auth.PATCH("/v1/product-offerings/:id/status", productOfferingHandler.UpdateProductOfferingStatus)
+			auth.PUT("/v1/product-offerings/:id", middleware.RequirePermission("product_offering:update", permChecker), productOfferingHandler.UpdateProductOffering)
+			auth.DELETE("/v1/product-offerings/:id", middleware.RequirePermission("product_offering:delete", permChecker), productOfferingHandler.DeleteProductOffering)
+			auth.PATCH("/v1/product-offerings/:id/status", middleware.RequirePermission("product_offering:update", permChecker), productOfferingHandler.UpdateProductOfferingStatus)
 
 			// 功能模板管理
-			auth.GET("/v1/feature-templates", featureTemplateHandler.GetFeatureTemplateList)
+			auth.GET("/v1/feature-templates", middleware.RequirePermission("feature_template:read", permChecker), featureTemplateHandler.GetFeatureTemplateList)
 			auth.POST("/v1/feature-templates", middleware.RequirePermission("feature_template:create", permChecker), featureTemplateHandler.CreateFeatureTemplate)
-			auth.GET("/v1/feature-templates/categories", featureTemplateHandler.GetCategoryList)
-			auth.GET("/v1/feature-templates/:id", featureTemplateHandler.GetFeatureTemplate)
-			auth.PUT("/v1/feature-templates/:id", featureTemplateHandler.UpdateFeatureTemplate)
-			auth.DELETE("/v1/feature-templates/:id", featureTemplateHandler.DeleteFeatureTemplate)
-			auth.POST("/v1/feature-template-categories", featureTemplateHandler.CreateCategory)
-			auth.PUT("/v1/feature-template-categories/:id", featureTemplateHandler.UpdateCategory)
-			auth.DELETE("/v1/feature-template-categories/:id", featureTemplateHandler.DeleteCategory)
+			auth.GET("/v1/feature-templates/categories", middleware.RequirePermission("feature_template:read", permChecker), featureTemplateHandler.GetCategoryList)
+			auth.GET("/v1/feature-templates/:id", middleware.RequirePermission("feature_template:read", permChecker), featureTemplateHandler.GetFeatureTemplate)
+			auth.PUT("/v1/feature-templates/:id", middleware.RequirePermission("feature_template:update", permChecker), featureTemplateHandler.UpdateFeatureTemplate)
+			auth.DELETE("/v1/feature-templates/:id", middleware.RequirePermission("feature_template:delete", permChecker), featureTemplateHandler.DeleteFeatureTemplate)
+			auth.POST("/v1/feature-template-categories", middleware.RequirePermission("feature_template:update", permChecker), featureTemplateHandler.CreateCategory)
+			auth.PUT("/v1/feature-template-categories/:id", middleware.RequirePermission("feature_template:update", permChecker), featureTemplateHandler.UpdateCategory)
+			auth.DELETE("/v1/feature-template-categories/:id", middleware.RequirePermission("feature_template:delete", permChecker), featureTemplateHandler.DeleteCategory)
 
 			// 审计日志
 			auth.GET("/v1/audit-logs", middleware.RequirePermission("audit_log:read", permChecker), auditLogHandler.GetAuditLogList)
@@ -155,7 +155,8 @@ func SetupRouter() *gin.Engine {
 
 			// 菜单与权限。/menus 无需权限：任何登录用户都要读自己的菜单
 			auth.GET("/v1/menus", rbacHandler.GetUserMenuTree)
-			auth.GET("/v1/permissions", rbacHandler.GetPermissionMatrix)
+			// 权限矩阵是角色配置页的数据，需 menu:read 才能管理角色权限
+			auth.GET("/v1/permissions", middleware.RequirePermission("menu:read", permChecker), rbacHandler.GetPermissionMatrix)
 			auth.GET("/v1/menus/all", middleware.RequirePermission("menu:read", permChecker), rbacHandler.GetAllMenuTree)
 			auth.POST("/v1/menus", middleware.RequirePermission("menu:create", permChecker), rbacHandler.CreateMenu)
 			auth.PUT("/v1/menus/:id", middleware.RequirePermission("menu:update", permChecker), rbacHandler.UpdateMenu)
@@ -195,33 +196,36 @@ func SetupRouter() *gin.Engine {
 			auth.GET("/v1/users/:id/roles", middleware.RequirePermission("user:read", permChecker), userManagementHandler.GetUserRoles)
 
 			// 授权码管理
-			auth.GET("/v1/authorization-codes", authCodeHandler.GetAuthorizationCodeList)
+			auth.GET("/v1/authorization-codes", middleware.RequirePermission("authorization_code:read", permChecker), authCodeHandler.GetAuthorizationCodeList)
 			auth.POST("/v1/authorization-codes", middleware.RequirePermission("authorization_code:create", permChecker), authCodeHandler.CreateAuthorizationCode)
 			// 批量创建上限 100 条，按单次创建权限管控
 			auth.POST("/v1/authorization-codes/batch", middleware.RequirePermission("authorization_code:create", permChecker), authCodeHandler.BatchCreateAuthorizationCodes)
-			auth.GET("/v1/authorization-codes/:id", authCodeHandler.GetAuthorizationCode)
-			auth.GET("/v1/authorization-codes/:id/download", authCodeHandler.DownloadAuthorizationFile)
-			auth.PUT("/v1/authorization-codes/:id", authCodeHandler.UpdateAuthorizationCode)
-			auth.PUT("/v1/authorization-codes/:id/lock", authCodeHandler.LockUnlockAuthorizationCode)
-			auth.DELETE("/v1/authorization-codes/:id", authCodeHandler.DeleteAuthorizationCode)
-			auth.GET("/v1/authorization-codes/:id/changes", authCodeHandler.GetAuthorizationChangeList)
+			auth.GET("/v1/authorization-codes/:id", middleware.RequirePermission("authorization_code:read", permChecker), authCodeHandler.GetAuthorizationCode)
+			// 下载授权文件（客户端离线验证物料）需读取权限
+			auth.GET("/v1/authorization-codes/:id/download", middleware.RequirePermission("authorization_code:read", permChecker), authCodeHandler.DownloadAuthorizationFile)
+			auth.PUT("/v1/authorization-codes/:id", middleware.RequirePermission("authorization_code:update", permChecker), authCodeHandler.UpdateAuthorizationCode)
+			auth.PUT("/v1/authorization-codes/:id/lock", middleware.RequirePermission("authorization_code:update", permChecker), authCodeHandler.LockUnlockAuthorizationCode)
+			auth.DELETE("/v1/authorization-codes/:id", middleware.RequirePermission("authorization_code:delete", permChecker), authCodeHandler.DeleteAuthorizationCode)
+			auth.GET("/v1/authorization-codes/:id/changes", middleware.RequirePermission("authorization_code:read", permChecker), authCodeHandler.GetAuthorizationChangeList)
 
 			// 许可证管理
-			auth.GET("/v1/licenses", licenseHandler.GetLicenseList)
-			auth.GET("/v1/licenses/:id", licenseHandler.GetLicense)
-			auth.POST("/v1/licenses", licenseHandler.CreateLicense)
-			auth.PUT("/v1/licenses/:id/revoke", licenseHandler.RevokeLicense)
-			auth.DELETE("/v1/licenses/:id", licenseHandler.DeleteLicense)
-			auth.GET("/v1/licenses/:id/download", licenseHandler.DownloadLicenseFile)
+			auth.GET("/v1/licenses", middleware.RequirePermission("license:read", permChecker), licenseHandler.GetLicenseList)
+			auth.GET("/v1/licenses/:id", middleware.RequirePermission("license:read", permChecker), licenseHandler.GetLicense)
+			auth.POST("/v1/licenses", middleware.RequirePermission("license:create", permChecker), licenseHandler.CreateLicense)
+			// 撤销/删除为破坏性写操作，按 license:delete 管控（无 update 码）
+			auth.PUT("/v1/licenses/:id/revoke", middleware.RequirePermission("license:delete", permChecker), licenseHandler.RevokeLicense)
+			auth.DELETE("/v1/licenses/:id", middleware.RequirePermission("license:delete", permChecker), licenseHandler.DeleteLicense)
+			// 下载许可证文件需读取权限
+			auth.GET("/v1/licenses/:id/download", middleware.RequirePermission("license:read", permChecker), licenseHandler.DownloadLicenseFile)
 
-			// 统计分析
+			// 统计分析（登录即可读，无独立 dashboard:read 授予时由 super_admin 通配兜底）
 			auth.GET("/v1/stats/overview", licenseHandler.GetStatsOverview)
 
 			// 仪表盘接口
-			auth.GET("/v1/dashboard/home", dashboardHandler.GetHome)
-			auth.GET("/v1/dashboard/trends", dashboardHandler.GetBusinessTrends)
-			auth.GET("/v1/dashboard/authorization-trend", dashboardHandler.GetAuthorizationTrend)
-			auth.GET("/v1/dashboard/recent-authorizations", dashboardHandler.GetRecentAuthorizations)
+			auth.GET("/v1/dashboard/home", middleware.RequirePermission("dashboard:read", permChecker), dashboardHandler.GetHome)
+			auth.GET("/v1/dashboard/trends", middleware.RequirePermission("dashboard:read", permChecker), dashboardHandler.GetBusinessTrends)
+			auth.GET("/v1/dashboard/authorization-trend", middleware.RequirePermission("dashboard:read", permChecker), dashboardHandler.GetAuthorizationTrend)
+			auth.GET("/v1/dashboard/recent-authorizations", middleware.RequirePermission("dashboard:read", permChecker), dashboardHandler.GetRecentAuthorizations)
 		}
 
 		// 管理员接口
