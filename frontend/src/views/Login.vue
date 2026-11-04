@@ -20,7 +20,6 @@
         <span>{{ siteName }}</span>
       </div>
       <div class="brand-copy">
-        <p class="eyebrow">{{ t('login.communityEdition') }}</p>
         <h1>{{ t('login.heroTitleLine1') }}{{ t('login.heroTitleLine2') }}</h1>
         <p>{{ t('login.heroSubtitle') }}</p>
         <div class="authorization-flow" aria-hidden="true">
@@ -33,9 +32,6 @@
       </div>
       <div class="brand-footer">
         <p class="brand-note">{{ t('login.brandNote') }}</p>
-        <a href="https://cedar-v.com/products/cedar-license-cloud/index.html" target="_blank" rel="noopener noreferrer">
-          {{ t('login.cloudPrompt') }} <span>{{ t('login.cloudLink') }} →</span>
-        </a>
       </div>
     </section>
 
@@ -83,7 +79,6 @@
             {{ t('login.submit') }}
           </el-button>
         </el-form>
-        <footer>{{ t('login.copyright', { year: currentYear }) }}</footer>
       </div>
     </section>
   </main>
@@ -133,7 +128,6 @@ const loginFormRef = ref<FormInstance>()
 const loading = ref(false)
 const rememberMe = ref(false)
 const currentLanguage = ref(locale.value as SupportedLocale)
-const currentYear = new Date().getFullYear()
 const loginForm = reactive({ ...DEFAULT_COMMUNITY_LOGIN })
 const loginRules: FormRules = {
   username: [
@@ -274,7 +268,6 @@ onMounted(() => {
   font-size: 16px;
   font-weight: 500;
 }
-.login-card footer { margin-top:40px; color:#708079; font-size:12px; text-align:left; }
 @keyframes orbit-rotate { to { transform:rotate(405deg); } }
 @keyframes core-pulse { 0%,100% { opacity:.28; transform:scaleY(.55); } 50% { opacity:1; transform:scaleY(1); } }
 @keyframes signal-travel { 0%,100% { transform:translate(0,0); opacity:.3; } 50% { transform:translate(92px,-92px); opacity:1; } }

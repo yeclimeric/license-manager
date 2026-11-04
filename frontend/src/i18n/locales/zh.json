@@ -20,7 +20,7 @@
       "passwordRequired": "请输入密码",
       "passwordMinLength": "密码至少需要6个字符"
     },
-    "heroTitleLine1": "雪松软件授权",
+    "heroTitleLine1": "软件授权",
     "heroTitleLine2": "管理系统",
     "heroSubtitle": "赋能软件商业化，构建 B2B 与 B2C 全场景的软件授权体系。",
     "stats": {
@@ -35,16 +35,12 @@
     },
     "welcomeTitle": "登录",
     "welcomeSubtitle": "登录您的账户",
-    "communityEdition": "开源社区版",
     "brandNote": "开放、可靠的软件授权基础能力。",
-    "cloudPrompt": "需要免部署的云服务？",
-    "cloudLink": "了解雪松授权云",
     "flow": {
       "issue": "签发",
       "verify": "验证",
       "activate": "激活"
-    },
-    "copyright": "© {year} Cedar-V. 保留所有权利。"
+    }
   },
   "sidebar": {
     "expand": "展开侧边栏",

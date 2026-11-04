@@ -35,16 +35,12 @@
     },
     "welcomeTitle": "Log in",
     "welcomeSubtitle": "Sign in to your account to continue",
-    "communityEdition": "Open Source Community Edition",
     "brandNote": "Open and reliable software licensing essentials.",
-    "cloudPrompt": "Prefer a managed cloud service?",
-    "cloudLink": "Explore Cedar License Cloud",
     "flow": {
       "issue": "ISSUE",
       "verify": "VERIFY",
       "activate": "ACTIVATE"
-    },
-    "copyright": "© {year} Cedar-V. All rights reserved."
+    }
   },
   "sidebar": {
     "expand": "Expand Sidebar",

@@ -35,16 +35,12 @@
     },
     "welcomeTitle": "ログイン",
     "welcomeSubtitle": "アカウントにサインインして続けてください",
-    "communityEdition": "オープンソース・コミュニティ版",
     "brandNote": "オープンで信頼できるソフトウェアライセンス基盤。",
-    "cloudPrompt": "運用不要のクラウドサービスをお探しですか？",
-    "cloudLink": "雪松ライセンスクラウドを見る",
     "flow": {
       "issue": "発行",
       "verify": "検証",
       "activate": "有効化"
-    },
-    "copyright": "© {year} Cedar-V. All rights reserved."
+    }
   },
   "sidebar": {
     "expand": "サイドバーを展開",
