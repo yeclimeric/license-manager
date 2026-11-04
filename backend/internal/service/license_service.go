@@ -453,8 +453,8 @@ func (s *licenseService) ActivateLicense(ctx context.Context, req *models.Activa
 	// 使用事务确保并发安全
 	var response *models.ActivateResponse
 	err = s.db.Transaction(func(tx *gorm.DB) error {
-		// 检查当前激活数量
-		count, err := s.licenseRepo.GetActiveLicenseCount(ctx, authCode.ID)
+		// 计数与读父行都在同一事务内，避免并发双读旧快照突破上限
+		count, err := s.getTxActiveLicenseCount(tx, authCode.ID)
 		if err != nil {
 			return err
 		}
@@ -465,7 +465,23 @@ func (s *licenseService) ActivateLicense(ctx context.Context, req *models.Activa
 			authCode.ID, req.HardwareFingerprint).First(&existingLicense).Error
 
 		if err == nil {
-			// 已存在，直接激活
+			// 已存在：仅撤销态可重新激活，其余态（active/inactive）维持原状。
+			// 撤销许可证的指纹复用是合法场景（设备重新接入），但必须经过
+			// 额度校验——否则会绕过 MaxActivations 限制（issue #3）。
+			if existingLicense.Status != "revoked" {
+				licenseFile, genErr := s.generateLicenseFileContent(&existingLicense, authCode)
+				if genErr != nil {
+					return genErr
+				}
+				response = s.buildActivateResponse(existingLicense.LicenseKey, licenseFile, authCode)
+				return nil
+			}
+
+			// 撤销态复活：该槽位不计入 active，需占用一个额度
+			if count >= int64(authCode.MaxActivations) {
+				return repository.ErrMaxActivationsReached
+			}
+
 			existingLicense.Status = "active"
 			existingLicense.ActivationIP = &clientIP
 			now := time.Now()
@@ -477,20 +493,11 @@ func (s *licenseService) ActivateLicense(ctx context.Context, req *models.Activa
 				return err
 			}
 
-			// 生成许可证文件
-			licenseFile, err := s.generateLicenseFileContent(&existingLicense, authCode)
-			if err != nil {
-				return err
+			licenseFile, genErr := s.generateLicenseFileContent(&existingLicense, authCode)
+			if genErr != nil {
+				return genErr
 			}
-
-			response = &models.ActivateResponse{
-				LicenseKey:        existingLicense.LicenseKey,
-				LicenseFile:       licenseFile,
-				HeartbeatInterval: 300, // 5分钟
-				PublicKey:         s.productPublicKey(authCode),
-				PublicKeys:        s.productPublicKeys(authCode),
-				KeyChain:          s.productKeyChain(authCode),
-			}
+			response = s.buildActivateResponse(existingLicense.LicenseKey, licenseFile, authCode)
 			return nil
 		} else if err != gorm.ErrRecordNotFound {
 			return err
@@ -498,7 +505,7 @@ func (s *licenseService) ActivateLicense(ctx context.Context, req *models.Activa
 
 		// 检查激活数量限制
 		if count >= int64(authCode.MaxActivations) {
-			return repository.ErrLicenseNotFound // 使用已有错误，表示激活数量已达上限
+			return repository.ErrMaxActivationsReached
 		}
 
 		// 生成新的许可证
@@ -531,31 +538,70 @@ func (s *licenseService) ActivateLicense(ctx context.Context, req *models.Activa
 			return err
 		}
 
-		// 生成许可证文件
-		licenseFile, err := s.generateLicenseFileContent(license, authCode)
-		if err != nil {
-			return err
+		licenseFile, genErr := s.generateLicenseFileContent(license, authCode)
+		if genErr != nil {
+			return genErr
 		}
-
-		response = &models.ActivateResponse{
-			LicenseKey:        license.LicenseKey,
-			LicenseFile:       licenseFile,
-			HeartbeatInterval: 300,
-			PublicKey:         s.productPublicKey(authCode),
-			PublicKeys:        s.productPublicKeys(authCode),
-			KeyChain:          s.productKeyChain(authCode),
-		}
+		response = s.buildActivateResponse(license.LicenseKey, licenseFile, authCode)
 		return nil
 	})
 
 	if err != nil {
-		if errors.Is(err, repository.ErrLicenseNotFound) {
+		// 激活额度耗尽（含撤销态复活占用槽位）单独区分，不与「许可证不存在」混用
+		if errors.Is(err, repository.ErrMaxActivationsReached) {
 			return nil, i18n.NewI18nError("300004", lang) // 激活数量已达上限
 		}
 		return nil, i18n.NewI18nError("900004", lang, err.Error())
 	}
 
 	return response, nil
+}
+
+// getTxActiveLicenseCount 在事务内统计授权码的激活数。
+//
+// 用传入的 tx 而非 r.db，使计数与父行更新落在同一事务快照，
+// 避免并发双读旧快照导致突破 MaxActivations。
+func (s *licenseService) getTxActiveLicenseCount(tx *gorm.DB, authCodeID string) (int64, error) {
+	var count int64
+	err := tx.Model(&models.License{}).
+		Where("authorization_code_id = ? AND status = ?", authCodeID, "active").
+		Count(&count).Error
+	return count, err
+}
+
+// buildActivateResponse 组装激活响应，把 4 次产品项密钥查询收敛为 1 次。
+//
+// 现状激活流程对同一 offering 调了 GetProductOfferingByID 四次
+//（productPublicKey / productPublicKeys / productKeyChain / signLicenseFile），
+// 每次都在 context.Background() 上单独发 SQL。收敛为一次查询后三字段复用同一 offering。
+func (s *licenseService) buildActivateResponse(licenseKey, licenseFile string, authCode *models.AuthorizationCode) *models.ActivateResponse {
+	publicKey, publicKeys, keyChain := s.productSigningMaterial(authCode)
+	return &models.ActivateResponse{
+		LicenseKey:        licenseKey,
+		LicenseFile:       licenseFile,
+		HeartbeatInterval: 300, // 5分钟
+		PublicKey:         publicKey,
+		PublicKeys:        publicKeys,
+		KeyChain:          keyChain,
+	}
+}
+
+// productSigningMaterial 一次性取回某授权码所属产品项的三类签名物料。
+//
+// 返回 (当前公钥, 全部有效公钥, 完整密钥链)。无产品项或查询失败时三者均为 nil/空串，
+// 由调用方各自兜底。把 3 个独立方法合为一次 offering 查询。
+func (s *licenseService) productSigningMaterial(authCode *models.AuthorizationCode) (string, []string, []models.SigningKeyChainEntry) {
+	if s.productRepo == nil || authCode == nil ||
+		authCode.ProductOfferingID == nil || *authCode.ProductOfferingID == "" {
+		return "", nil, nil
+	}
+	offering, err := s.productRepo.GetProductOfferingByID(context.Background(), *authCode.ProductOfferingID)
+	if err != nil {
+		return "", nil, nil
+	}
+	return offering.SigningPublicKey,
+		CollectSigningPublicKeys(offering),
+		ParseSigningKeyChain(offering.SigningKeyChain)
 }
 
 // Heartbeat 心跳检测
@@ -641,11 +687,12 @@ func (s *licenseService) Heartbeat(ctx context.Context, req *models.HeartbeatReq
 		ConfigUpdated:     configUpdated,
 		LicenseFile:       licenseFile,
 		HeartbeatInterval: 300,
-		// 心跳顺带下发公钥集合与密钥链：密钥轮换后客户端在此获得新公钥，
-		// 无需重新发版客户端即可继续验签。
-		PublicKeys: s.productPublicKeys(license.AuthorizationCode),
-		KeyChain:   s.productKeyChain(license.AuthorizationCode),
 	}
+	// 心跳顺带下发公钥集合与密钥链：密钥轮换后客户端在此获得新公钥，
+	// 无需重新发版客户端即可继续验签。
+	_, pubKeys, keyChain := s.productSigningMaterial(license.AuthorizationCode)
+	response.PublicKeys = pubKeys
+	response.KeyChain = keyChain
 
 	return response, nil
 }
@@ -833,48 +880,28 @@ func (s *licenseService) signWithProductKey(data []byte, authCode *models.Author
 }
 
 // productPublicKey 返回授权码所属产品项的公钥，无关联时返回空串
+//
+// 已废弃：统一走 productSigningMaterial（一次 offering 查询取回三类物料）。
+// 保留本方法以兼容外部直接调用，内部委托实现。
 func (s *licenseService) productPublicKey(authCode *models.AuthorizationCode) string {
-	if s.productRepo == nil || authCode == nil ||
-		authCode.ProductOfferingID == nil || *authCode.ProductOfferingID == "" {
-		return ""
-	}
-	offering, err := s.productRepo.GetProductOfferingByID(context.Background(), *authCode.ProductOfferingID)
-	if err != nil {
-		return ""
-	}
-	return offering.SigningPublicKey
+	pub, _, _ := s.productSigningMaterial(authCode)
+	return pub
 }
 
 // productPublicKeys 返回授权码所属产品项的全部有效公钥（当前 + 轮换留档）
 //
-// 客户端按顺序逐一尝试验签，任一通过即视为可信。密钥轮换后客户端无需
-// 重新发版：随激活/心跳响应下发新公钥即可。
+// 已废弃：统一走 productSigningMaterial。保留以兼容外部直接调用。
 func (s *licenseService) productPublicKeys(authCode *models.AuthorizationCode) []string {
-	if s.productRepo == nil || authCode == nil ||
-		authCode.ProductOfferingID == nil || *authCode.ProductOfferingID == "" {
-		return nil
-	}
-	offering, err := s.productRepo.GetProductOfferingByID(context.Background(), *authCode.ProductOfferingID)
-	if err != nil {
-		return nil
-	}
-	return CollectSigningPublicKeys(offering)
+	_, keys, _ := s.productSigningMaterial(authCode)
+	return keys
 }
 
 // productKeyChain 返回授权码所属产品项的完整签名密钥链
 //
-// 链上每级带前任私钥的衔接签名，客户端可凭内置根公钥逐级验证，
-// 把整条链纳入信任——离线场景下也支持密钥轮换。
+// 已废弃：统一走 productSigningMaterial。保留以兼容外部直接调用。
 func (s *licenseService) productKeyChain(authCode *models.AuthorizationCode) []models.SigningKeyChainEntry {
-	if s.productRepo == nil || authCode == nil ||
-		authCode.ProductOfferingID == nil || *authCode.ProductOfferingID == "" {
-		return nil
-	}
-	offering, err := s.productRepo.GetProductOfferingByID(context.Background(), *authCode.ProductOfferingID)
-	if err != nil {
-		return nil
-	}
-	return ParseSigningKeyChain(offering.SigningKeyChain)
+	_, _, chain := s.productSigningMaterial(authCode)
+	return chain
 }
 
 // parseJSONField 将数据库中的 JSON 字段解析为 map，兼容被字符串包裹的情况

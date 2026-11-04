@@ -21,6 +21,10 @@ var (
 	ErrLicenseNotFound      = errors.New("license not found")
 	ErrLicenseAlreadyExists = errors.New("license already exists")
 	ErrLicenseDuplicate     = errors.New("license already exists")
+	// ErrMaxActivationsReached 授权码激活数已达上限。
+	// 与 ErrLicenseNotFound 分离：两者语义不同，复用一个哨兵会让
+	// 调用方无法区分「许可证不存在」与「激活额度耗尽」（issue #2 一码两义）。
+	ErrMaxActivationsReached = errors.New("license activation limit reached")
 )
 
 // 产品项领域的业务错误
