@@ -1,14 +1,9 @@
 package handlers
 
 import (
-	"errors"
-	"net/http"
-	"time"
-
 	"license-manager/internal/api/middleware"
 	"license-manager/internal/models"
 	"license-manager/internal/service"
-	"license-manager/pkg/i18n"
 
 	"github.com/gin-gonic/gin"
 )
@@ -24,47 +19,7 @@ func NewProductOfferingHandler(productOfferingService service.ProductOfferingSer
 	}
 }
 
-// respondError 输出错误响应：I18nError 直接用，其余走兜底
-func respondError(c *gin.Context, err error) {
-	var i18nErr *i18n.I18nError
-	if errors.As(err, &i18nErr) {
-		c.JSON(i18nErr.HttpCode, models.ErrorResponse{
-			Code:      i18nErr.Code,
-			Message:   i18nErr.Message,
-			Timestamp: time.Now().Format(time.RFC3339),
-		})
-		return
-	}
-
-	lang := middleware.GetLanguage(c)
-	status, errCode, message := i18n.NewI18nErrorResponse("900004", lang)
-	c.JSON(status, models.ErrorResponse{
-		Code:      errCode,
-		Message:   message,
-		Timestamp: time.Now().Format(time.RFC3339),
-	})
-}
-
-// respondSuccess 输出成功响应
-func respondSuccess(c *gin.Context, data interface{}) {
-	lang := middleware.GetLanguage(c)
-	c.JSON(http.StatusOK, models.APIResponse{
-		Code:    "000000",
-		Message: i18n.GetErrorMessage("000000", lang),
-		Data:    data,
-	})
-}
-
-// respondErrorWithCode 输出指定错误码的响应
-func respondErrorWithCode(c *gin.Context, code string) {
-	lang := middleware.GetLanguage(c)
-	status, errCode, message := i18n.NewI18nErrorResponse(code, lang)
-	c.JSON(status, models.ErrorResponse{
-		Code:      errCode,
-		Message:   message,
-		Timestamp: time.Now().Format(time.RFC3339),
-	})
-}
+// 通用响应函数已统一到 response.go（单一真源），本文件只保留产品域逻辑。
 
 // GetProductOfferingList 查询产品项列表
 // @Summary 查询产品项列表

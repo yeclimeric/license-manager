@@ -172,10 +172,10 @@ func (h *DashboardHandler) GetHome(c *gin.Context) {
 	ctx := middleware.WithLanguage(c.Request.Context(), c)
 	response, err := h.dashboardService.GetHome(ctx)
 	if err != nil {
-		respondDashboardError(c, err)
+		respondError(c, err)
 		return
 	}
-	respondDashboardSuccess(c, response)
+	respondSuccess(c, response)
 }
 
 // GetBusinessTrends 获取仪表盘双业务趋势。
@@ -204,24 +204,8 @@ func (h *DashboardHandler) GetBusinessTrends(c *gin.Context) {
 	ctx := middleware.WithLanguage(c.Request.Context(), c)
 	response, err := h.dashboardService.GetBusinessTrends(ctx, &req)
 	if err != nil {
-		respondDashboardError(c, err)
+		respondError(c, err)
 		return
 	}
-	respondDashboardSuccess(c, response)
-}
-
-func respondDashboardSuccess(c *gin.Context, data interface{}) {
-	lang := middleware.GetLanguage(c)
-	c.JSON(http.StatusOK, models.APIResponse{Code: "000000", Message: i18n.GetErrorMessage("000000", lang), Data: data})
-}
-
-func respondDashboardError(c *gin.Context, err error) {
-	var i18nErr *i18n.I18nError
-	if errors.As(err, &i18nErr) {
-		c.JSON(i18nErr.HttpCode, models.ErrorResponse{Code: i18nErr.Code, Message: i18nErr.Message, Timestamp: time.Now().Format(time.RFC3339)})
-		return
-	}
-	lang := middleware.GetLanguage(c)
-	status, errCode, message := i18n.NewI18nErrorResponse("900004", lang)
-	c.JSON(status, models.ErrorResponse{Code: errCode, Message: message, Timestamp: time.Now().Format(time.RFC3339)})
+	respondSuccess(c, response)
 }
