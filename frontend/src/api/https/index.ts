@@ -92,8 +92,13 @@ Axios.interceptors.response.use(response => {
       case '000000':
         // code === '000000' 代表成功
         return apiData
-      case 401:
-        // code === 401 代表未授权，清除token并跳转到登录页
+      // 认证类业务码（字符串）。原实现写 case 401(number)，与后端的字符串
+      // 业务码永不匹配，是死代码；后端认证码统一为 i18n 目录的 100001/100002/100004/100007。
+      // HTTP 401 由下方 error 拦截器处理，这里兜住「200 响应里带认证失败业务码」的场景。
+      case '100001':
+      case '100002':
+      case '100004':
+      case '100007':
         redirectToLogin()
         const authError = new Error(apiData.message || "未授权访问")
         ;(authError as any).response = { data: apiData }

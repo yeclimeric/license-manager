@@ -1,5 +1,5 @@
 import Axios from './https'
-import type { ApiResponse } from './customer'
+import type { ApiResponse } from './types'
 
 // 部署模式
 export type DeploymentMode = 'online' | 'offline' | 'hybrid'

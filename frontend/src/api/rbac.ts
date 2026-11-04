@@ -1,5 +1,5 @@
 import Axios from './https'
-import type { ApiResponse } from './customer'
+import type { ApiResponse } from './types'
 
 /** 菜单类型 */
 export type MenuType = 'menu' | 'directory'

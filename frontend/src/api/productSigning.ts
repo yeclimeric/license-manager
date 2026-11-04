@@ -1,5 +1,5 @@
 import Axios from './https'
-import type { ApiResponse } from './customer'
+import type { ApiResponse } from './types'
 import type { ProductOffering } from './productOffering'
 
 /** 签名密钥链条目 */

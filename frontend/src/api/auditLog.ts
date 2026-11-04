@@ -1,5 +1,5 @@
 import Axios from './https'
-import type { ApiResponse } from './customer'
+import type { ApiResponse } from './types'
 
 /** 审计结果 */
 export type AuditStatus = 'success' | 'failure'

@@ -1,4 +1,5 @@
 import Axios from './https'
+import type { ApiResponse } from './types'
 
 // 授权统计信息类型
 export interface AuthorizationStats {
@@ -101,13 +102,6 @@ export interface CustomerQueryResponse {
 
 // 客户详情响应
 // 通用响应 - 泛型类型
-export interface ApiResponse<T = any> {
-  code: string;
-  message: string;
-  timestamp: string;
-  data?: T;
-}
-
 /**
  * 查询客户列表
  */

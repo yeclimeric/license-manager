@@ -1,5 +1,5 @@
 import Axios from './https'
-import type { ApiResponse } from './customer'
+import type { ApiResponse } from './types'
 
 export interface LoginRequest {
   username: string;

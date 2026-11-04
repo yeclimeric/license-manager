@@ -7,10 +7,10 @@
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
 import Axios from './https/index'
+import type { ApiResponse } from './types'
 
 // 最近授权数据类型定义
 
-// API响应类型
 export interface RecentAuthorizationItem {
   id: string
   code: string
@@ -32,13 +32,6 @@ export interface RecentAuthorizationItem {
   product_offering_name: string
   created_at: string
   updated_at: string
-}
-
-// 请求格式
-export interface ApiResponse<T> {
-  code: string
-  message: string
-  data: T
 }
 
 // 最近授权响应类型

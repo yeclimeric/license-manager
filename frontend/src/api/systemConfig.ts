@@ -1,5 +1,5 @@
 import Axios from './https'
-import type { ApiResponse } from './customer'
+import type { ApiResponse } from './types'
 
 /** 配置值类型 */
 export type ConfigValueType = 'text' | 'textarea' | 'switch' | 'image' | 'select' | 'number'

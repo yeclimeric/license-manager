@@ -1,5 +1,5 @@
 import Axios from './https'
-import type { ApiResponse } from './customer'
+import type { ApiResponse } from './types'
 
 // 功能模板状态
 export type FeatureTemplateStatus = 'active' | 'inactive'
