@@ -77,6 +77,25 @@ export const formatDateTime = (dateString: string | null | undefined): string =>
 }
 
 /**
+ * 紧凑日期时间格式（列表页表格用）：YYYY-MM-DD HH:mm，可选带秒。
+ *
+ * 与上面 locale 版的区别：空值返回空串而非「永久」，输出固定 ASCII 格式，
+ * 便于表格列对齐。历史上 ApiKeys / Users / AuditLogs 各自复制了一份
+ * 逐字符相同的实现，此处收敛为单一真源。
+ */
+export const formatDateTimeCompact = (
+  dateString: string | null | undefined,
+  withSeconds = false
+): string => {
+  if (!dateString) return ''
+  const date = new Date(dateString)
+  if (Number.isNaN(date.getTime())) return dateString
+  const pad = (n: number) => String(n).padStart(2, '0')
+  const base = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`
+  return withSeconds ? `${base}:${pad(date.getSeconds())}` : base
+}
+
+/**
  * 检查日期是否已过期
  * @param dateString 日期字符串
  * @returns 如果日期已过期返回 true，否则返回 false

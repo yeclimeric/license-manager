@@ -217,6 +217,7 @@ import {
   type AuditStatus
 } from '@/api/auditLog'
 import { getErrorMessage } from '@/utils/error'
+import { formatDateTimeCompact } from '@/utils/date'
 import { useInitialSkeleton } from '@/composables/useInitialSkeleton'
 
 const { t } = useI18n()
@@ -257,13 +258,8 @@ const prettyJson = (raw: string): string => {
 }
 
 // 后端时间戳带时区偏移，前端需显式解析
-const formatDateTime = (value: string): string => {
-  if (!value) return ''
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return value
-  const pad = (n: number) => String(n).padStart(2, '0')
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
-}
+// 审计日志需要秒级精度，统一走 utils/date 的紧凑格式
+const formatDateTime = (value: string): string => formatDateTimeCompact(value, true)
 
 const loadStats = async () => {
   try {

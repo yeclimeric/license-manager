@@ -167,6 +167,7 @@ import {
 } from '@/api/user'
 import { getRoles } from '@/api/rbac'
 import { getErrorMessage } from '@/utils/error'
+import { formatDateTimeCompact } from '@/utils/date'
 
 const { t } = useI18n()
 
@@ -196,13 +197,8 @@ const statusTagType = (status: UserStatus) => {
   return 'info'
 }
 
-const formatDate = (value: string): string => {
-  if (!value) return ''
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return value
-  const pad = (n: number) => String(n).padStart(2, '0')
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`
-}
+// 表格列沿用局部短名，实现统一走 utils/date
+const formatDate = (value: string): string => formatDateTimeCompact(value)
 
 const loadUsers = async () => {
   loading.value = true
@@ -302,7 +298,9 @@ const removeUser = async (row: UserItem) => {
   try {
     await deleteUser(row.id)
     ElMessage.success(t('users.message.userDeleted'))
-    loadUsers()
+    // 删除的是末页最后一条时回退一页，否则会停在空白页
+    if (users.value.length === 1 && pagination.page > 1) pagination.page -= 1
+    await loadUsers()
   } catch (error) {
     ElMessage.error(getErrorMessage(error, t('users.message.loadFailed')))
   }

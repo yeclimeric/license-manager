@@ -1,4 +1,4 @@
-import { computed, onScopeDispose, ref, watch, type Ref } from 'vue'
+import { computed, getCurrentScope, onScopeDispose, ref, watch, type Ref } from 'vue'
 
 export const useInitialSkeleton = (loading: Ref<boolean>, delay = 120) => {
   const initialized = ref(false)
@@ -31,7 +31,11 @@ export const useInitialSkeleton = (loading: Ref<boolean>, delay = 120) => {
     clearTimer()
   }
 
-  onScopeDispose(clearTimer)
+  // 组件内必有 effect scope；纯单测直接调用时可没有，
+  // 此时 onScopeDispose 会告警且不会注册清理，故显式判断。
+  if (getCurrentScope()) {
+    onScopeDispose(clearTimer)
+  }
 
   return {
     initialized,

@@ -156,6 +156,7 @@ import {
 } from '@/api/systemConfig'
 import { getUsers, type UserItem } from '@/api/user'
 import { getErrorMessage } from '@/utils/error'
+import { formatDateTimeCompact } from '@/utils/date'
 
 const { t } = useI18n()
 
@@ -180,13 +181,8 @@ const statusTagType = (status: string) => {
   return 'info'
 }
 
-const formatDate = (value: string): string => {
-  if (!value) return ''
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return value
-  const pad = (n: number) => String(n).padStart(2, '0')
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`
-}
+// 表格列沿用局部短名，实现统一走 utils/date（空值返回空串）
+const formatDate = (value: string): string => formatDateTimeCompact(value)
 
 const loadKeys = async () => {
   loading.value = true
@@ -272,7 +268,9 @@ const removeKey = async (row: ApiKeyItem) => {
   try {
     await deleteApiKey(row.id)
     ElMessage.success(t('apiKeys.message.deleted'))
-    loadKeys()
+    // 删除的是末页最后一条时回退一页，否则会停在空白页
+    if (keys.value.length === 1 && pagination.page > 1) pagination.page -= 1
+    await loadKeys()
   } catch (error) {
     ElMessage.error(getErrorMessage(error, t('apiKeys.message.loadFailed')))
   }
