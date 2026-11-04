@@ -117,27 +117,11 @@ func (r *userRepository) batchUserRoles(ctx context.Context, userIDs []string) (
 
 // GetUserList 查询用户列表
 func (r *userRepository) GetUserList(ctx context.Context, req *models.UserListRequest) ([]models.UserListItem, int64, error) {
-	page := req.Page
-	if page <= 0 {
-		page = 1
-	}
-	pageSize := req.PageSize
-	if pageSize <= 0 {
-		pageSize = 20
-	}
-	if pageSize > 100 {
-		pageSize = 100
-	}
+	page, pageSize := NormalizePage(req.Page, req.PageSize)
 
-	sortBy := "created_at"
-	switch req.Sort {
-	case "updated_at", "username", "full_name":
-		sortBy = req.Sort
-	}
-	sortOrder := "DESC"
-	if strings.EqualFold(req.Order, "asc") {
-		sortOrder = "ASC"
-	}
+	// 排序走统一白名单（repository/sort.go）
+	orderClause := SafeOrderClause(req.Sort, req.Order, "",
+		"created_at", "updated_at", "username", "full_name")
 
 	query := r.db.WithContext(ctx).Model(&models.User{})
 
@@ -158,7 +142,7 @@ func (r *userRepository) GetUserList(ctx context.Context, req *models.UserListRe
 	}
 
 	var users []models.User
-	if err := query.Order(sortBy + " " + sortOrder).
+	if err := query.Order(orderClause).
 		Offset((page - 1) * pageSize).Limit(pageSize).
 		Find(&users).Error; err != nil {
 		return nil, 0, fmt.Errorf("failed to list users: %w", err)

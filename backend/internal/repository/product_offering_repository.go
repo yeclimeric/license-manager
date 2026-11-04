@@ -27,15 +27,7 @@ func NewProductOfferingRepository(db *gorm.DB) ProductOfferingRepository {
 
 // GetProductOfferingList 查询产品项列表
 func (r *productOfferingRepository) GetProductOfferingList(ctx context.Context, req *models.ProductOfferingListRequest) ([]models.ProductOffering, int64, error) {
-	if req.Page <= 0 {
-		req.Page = 1
-	}
-	if req.PageSize <= 0 {
-		req.PageSize = 20
-	}
-	if req.PageSize > 100 {
-		req.PageSize = 100
-	}
+	req.Page, req.PageSize = NormalizePage(req.Page, req.PageSize)
 	if req.SortBy == "" {
 		req.SortBy = "created_at"
 	}
@@ -60,20 +52,13 @@ func (r *productOfferingRepository) GetProductOfferingList(ctx context.Context, 
 		return nil, 0, fmt.Errorf("failed to count product offerings: %w", err)
 	}
 
-	// 白名单排序字段，防止 SQL 注入
-	sortColumn := "created_at"
-	switch req.SortBy {
-	case "name", "code", "created_at", "updated_at":
-		sortColumn = req.SortBy
-	}
-	sortOrder := "DESC"
-	if strings.EqualFold(req.SortOrder, "asc") {
-		sortOrder = "ASC"
-	}
+	// 排序走统一白名单（repository/sort.go）
+	orderClause := SafeOrderClause(req.SortBy, req.SortOrder, "",
+		"created_at", "name", "code", "updated_at")
 
 	var offerings []models.ProductOffering
 	offset := (req.Page - 1) * req.PageSize
-	if err := query.Order(sortColumn + " " + sortOrder).Offset(offset).Limit(req.PageSize).Find(&offerings).Error; err != nil {
+	if err := query.Order(orderClause).Offset(offset).Limit(req.PageSize).Find(&offerings).Error; err != nil {
 		return nil, 0, fmt.Errorf("failed to list product offerings: %w", err)
 	}
 

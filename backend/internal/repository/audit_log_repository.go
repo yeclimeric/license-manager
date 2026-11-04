@@ -29,26 +29,11 @@ func (r *auditLogRepository) Create(ctx context.Context, log *models.AuditLog) e
 
 // GetAuditLogList 查询审计日志列表
 func (r *auditLogRepository) GetAuditLogList(ctx context.Context, req *models.AuditLogListRequest) ([]models.AuditLog, int64, error) {
-	page := req.Page
-	if page <= 0 {
-		page = 1
-	}
-	pageSize := req.PageSize
-	if pageSize <= 0 {
-		pageSize = 20
-	}
-	if pageSize > 100 {
-		pageSize = 100
-	}
+	page, pageSize := NormalizePage(req.Page, req.PageSize)
 
-	sortBy := req.SortBy
-	if sortBy == "" {
-		sortBy = "created_at"
-	}
-	sortOrder := "DESC"
-	if strings.EqualFold(req.SortOrder, "asc") {
-		sortOrder = "ASC"
-	}
+	// 排序走统一白名单（repository/sort.go）
+	orderClause := SafeOrderClause(req.SortBy, req.SortOrder, "",
+		"created_at", "action", "resource_type", "status")
 
 	query := r.db.WithContext(ctx).Model(&models.AuditLog{})
 
@@ -79,16 +64,9 @@ func (r *auditLogRepository) GetAuditLogList(ctx context.Context, req *models.Au
 		return nil, 0, fmt.Errorf("failed to count audit logs: %w", err)
 	}
 
-	// 白名单排序字段，防止 SQL 注入
-	sortColumn := "created_at"
-	switch sortBy {
-	case "created_at", "action", "resource_type", "status":
-		sortColumn = sortBy
-	}
-
 	var logs []models.AuditLog
 	offset := (page - 1) * pageSize
-	if err := query.Order(sortColumn + " " + sortOrder).Offset(offset).Limit(pageSize).Find(&logs).Error; err != nil {
+	if err := query.Order(orderClause).Offset(offset).Limit(pageSize).Find(&logs).Error; err != nil {
 		return nil, 0, fmt.Errorf("failed to list audit logs: %w", err)
 	}
 

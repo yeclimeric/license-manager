@@ -119,17 +119,7 @@ func (r *systemConfigRepository) Delete(ctx context.Context, key string) error {
 
 // GetAPIKeyList 查询 API Key 列表
 func (r *systemConfigRepository) GetAPIKeyList(ctx context.Context, req *models.APIKeyListRequest) ([]models.APIKeyListItem, int64, error) {
-	page := req.Page
-	if page <= 0 {
-		page = 1
-	}
-	pageSize := req.PageSize
-	if pageSize <= 0 {
-		pageSize = 20
-	}
-	if pageSize > 100 {
-		pageSize = 100
-	}
+	page, pageSize := NormalizePage(req.Page, req.PageSize)
 
 	type row struct {
 		ID         string

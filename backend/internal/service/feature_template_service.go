@@ -39,14 +39,10 @@ func (s *featureTemplateService) GetFeatureTemplateList(ctx context.Context, req
 		s.decorate(&templates[i], labels, lang)
 	}
 
-	pageSize := req.PageSize
-	if pageSize <= 0 {
-		pageSize = 20
-	}
-	totalPages := 0
-	if total > 0 {
-		totalPages = int((total + int64(pageSize) - 1) / int64(pageSize))
-	}
+	// 与 repository 共用同一分页归一化，避免 page_size>100 时
+	// 「按 100 查询、按原值算页数」的分裂
+	_, pageSize := repository.NormalizePage(req.Page, req.PageSize)
+	totalPages := repository.CalcTotalPages(int64(total), pageSize)
 
 	return &models.FeatureTemplateListResponse{
 		List:       templates,

@@ -25,15 +25,7 @@ func NewCustomerRepository(db *gorm.DB) CustomerRepository {
 // GetCustomerList 查询客户列表
 func (r *customerRepository) GetCustomerList(ctx context.Context, req *models.CustomerListRequest) (*models.CustomerListResponse, error) {
 	// 设置默认值
-	if req.Page <= 0 {
-		req.Page = 1
-	}
-	if req.PageSize <= 0 {
-		req.PageSize = 20
-	}
-	if req.PageSize > 100 {
-		req.PageSize = 100
-	}
+	req.Page, req.PageSize = NormalizePage(req.Page, req.PageSize)
 	if req.Sort == "" {
 		req.Sort = "created_at"
 	}
@@ -74,9 +66,10 @@ func (r *customerRepository) GetCustomerList(ctx context.Context, req *models.Cu
 		return nil, fmt.Errorf("failed to count customers: %w", err)
 	}
 
-	// 排序和分页
+	// 排序和分页：列名与方向经白名单收敛，不直接拼接请求字段
 	offset := (req.Page - 1) * req.PageSize
-	orderClause := fmt.Sprintf("%s %s", req.Sort, strings.ToUpper(req.Order))
+	orderClause := SafeOrderClause(req.Sort, req.Order, "",
+		"created_at", "updated_at", "customer_name", "customer_code")
 	query = query.Order(orderClause).Offset(offset).Limit(req.PageSize)
 
 	// 查询数据
@@ -101,11 +94,8 @@ func (r *customerRepository) GetCustomerList(ctx context.Context, req *models.Cu
 		})
 	}
 
-	// 计算总页数
-	totalPages := int(total) / req.PageSize
-	if int(total)%req.PageSize > 0 {
-		totalPages++
-	}
+	// 计算总页数（统一契约，含除零保护）
+	totalPages := CalcTotalPages(total, req.PageSize)
 
 	return &models.CustomerListResponse{
 		List:       customerList,

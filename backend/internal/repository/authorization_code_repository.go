@@ -2,10 +2,10 @@ package repository
 
 import (
 	"context"
-	"license-manager/internal/models"
-	"math"
 	"strings"
 	"time"
+
+	"license-manager/internal/models"
 
 	"gorm.io/gorm"
 )
@@ -54,14 +54,8 @@ func (r *authorizationCodeRepository) GetAuthorizationCodeByID(ctx context.Conte
 // GetAuthorizationCodeList 查询授权码列表
 func (r *authorizationCodeRepository) GetAuthorizationCodeList(ctx context.Context, req *models.AuthorizationCodeListRequest) (*models.AuthorizationCodeListResponse, error) {
 	// 设置默认值
-	page := req.Page
-	if page <= 0 {
-		page = 1
-	}
-	pageSize := req.PageSize
-	if pageSize <= 0 {
-		pageSize = 20
-	}
+	// 统一归一化：此处原实现缺 page_size>100 截断，与其余列表不一致
+	page, pageSize := NormalizePage(req.Page, req.PageSize)
 	sort := req.Sort
 	if sort == "" {
 		sort = "created_at"
@@ -163,7 +157,7 @@ func (r *authorizationCodeRepository) GetAuthorizationCodeList(ctx context.Conte
 	}
 
 	offset := (page - 1) * pageSize
-	orderClause := sort + " " + order
+	orderClause := SafeOrderClause(sort, order, "", "created_at", "updated_at", "code")
 	if err := query.Order(orderClause).Limit(pageSize).Offset(offset).Scan(&results).Error; err != nil {
 		return nil, err
 	}
@@ -197,7 +191,7 @@ func (r *authorizationCodeRepository) GetAuthorizationCodeList(ctx context.Conte
 		}
 	}
 
-	totalPages := int((total + int64(pageSize) - 1) / int64(pageSize))
+	totalPages := CalcTotalPages(total, pageSize)
 
 	return &models.AuthorizationCodeListResponse{
 		List:       list,
@@ -236,15 +230,7 @@ func (r *authorizationCodeRepository) CheckCustomerExists(ctx context.Context, c
 // GetAuthorizationChangeList 查询授权变更历史列表
 func (r *authorizationCodeRepository) GetAuthorizationChangeList(ctx context.Context, authCodeID string, req *models.AuthorizationChangeListRequest) (*models.AuthorizationChangeListResponse, error) {
 	// 设置默认值
-	if req.Page <= 0 {
-		req.Page = 1
-	}
-	if req.PageSize <= 0 {
-		req.PageSize = 20
-	}
-	if req.PageSize > 100 {
-		req.PageSize = 100
-	}
+	req.Page, req.PageSize = NormalizePage(req.Page, req.PageSize)
 	if req.Sort == "" {
 		req.Sort = "created_at"
 	}
@@ -292,8 +278,9 @@ func (r *authorizationCodeRepository) GetAuthorizationChangeList(ctx context.Con
 		return nil, err
 	}
 
-	// 排序和分页
-	orderBy := "authorization_changes." + req.Sort + " " + req.Order
+	// 排序和分页：白名单收敛，避免请求字段直接拼进 SQL
+	orderBy := SafeOrderClause(req.Sort, req.Order, "authorization_changes.",
+		"created_at", "change_type")
 	offset := (req.Page - 1) * req.PageSize
 
 	var changes []struct {
@@ -327,8 +314,8 @@ func (r *authorizationCodeRepository) GetAuthorizationChangeList(ctx context.Con
 		}
 	}
 
-	// 计算总页数
-	totalPages := int(math.Ceil(float64(total) / float64(req.PageSize)))
+	// 计算总页数（统一契约，含除零保护）
+	totalPages := CalcTotalPages(total, req.PageSize)
 
 	return &models.AuthorizationChangeListResponse{
 		List:       list,

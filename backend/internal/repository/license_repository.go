@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"math"
 	"time"
 
 	"gorm.io/gorm"
@@ -25,15 +24,7 @@ func NewLicenseRepository(db *gorm.DB) LicenseRepository {
 // GetLicenseList 查询许可证列表
 func (r *licenseRepository) GetLicenseList(ctx context.Context, req *models.LicenseListRequest) (*models.LicenseListResponse, error) {
 	// 设置默认值
-	if req.Page <= 0 {
-		req.Page = 1
-	}
-	if req.PageSize <= 0 {
-		req.PageSize = 20
-	}
-	if req.PageSize > 100 {
-		req.PageSize = 100
-	}
+	req.Page, req.PageSize = NormalizePage(req.Page, req.PageSize)
 	if req.Sort == "" {
 		req.Sort = "created_at"
 	}
@@ -87,8 +78,9 @@ func (r *licenseRepository) GetLicenseList(ctx context.Context, req *models.Lice
 		return nil, err
 	}
 
-	// 排序和分页
-	orderBy := "licenses." + req.Sort + " " + req.Order
+	// 排序和分页：白名单收敛，避免请求字段直接拼进 SQL
+	orderBy := SafeOrderClause(req.Sort, req.Order, "licenses.",
+		"created_at", "updated_at", "activated_at", "last_heartbeat")
 	offset := (req.Page - 1) * req.PageSize
 
 	var licenses []struct {
@@ -153,8 +145,8 @@ func (r *licenseRepository) GetLicenseList(ctx context.Context, req *models.Lice
 		}
 	}
 
-	// 计算总页数
-	totalPages := int(math.Ceil(float64(total) / float64(req.PageSize)))
+	// 计算总页数（统一契约，含除零保护）
+	totalPages := CalcTotalPages(total, req.PageSize)
 
 	return &models.LicenseListResponse{
 		List:       list,
