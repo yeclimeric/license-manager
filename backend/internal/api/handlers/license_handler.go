@@ -4,7 +4,6 @@ import (
 	"archive/zip"
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"path/filepath"
@@ -69,23 +68,7 @@ func (h *LicenseHandler) GetLicenseList(c *gin.Context) {
 	data, err := h.licenseService.GetLicenseList(ctx, &req)
 	if err != nil {
 		// 错误已经在Service层完全包装好了，直接使用
-		var i18nErr *i18n.I18nError
-		if errors.As(err, &i18nErr) {
-			c.JSON(i18nErr.HttpCode, models.ErrorResponse{
-				Code:      i18nErr.Code,
-				Message:   i18nErr.Message,
-				Timestamp: time.Now().Format(time.RFC3339),
-			})
-		} else {
-			// 兜底：理论上不应该到这里，因为Service层应该返回I18nError
-			lang := middleware.GetLanguage(c)
-			status, errCode, message := i18n.NewI18nErrorResponse("900004", lang)
-			c.JSON(status, models.ErrorResponse{
-				Code:      errCode,
-				Message:   message,
-				Timestamp: time.Now().Format(time.RFC3339),
-			})
-		}
+		respondError(c, err)
 		return
 	}
 
@@ -115,13 +98,7 @@ func (h *LicenseHandler) GetLicenseList(c *gin.Context) {
 func (h *LicenseHandler) GetLicense(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
-		lang := middleware.GetLanguage(c)
-		status, errCode, message := i18n.NewI18nErrorResponse("900001", lang)
-		c.JSON(status, models.ErrorResponse{
-			Code:      errCode,
-			Message:   message,
-			Timestamp: time.Now().Format(time.RFC3339),
-		})
+		respondErrorWithCode(c, "900001")
 		return
 	}
 
@@ -131,23 +108,7 @@ func (h *LicenseHandler) GetLicense(c *gin.Context) {
 	data, err := h.licenseService.GetLicense(ctx, id)
 	if err != nil {
 		// 错误已经在Service层完全包装好了，直接使用
-		var i18nErr *i18n.I18nError
-		if errors.As(err, &i18nErr) {
-			c.JSON(i18nErr.HttpCode, models.ErrorResponse{
-				Code:      i18nErr.Code,
-				Message:   i18nErr.Message,
-				Timestamp: time.Now().Format(time.RFC3339),
-			})
-		} else {
-			// 兜底：理论上不应该到这里，因为Service层应该返回I18nError
-			lang := middleware.GetLanguage(c)
-			status, errCode, message := i18n.NewI18nErrorResponse("900004", lang)
-			c.JSON(status, models.ErrorResponse{
-				Code:      errCode,
-				Message:   message,
-				Timestamp: time.Now().Format(time.RFC3339),
-			})
-		}
+		respondError(c, err)
 		return
 	}
 
@@ -193,23 +154,7 @@ func (h *LicenseHandler) CreateLicense(c *gin.Context) {
 	data, err := h.licenseService.CreateLicense(ctx, &req)
 	if err != nil {
 		// 错误已经在Service层完全包装好了，直接使用
-		var i18nErr *i18n.I18nError
-		if errors.As(err, &i18nErr) {
-			c.JSON(i18nErr.HttpCode, models.ErrorResponse{
-				Code:      i18nErr.Code,
-				Message:   i18nErr.Message,
-				Timestamp: time.Now().Format(time.RFC3339),
-			})
-		} else {
-			// 兜底：理论上不应该到这里，因为Service层应该返回I18nError
-			lang := middleware.GetLanguage(c)
-			status, errCode, message := i18n.NewI18nErrorResponse("900004", lang)
-			c.JSON(status, models.ErrorResponse{
-				Code:      errCode,
-				Message:   message,
-				Timestamp: time.Now().Format(time.RFC3339),
-			})
-		}
+		respondError(c, err)
 		return
 	}
 
@@ -241,13 +186,7 @@ func (h *LicenseHandler) CreateLicense(c *gin.Context) {
 func (h *LicenseHandler) RevokeLicense(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
-		lang := middleware.GetLanguage(c)
-		status, errCode, message := i18n.NewI18nErrorResponse("900001", lang)
-		c.JSON(status, models.ErrorResponse{
-			Code:      errCode,
-			Message:   message,
-			Timestamp: time.Now().Format(time.RFC3339),
-		})
+		respondErrorWithCode(c, "900001")
 		return
 	}
 
@@ -269,23 +208,7 @@ func (h *LicenseHandler) RevokeLicense(c *gin.Context) {
 	data, err := h.licenseService.RevokeLicense(ctx, id, &req)
 	if err != nil {
 		// 错误已经在Service层完全包装好了，直接使用
-		var i18nErr *i18n.I18nError
-		if errors.As(err, &i18nErr) {
-			c.JSON(i18nErr.HttpCode, models.ErrorResponse{
-				Code:      i18nErr.Code,
-				Message:   i18nErr.Message,
-				Timestamp: time.Now().Format(time.RFC3339),
-			})
-		} else {
-			// 兜底：理论上不应该到这里，因为Service层应该返回I18nError
-			lang := middleware.GetLanguage(c)
-			status, errCode, message := i18n.NewI18nErrorResponse("900004", lang)
-			c.JSON(status, models.ErrorResponse{
-				Code:      errCode,
-				Message:   message,
-				Timestamp: time.Now().Format(time.RFC3339),
-			})
-		}
+		respondError(c, err)
 		return
 	}
 
@@ -316,16 +239,7 @@ func (h *LicenseHandler) DeleteLicense(c *gin.Context) {
 	id := c.Param("id")
 	ctx := middleware.WithLanguage(c.Request.Context(), c)
 	if err := h.licenseService.DeleteLicense(ctx, id); err != nil {
-		var i18nErr *i18n.I18nError
-		if errors.As(err, &i18nErr) {
-			c.JSON(i18nErr.HttpCode, models.ErrorResponse{
-				Code: i18nErr.Code, Message: i18nErr.Message, Timestamp: time.Now().Format(time.RFC3339),
-			})
-			return
-		}
-		lang := middleware.GetLanguage(c)
-		status, errCode, message := i18n.NewI18nErrorResponse("900004", lang)
-		c.JSON(status, models.ErrorResponse{Code: errCode, Message: message, Timestamp: time.Now().Format(time.RFC3339)})
+		respondError(c, err)
 		return
 	}
 
@@ -351,15 +265,9 @@ func (h *LicenseHandler) DeleteLicense(c *gin.Context) {
 // @Failure 500 {object} models.ErrorResponse "服务器内部错误"
 // @Router /api/v1/licenses/{id}/download [get]
 func (h *LicenseHandler) DownloadLicenseFile(c *gin.Context) {
-	lang := middleware.GetLanguage(c)
 	id := c.Param("id")
 	if id == "" {
-		status, errCode, message := i18n.NewI18nErrorResponse("900001", lang)
-		c.JSON(status, models.ErrorResponse{
-			Code:      errCode,
-			Message:   message,
-			Timestamp: time.Now().Format(time.RFC3339),
-		})
+		respondErrorWithCode(c, "900001")
 		return
 	}
 
@@ -369,23 +277,7 @@ func (h *LicenseHandler) DownloadLicenseFile(c *gin.Context) {
 	fileData, fileName, licenseKey, err := h.licenseService.GenerateLicenseFile(ctx, id)
 	if err != nil {
 		// 错误已经在Service层完全包装好了，直接使用
-		var i18nErr *i18n.I18nError
-		if errors.As(err, &i18nErr) {
-			c.JSON(i18nErr.HttpCode, models.ErrorResponse{
-				Code:      i18nErr.Code,
-				Message:   i18nErr.Message,
-				Timestamp: time.Now().Format(time.RFC3339),
-			})
-		} else {
-			// 兜底：理论上不应该到这里，因为Service层应该返回I18nError
-			lang := middleware.GetLanguage(c)
-			status, errCode, message := i18n.NewI18nErrorResponse("900004", lang)
-			c.JSON(status, models.ErrorResponse{
-				Code:      errCode,
-				Message:   message,
-				Timestamp: time.Now().Format(time.RFC3339),
-			})
-		}
+		respondError(c, err)
 		return
 	}
 
@@ -393,12 +285,7 @@ func (h *LicenseHandler) DownloadLicenseFile(c *gin.Context) {
 	// 否则回退全局配置公钥。直接读全局公钥会导致产品项签发的授权文件验签失败。
 	publicKeyData, err := h.licenseService.GetLicenseSigningPublicKey(ctx, id)
 	if err != nil {
-		status, errCode, message := i18n.NewI18nErrorResponse("900004", lang)
-		c.JSON(status, models.ErrorResponse{
-			Code:      errCode,
-			Message:   message,
-			Timestamp: time.Now().Format(time.RFC3339),
-		})
+		respondErrorWithCode(c, "900004")
 		return
 	}
 
@@ -408,41 +295,21 @@ func (h *LicenseHandler) DownloadLicenseFile(c *gin.Context) {
 	const zipLicenseFileName = "license.lic"
 	licenseFileWriter, err := zipWriter.Create(zipLicenseFileName)
 	if err != nil {
-		status, errCode, message := i18n.NewI18nErrorResponse("900004", lang)
-		c.JSON(status, models.ErrorResponse{
-			Code:      errCode,
-			Message:   message,
-			Timestamp: time.Now().Format(time.RFC3339),
-		})
+		respondErrorWithCode(c, "900004")
 		return
 	}
 	if _, err := licenseFileWriter.Write(fileData); err != nil {
-		status, errCode, message := i18n.NewI18nErrorResponse("900004", lang)
-		c.JSON(status, models.ErrorResponse{
-			Code:      errCode,
-			Message:   message,
-			Timestamp: time.Now().Format(time.RFC3339),
-		})
+		respondErrorWithCode(c, "900004")
 		return
 	}
 
 	publicKeyWriter, err := zipWriter.Create("rsa_public_key.pem")
 	if err != nil {
-		status, errCode, message := i18n.NewI18nErrorResponse("900004", lang)
-		c.JSON(status, models.ErrorResponse{
-			Code:      errCode,
-			Message:   message,
-			Timestamp: time.Now().Format(time.RFC3339),
-		})
+		respondErrorWithCode(c, "900004")
 		return
 	}
 	if _, err := publicKeyWriter.Write(publicKeyData); err != nil {
-		status, errCode, message := i18n.NewI18nErrorResponse("900004", lang)
-		c.JSON(status, models.ErrorResponse{
-			Code:      errCode,
-			Message:   message,
-			Timestamp: time.Now().Format(time.RFC3339),
-		})
+		respondErrorWithCode(c, "900004")
 		return
 	}
 
@@ -461,12 +328,7 @@ func (h *LicenseHandler) DownloadLicenseFile(c *gin.Context) {
 	}
 
 	if err := zipWriter.Close(); err != nil {
-		status, errCode, message := i18n.NewI18nErrorResponse("900004", lang)
-		c.JSON(status, models.ErrorResponse{
-			Code:      errCode,
-			Message:   message,
-			Timestamp: time.Now().Format(time.RFC3339),
-		})
+		respondErrorWithCode(c, "900004")
 		return
 	}
 
@@ -524,23 +386,7 @@ func (h *LicenseHandler) ActivateLicense(c *gin.Context) {
 	data, err := h.licenseService.ActivateLicense(ctx, &req, clientIP)
 	if err != nil {
 		// 错误已经在Service层完全包装好了，直接使用
-		var i18nErr *i18n.I18nError
-		if errors.As(err, &i18nErr) {
-			c.JSON(i18nErr.HttpCode, models.ErrorResponse{
-				Code:      i18nErr.Code,
-				Message:   i18nErr.Message,
-				Timestamp: time.Now().Format(time.RFC3339),
-			})
-		} else {
-			// 兜底：理论上不应该到这里，因为Service层应该返回I18nError
-			lang := middleware.GetLanguage(c)
-			status, errCode, message := i18n.NewI18nErrorResponse("900004", lang)
-			c.JSON(status, models.ErrorResponse{
-				Code:      errCode,
-				Message:   message,
-				Timestamp: time.Now().Format(time.RFC3339),
-			})
-		}
+		respondError(c, err)
 		return
 	}
 
@@ -588,23 +434,7 @@ func (h *LicenseHandler) Heartbeat(c *gin.Context) {
 	data, err := h.licenseService.Heartbeat(ctx, &req, clientIP)
 	if err != nil {
 		// 错误已经在Service层完全包装好了，直接使用
-		var i18nErr *i18n.I18nError
-		if errors.As(err, &i18nErr) {
-			c.JSON(i18nErr.HttpCode, models.ErrorResponse{
-				Code:      i18nErr.Code,
-				Message:   i18nErr.Message,
-				Timestamp: time.Now().Format(time.RFC3339),
-			})
-		} else {
-			// 兜底：理论上不应该到这里，因为Service层应该返回I18nError
-			lang := middleware.GetLanguage(c)
-			status, errCode, message := i18n.NewI18nErrorResponse("900004", lang)
-			c.JSON(status, models.ErrorResponse{
-				Code:      errCode,
-				Message:   message,
-				Timestamp: time.Now().Format(time.RFC3339),
-			})
-		}
+		respondError(c, err)
 		return
 	}
 
@@ -635,23 +465,7 @@ func (h *LicenseHandler) GetStatsOverview(c *gin.Context) {
 	data, err := h.licenseService.GetStatsOverview(ctx)
 	if err != nil {
 		// 错误已经在Service层完全包装好了，直接使用
-		var i18nErr *i18n.I18nError
-		if errors.As(err, &i18nErr) {
-			c.JSON(i18nErr.HttpCode, models.ErrorResponse{
-				Code:      i18nErr.Code,
-				Message:   i18nErr.Message,
-				Timestamp: time.Now().Format(time.RFC3339),
-			})
-		} else {
-			// 兜底：理论上不应该到这里，因为Service层应该返回I18nError
-			lang := middleware.GetLanguage(c)
-			status, errCode, message := i18n.NewI18nErrorResponse("900004", lang)
-			c.JSON(status, models.ErrorResponse{
-				Code:      errCode,
-				Message:   message,
-				Timestamp: time.Now().Format(time.RFC3339),
-			})
-		}
+		respondError(c, err)
 		return
 	}
 

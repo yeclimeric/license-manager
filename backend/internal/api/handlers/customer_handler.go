@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"errors"
 	"net/http"
 	"time"
 
@@ -63,23 +62,7 @@ func (h *CustomerHandler) GetCustomerList(c *gin.Context) {
 	data, err := h.customerService.GetCustomerList(ctx, &req)
 	if err != nil {
 		// 错误已经在Service层完全包装好了，直接使用
-		var i18nErr *i18n.I18nError
-		if errors.As(err, &i18nErr) {
-			c.JSON(i18nErr.HttpCode, models.ErrorResponse{
-				Code:      i18nErr.Code,
-				Message:   i18nErr.Message,
-				Timestamp: time.Now().Format(time.RFC3339),
-			})
-		} else {
-			// 兜底：理论上不应该到这里，因为Service层应该返回I18nError
-			lang := middleware.GetLanguage(c)
-			status, errCode, message := i18n.NewI18nErrorResponse("900004", lang)
-			c.JSON(status, models.ErrorResponse{
-				Code:      errCode,
-				Message:   message,
-				Timestamp: time.Now().Format(time.RFC3339),
-			})
-		}
+		respondError(c, err)
 		return
 	}
 
@@ -109,13 +92,7 @@ func (h *CustomerHandler) GetCustomerList(c *gin.Context) {
 func (h *CustomerHandler) GetCustomer(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
-		lang := middleware.GetLanguage(c)
-		status, errCode, message := i18n.NewI18nErrorResponse("900001", lang)
-		c.JSON(status, models.ErrorResponse{
-			Code:      errCode,
-			Message:   message,
-			Timestamp: time.Now().Format(time.RFC3339),
-		})
+		respondErrorWithCode(c, "900001")
 		return
 	}
 
@@ -125,23 +102,7 @@ func (h *CustomerHandler) GetCustomer(c *gin.Context) {
 	data, err := h.customerService.GetCustomer(ctx, id)
 	if err != nil {
 		// 错误已经在Service层完全包装好了，直接使用
-		var i18nErr *i18n.I18nError
-		if errors.As(err, &i18nErr) {
-			c.JSON(i18nErr.HttpCode, models.ErrorResponse{
-				Code:      i18nErr.Code,
-				Message:   i18nErr.Message,
-				Timestamp: time.Now().Format(time.RFC3339),
-			})
-		} else {
-			// 兜底：理论上不应该到这里，因为Service层应该返回I18nError
-			lang := middleware.GetLanguage(c)
-			status, errCode, message := i18n.NewI18nErrorResponse("900004", lang)
-			c.JSON(status, models.ErrorResponse{
-				Code:      errCode,
-				Message:   message,
-				Timestamp: time.Now().Format(time.RFC3339),
-			})
-		}
+		respondError(c, err)
 		return
 	}
 
@@ -187,23 +148,7 @@ func (h *CustomerHandler) CreateCustomer(c *gin.Context) {
 	data, err := h.customerService.CreateCustomer(ctx, &req)
 	if err != nil {
 		// 错误已经在Service层完全包装好了，直接使用
-		var i18nErr *i18n.I18nError
-		if errors.As(err, &i18nErr) {
-			c.JSON(i18nErr.HttpCode, models.ErrorResponse{
-				Code:      i18nErr.Code,
-				Message:   i18nErr.Message,
-				Timestamp: time.Now().Format(time.RFC3339),
-			})
-		} else {
-			// 兜底：理论上不应该到这里，因为Service层应该返回I18nError
-			lang := middleware.GetLanguage(c)
-			status, errCode, message := i18n.NewI18nErrorResponse("900004", lang)
-			c.JSON(status, models.ErrorResponse{
-				Code:      errCode,
-				Message:   message,
-				Timestamp: time.Now().Format(time.RFC3339),
-			})
-		}
+		respondError(c, err)
 		return
 	}
 
@@ -234,13 +179,7 @@ func (h *CustomerHandler) CreateCustomer(c *gin.Context) {
 func (h *CustomerHandler) UpdateCustomer(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
-		lang := middleware.GetLanguage(c)
-		status, errCode, message := i18n.NewI18nErrorResponse("900001", lang)
-		c.JSON(status, models.ErrorResponse{
-			Code:      errCode,
-			Message:   message,
-			Timestamp: time.Now().Format(time.RFC3339),
-		})
+		respondErrorWithCode(c, "900001")
 		return
 	}
 
@@ -262,23 +201,7 @@ func (h *CustomerHandler) UpdateCustomer(c *gin.Context) {
 	data, err := h.customerService.UpdateCustomer(ctx, id, &req)
 	if err != nil {
 		// 错误已经在Service层完全包装好了，直接使用
-		var i18nErr *i18n.I18nError
-		if errors.As(err, &i18nErr) {
-			c.JSON(i18nErr.HttpCode, models.ErrorResponse{
-				Code:      i18nErr.Code,
-				Message:   i18nErr.Message,
-				Timestamp: time.Now().Format(time.RFC3339),
-			})
-		} else {
-			// 兜底：理论上不应该到这里，因为Service层应该返回I18nError
-			lang := middleware.GetLanguage(c)
-			status, errCode, message := i18n.NewI18nErrorResponse("900004", lang)
-			c.JSON(status, models.ErrorResponse{
-				Code:      errCode,
-				Message:   message,
-				Timestamp: time.Now().Format(time.RFC3339),
-			})
-		}
+		respondError(c, err)
 		return
 	}
 
@@ -309,13 +232,7 @@ func (h *CustomerHandler) UpdateCustomer(c *gin.Context) {
 func (h *CustomerHandler) DeleteCustomer(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
-		lang := middleware.GetLanguage(c)
-		status, errCode, message := i18n.NewI18nErrorResponse("900001", lang)
-		c.JSON(status, models.ErrorResponse{
-			Code:      errCode,
-			Message:   message,
-			Timestamp: time.Now().Format(time.RFC3339),
-		})
+		respondErrorWithCode(c, "900001")
 		return
 	}
 
@@ -325,23 +242,7 @@ func (h *CustomerHandler) DeleteCustomer(c *gin.Context) {
 	err := h.customerService.DeleteCustomer(ctx, id)
 	if err != nil {
 		// 错误已经在Service层完全包装好了，直接使用
-		var i18nErr *i18n.I18nError
-		if errors.As(err, &i18nErr) {
-			c.JSON(i18nErr.HttpCode, models.ErrorResponse{
-				Code:      i18nErr.Code,
-				Message:   i18nErr.Message,
-				Timestamp: time.Now().Format(time.RFC3339),
-			})
-		} else {
-			// 兜底：理论上不应该到这里，因为Service层应该返回I18nError
-			lang := middleware.GetLanguage(c)
-			status, errCode, message := i18n.NewI18nErrorResponse("900004", lang)
-			c.JSON(status, models.ErrorResponse{
-				Code:      errCode,
-				Message:   message,
-				Timestamp: time.Now().Format(time.RFC3339),
-			})
-		}
+		respondError(c, err)
 		return
 	}
 
@@ -372,13 +273,7 @@ func (h *CustomerHandler) DeleteCustomer(c *gin.Context) {
 func (h *CustomerHandler) UpdateCustomerStatus(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
-		lang := middleware.GetLanguage(c)
-		status, errCode, message := i18n.NewI18nErrorResponse("900001", lang)
-		c.JSON(status, models.ErrorResponse{
-			Code:      errCode,
-			Message:   message,
-			Timestamp: time.Now().Format(time.RFC3339),
-		})
+		respondErrorWithCode(c, "900001")
 		return
 	}
 
@@ -400,23 +295,7 @@ func (h *CustomerHandler) UpdateCustomerStatus(c *gin.Context) {
 	data, err := h.customerService.UpdateCustomerStatus(ctx, id, &req)
 	if err != nil {
 		// 错误已经在Service层完全包装好了，直接使用
-		var i18nErr *i18n.I18nError
-		if errors.As(err, &i18nErr) {
-			c.JSON(i18nErr.HttpCode, models.ErrorResponse{
-				Code:      i18nErr.Code,
-				Message:   i18nErr.Message,
-				Timestamp: time.Now().Format(time.RFC3339),
-			})
-		} else {
-			// 兜底：理论上不应该到这里，因为Service层应该返回I18nError
-			lang := middleware.GetLanguage(c)
-			status, errCode, message := i18n.NewI18nErrorResponse("900004", lang)
-			c.JSON(status, models.ErrorResponse{
-				Code:      errCode,
-				Message:   message,
-				Timestamp: time.Now().Format(time.RFC3339),
-			})
-		}
+		respondError(c, err)
 		return
 	}
 

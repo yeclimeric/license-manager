@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"errors"
 	"net/http"
 	"time"
 
@@ -38,27 +37,11 @@ func NewEnumHandler(enumService service.EnumService) *EnumHandler {
 func (h *EnumHandler) GetAllEnums(c *gin.Context) {
 	// 设置语言到Context中
 	ctx := middleware.WithLanguage(c.Request.Context(), c)
-	
+
 	data, err := h.enumService.GetAllEnums(ctx)
 	if err != nil {
 		// 错误已经在Service层完全包装好了，直接使用
-		var i18nErr *i18n.I18nError
-		if errors.As(err, &i18nErr) {
-			c.JSON(i18nErr.HttpCode, models.ErrorResponse{
-				Code:      i18nErr.Code,
-				Message:   i18nErr.Message,
-				Timestamp: time.Now().Format(time.RFC3339),
-			})
-		} else {
-			// 兜底：理论上不应该到这里，因为Service层应该返回I18nError
-			lang := middleware.GetLanguage(c)
-			status, errCode, message := i18n.NewI18nErrorResponse("900004", lang)
-			c.JSON(status, models.ErrorResponse{
-				Code:      errCode,
-				Message:   message,
-				Timestamp: time.Now().Format(time.RFC3339),
-			})
-		}
+		respondError(c, err)
 		return
 	}
 
@@ -99,27 +82,11 @@ func (h *EnumHandler) GetEnumsByType(c *gin.Context) {
 
 	// 设置语言到Context中
 	ctx := middleware.WithLanguage(c.Request.Context(), c)
-	
+
 	data, err := h.enumService.GetEnumsByType(ctx, enumType)
 	if err != nil {
 		// 错误已经在Service层完全包装好了，直接使用
-		var i18nErr *i18n.I18nError
-		if errors.As(err, &i18nErr) {
-			c.JSON(i18nErr.HttpCode, models.ErrorResponse{
-				Code:      i18nErr.Code,
-				Message:   i18nErr.Message,
-				Timestamp: time.Now().Format(time.RFC3339),
-			})
-		} else {
-			// 兜底：理论上不应该到这里，因为Service层应该返回I18nError
-			lang := middleware.GetLanguage(c)
-			status, errCode, message := i18n.NewI18nErrorResponse("900004", lang)
-			c.JSON(status, models.ErrorResponse{
-				Code:      errCode,
-				Message:   message,
-				Timestamp: time.Now().Format(time.RFC3339),
-			})
-		}
+		respondError(c, err)
 		return
 	}
 

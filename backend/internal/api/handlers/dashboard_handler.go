@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"errors"
 	"net/http"
 	"time"
 
@@ -61,23 +60,7 @@ func (h *DashboardHandler) GetAuthorizationTrend(c *gin.Context) {
 	response, err := h.dashboardService.GetAuthorizationTrend(ctx, &req)
 	if err != nil {
 		// 错误已经在Service层完全包装好了，直接使用
-		var i18nErr *i18n.I18nError
-		if errors.As(err, &i18nErr) {
-			c.JSON(i18nErr.HttpCode, models.ErrorResponse{
-				Code:      i18nErr.Code,
-				Message:   i18nErr.Message,
-				Timestamp: time.Now().Format(time.RFC3339),
-			})
-		} else {
-			// 兜底：理论上不应该到这里，因为Service层应该返回I18nError
-			lang := middleware.GetLanguage(c)
-			status, errCode, message := i18n.NewI18nErrorResponse("900004", lang)
-			c.JSON(status, models.ErrorResponse{
-				Code:      errCode,
-				Message:   message,
-				Timestamp: time.Now().Format(time.RFC3339),
-			})
-		}
+		respondError(c, err)
 		return
 	}
 
@@ -128,23 +111,7 @@ func (h *DashboardHandler) GetRecentAuthorizations(c *gin.Context) {
 	response, err := h.dashboardService.GetRecentAuthorizations(ctx, &req)
 	if err != nil {
 		// 错误已经在Service层完全包装好了，直接使用
-		var i18nErr *i18n.I18nError
-		if errors.As(err, &i18nErr) {
-			c.JSON(i18nErr.HttpCode, models.ErrorResponse{
-				Code:      i18nErr.Code,
-				Message:   i18nErr.Message,
-				Timestamp: time.Now().Format(time.RFC3339),
-			})
-		} else {
-			// 兜底：理论上不应该到这里，因为Service层应该返回I18nError
-			lang := middleware.GetLanguage(c)
-			status, errCode, message := i18n.NewI18nErrorResponse("900004", lang)
-			c.JSON(status, models.ErrorResponse{
-				Code:      errCode,
-				Message:   message,
-				Timestamp: time.Now().Format(time.RFC3339),
-			})
-		}
+		respondError(c, err)
 		return
 	}
 

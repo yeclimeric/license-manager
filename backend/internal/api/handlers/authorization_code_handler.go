@@ -3,7 +3,6 @@ package handlers
 import (
 	"archive/zip"
 	"bytes"
-	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -62,23 +61,7 @@ func (h *AuthorizationCodeHandler) CreateAuthorizationCode(c *gin.Context) {
 	data, err := h.authCodeService.CreateAuthorizationCode(c.Request.Context(), &req)
 	if err != nil {
 		// 错误已经在Service层完全包装好了，直接使用
-		var i18nErr *i18n.I18nError
-		if errors.As(err, &i18nErr) {
-			c.JSON(i18nErr.HttpCode, models.ErrorResponse{
-				Code:      i18nErr.Code,
-				Message:   i18nErr.Message,
-				Timestamp: time.Now().Format(time.RFC3339),
-			})
-		} else {
-			// 兜底：理论上不应该到这里，因为Service层应该返回I18nError
-			lang := middleware.GetLanguage(c)
-			status, errCode, message := i18n.NewI18nErrorResponse("900004", lang)
-			c.JSON(status, models.ErrorResponse{
-				Code:      errCode,
-				Message:   message,
-				Timestamp: time.Now().Format(time.RFC3339),
-			})
-		}
+		respondError(c, err)
 		return
 	}
 
@@ -119,22 +102,7 @@ func (h *AuthorizationCodeHandler) BatchCreateAuthorizationCodes(c *gin.Context)
 
 	data, err := h.authCodeService.BatchCreateAuthorizationCodes(c.Request.Context(), &req)
 	if err != nil {
-		var i18nErr *i18n.I18nError
-		if errors.As(err, &i18nErr) {
-			c.JSON(i18nErr.HttpCode, models.ErrorResponse{
-				Code:      i18nErr.Code,
-				Message:   i18nErr.Message,
-				Timestamp: time.Now().Format(time.RFC3339),
-			})
-		} else {
-			lang := middleware.GetLanguage(c)
-			status, errCode, message := i18n.NewI18nErrorResponse("900004", lang)
-			c.JSON(status, models.ErrorResponse{
-				Code:      errCode,
-				Message:   message,
-				Timestamp: time.Now().Format(time.RFC3339),
-			})
-		}
+		respondError(c, err)
 		return
 	}
 
@@ -184,23 +152,7 @@ func (h *AuthorizationCodeHandler) GetAuthorizationCodeList(c *gin.Context) {
 	data, err := h.authCodeService.GetAuthorizationCodeList(c.Request.Context(), &req)
 	if err != nil {
 		// 错误已经在Service层完全包装好了，直接使用
-		var i18nErr *i18n.I18nError
-		if errors.As(err, &i18nErr) {
-			c.JSON(i18nErr.HttpCode, models.ErrorResponse{
-				Code:      i18nErr.Code,
-				Message:   i18nErr.Message,
-				Timestamp: time.Now().Format(time.RFC3339),
-			})
-		} else {
-			// 兜底：理论上不应该到这里，因为Service层应该返回I18nError
-			lang := middleware.GetLanguage(c)
-			status, errCode, message := i18n.NewI18nErrorResponse("900004", lang)
-			c.JSON(status, models.ErrorResponse{
-				Code:      errCode,
-				Message:   message,
-				Timestamp: time.Now().Format(time.RFC3339),
-			})
-		}
+		respondError(c, err)
 		return
 	}
 
@@ -230,36 +182,14 @@ func (h *AuthorizationCodeHandler) GetAuthorizationCodeList(c *gin.Context) {
 func (h *AuthorizationCodeHandler) GetAuthorizationCode(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
-		lang := middleware.GetLanguage(c)
-		status, errCode, message := i18n.NewI18nErrorResponse("900001", lang)
-		c.JSON(status, models.ErrorResponse{
-			Code:      errCode,
-			Message:   message,
-			Timestamp: time.Now().Format(time.RFC3339),
-		})
+		respondErrorWithCode(c, "900001")
 		return
 	}
 
 	data, err := h.authCodeService.GetAuthorizationCode(c.Request.Context(), id)
 	if err != nil {
 		// 错误已经在Service层完全包装好了，直接使用
-		var i18nErr *i18n.I18nError
-		if errors.As(err, &i18nErr) {
-			c.JSON(i18nErr.HttpCode, models.ErrorResponse{
-				Code:      i18nErr.Code,
-				Message:   i18nErr.Message,
-				Timestamp: time.Now().Format(time.RFC3339),
-			})
-		} else {
-			// 兜底：理论上不应该到这里，因为Service层应该返回I18nError
-			lang := middleware.GetLanguage(c)
-			status, errCode, message := i18n.NewI18nErrorResponse("900004", lang)
-			c.JSON(status, models.ErrorResponse{
-				Code:      errCode,
-				Message:   message,
-				Timestamp: time.Now().Format(time.RFC3339),
-			})
-		}
+		respondError(c, err)
 		return
 	}
 
@@ -288,15 +218,9 @@ func (h *AuthorizationCodeHandler) GetAuthorizationCode(c *gin.Context) {
 // @Failure 500 {object} models.ErrorResponse "服务器内部错误"
 // @Router /api/v1/authorization-codes/{id}/download [get]
 func (h *AuthorizationCodeHandler) DownloadAuthorizationFile(c *gin.Context) {
-	lang := middleware.GetLanguage(c)
 	id := c.Param("id")
 	if id == "" {
-		status, errCode, message := i18n.NewI18nErrorResponse("900001", lang)
-		c.JSON(status, models.ErrorResponse{
-			Code:      errCode,
-			Message:   message,
-			Timestamp: time.Now().Format(time.RFC3339),
-		})
+		respondErrorWithCode(c, "900001")
 		return
 	}
 
@@ -304,44 +228,20 @@ func (h *AuthorizationCodeHandler) DownloadAuthorizationFile(c *gin.Context) {
 
 	fileData, fileName, authCode, err := h.authCodeService.GenerateAuthorizationFile(ctx, id)
 	if err != nil {
-		var i18nErr *i18n.I18nError
-		if errors.As(err, &i18nErr) {
-			c.JSON(i18nErr.HttpCode, models.ErrorResponse{
-				Code:      i18nErr.Code,
-				Message:   i18nErr.Message,
-				Timestamp: time.Now().Format(time.RFC3339),
-			})
-		} else {
-			status, errCode, message := i18n.NewI18nErrorResponse("900004", lang)
-			c.JSON(status, models.ErrorResponse{
-				Code:      errCode,
-				Message:   message,
-				Timestamp: time.Now().Format(time.RFC3339),
-			})
-		}
+		respondError(c, err)
 		return
 	}
 
 	cfg := config.GetConfig()
 	if cfg == nil || cfg.License.RSA.PublicKeyPath == "" {
-		status, errCode, message := i18n.NewI18nErrorResponse("900004", lang)
-		c.JSON(status, models.ErrorResponse{
-			Code:      errCode,
-			Message:   message,
-			Timestamp: time.Now().Format(time.RFC3339),
-		})
+		respondErrorWithCode(c, "900004")
 		return
 	}
 
 	publicKeyPath := filepath.Clean(cfg.License.RSA.PublicKeyPath)
 	publicKeyData, err := os.ReadFile(publicKeyPath)
 	if err != nil {
-		status, errCode, message := i18n.NewI18nErrorResponse("900004", lang)
-		c.JSON(status, models.ErrorResponse{
-			Code:      errCode,
-			Message:   message,
-			Timestamp: time.Now().Format(time.RFC3339),
-		})
+		respondErrorWithCode(c, "900004")
 		return
 	}
 
@@ -351,51 +251,26 @@ func (h *AuthorizationCodeHandler) DownloadAuthorizationFile(c *gin.Context) {
 	const zipAuthFileName = "authorization_code.txt"
 	authFileWriter, err := zipWriter.Create(zipAuthFileName)
 	if err != nil {
-		status, errCode, message := i18n.NewI18nErrorResponse("900004", lang)
-		c.JSON(status, models.ErrorResponse{
-			Code:      errCode,
-			Message:   message,
-			Timestamp: time.Now().Format(time.RFC3339),
-		})
+		respondErrorWithCode(c, "900004")
 		return
 	}
 	if _, err := authFileWriter.Write(fileData); err != nil {
-		status, errCode, message := i18n.NewI18nErrorResponse("900004", lang)
-		c.JSON(status, models.ErrorResponse{
-			Code:      errCode,
-			Message:   message,
-			Timestamp: time.Now().Format(time.RFC3339),
-		})
+		respondErrorWithCode(c, "900004")
 		return
 	}
 
 	publicKeyWriter, err := zipWriter.Create("rsa_public_key.pem")
 	if err != nil {
-		status, errCode, message := i18n.NewI18nErrorResponse("900004", lang)
-		c.JSON(status, models.ErrorResponse{
-			Code:      errCode,
-			Message:   message,
-			Timestamp: time.Now().Format(time.RFC3339),
-		})
+		respondErrorWithCode(c, "900004")
 		return
 	}
 	if _, err := publicKeyWriter.Write(publicKeyData); err != nil {
-		status, errCode, message := i18n.NewI18nErrorResponse("900004", lang)
-		c.JSON(status, models.ErrorResponse{
-			Code:      errCode,
-			Message:   message,
-			Timestamp: time.Now().Format(time.RFC3339),
-		})
+		respondErrorWithCode(c, "900004")
 		return
 	}
 
 	if err := zipWriter.Close(); err != nil {
-		status, errCode, message := i18n.NewI18nErrorResponse("900004", lang)
-		c.JSON(status, models.ErrorResponse{
-			Code:      errCode,
-			Message:   message,
-			Timestamp: time.Now().Format(time.RFC3339),
-		})
+		respondErrorWithCode(c, "900004")
 		return
 	}
 
@@ -432,13 +307,7 @@ func (h *AuthorizationCodeHandler) DownloadAuthorizationFile(c *gin.Context) {
 func (h *AuthorizationCodeHandler) UpdateAuthorizationCode(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
-		lang := middleware.GetLanguage(c)
-		status, errCode, message := i18n.NewI18nErrorResponse("900001", lang)
-		c.JSON(status, models.ErrorResponse{
-			Code:      errCode,
-			Message:   message,
-			Timestamp: time.Now().Format(time.RFC3339),
-		})
+		respondErrorWithCode(c, "900001")
 		return
 	}
 
@@ -457,23 +326,7 @@ func (h *AuthorizationCodeHandler) UpdateAuthorizationCode(c *gin.Context) {
 	authCode, err := h.authCodeService.UpdateAuthorizationCode(c.Request.Context(), id, &req)
 	if err != nil {
 		// 错误已经在Service层完全包装好了，直接使用
-		var i18nErr *i18n.I18nError
-		if errors.As(err, &i18nErr) {
-			c.JSON(i18nErr.HttpCode, models.ErrorResponse{
-				Code:      i18nErr.Code,
-				Message:   i18nErr.Message,
-				Timestamp: time.Now().Format(time.RFC3339),
-			})
-		} else {
-			// 兜底：理论上不应该到这里，因为Service层应该返回I18nError
-			lang := middleware.GetLanguage(c)
-			status, errCode, message := i18n.NewI18nErrorResponse("900004", lang)
-			c.JSON(status, models.ErrorResponse{
-				Code:      errCode,
-				Message:   message,
-				Timestamp: time.Now().Format(time.RFC3339),
-			})
-		}
+		respondError(c, err)
 		return
 	}
 
@@ -504,13 +357,7 @@ func (h *AuthorizationCodeHandler) UpdateAuthorizationCode(c *gin.Context) {
 func (h *AuthorizationCodeHandler) LockUnlockAuthorizationCode(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
-		lang := middleware.GetLanguage(c)
-		status, errCode, message := i18n.NewI18nErrorResponse("900001", lang)
-		c.JSON(status, models.ErrorResponse{
-			Code:      errCode,
-			Message:   message,
-			Timestamp: time.Now().Format(time.RFC3339),
-		})
+		respondErrorWithCode(c, "900001")
 		return
 	}
 
@@ -529,23 +376,7 @@ func (h *AuthorizationCodeHandler) LockUnlockAuthorizationCode(c *gin.Context) {
 	data, err := h.authCodeService.LockUnlockAuthorizationCode(c.Request.Context(), id, &req)
 	if err != nil {
 		// 错误已经在Service层完全包装好了，直接使用
-		var i18nErr *i18n.I18nError
-		if errors.As(err, &i18nErr) {
-			c.JSON(i18nErr.HttpCode, models.ErrorResponse{
-				Code:      i18nErr.Code,
-				Message:   i18nErr.Message,
-				Timestamp: time.Now().Format(time.RFC3339),
-			})
-		} else {
-			// 兜底：理论上不应该到这里，因为Service层应该返回I18nError
-			lang := middleware.GetLanguage(c)
-			status, errCode, message := i18n.NewI18nErrorResponse("900004", lang)
-			c.JSON(status, models.ErrorResponse{
-				Code:      errCode,
-				Message:   message,
-				Timestamp: time.Now().Format(time.RFC3339),
-			})
-		}
+		respondError(c, err)
 		return
 	}
 
@@ -575,35 +406,13 @@ func (h *AuthorizationCodeHandler) LockUnlockAuthorizationCode(c *gin.Context) {
 func (h *AuthorizationCodeHandler) DeleteAuthorizationCode(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
-		lang := middleware.GetLanguage(c)
-		status, errCode, message := i18n.NewI18nErrorResponse("900001", lang)
-		c.JSON(status, models.ErrorResponse{
-			Code:      errCode,
-			Message:   message,
-			Timestamp: time.Now().Format(time.RFC3339),
-		})
+		respondErrorWithCode(c, "900001")
 		return
 	}
 
 	if err := h.authCodeService.DeleteAuthorizationCode(c.Request.Context(), id); err != nil {
 		// 错误已经在Service层完全包装好了，直接使用
-		var i18nErr *i18n.I18nError
-		if errors.As(err, &i18nErr) {
-			c.JSON(i18nErr.HttpCode, models.ErrorResponse{
-				Code:      i18nErr.Code,
-				Message:   i18nErr.Message,
-				Timestamp: time.Now().Format(time.RFC3339),
-			})
-		} else {
-			// 兜底：理论上不应该到这里，因为Service层应该返回I18nError
-			lang := middleware.GetLanguage(c)
-			status, errCode, message := i18n.NewI18nErrorResponse("900004", lang)
-			c.JSON(status, models.ErrorResponse{
-				Code:      errCode,
-				Message:   message,
-				Timestamp: time.Now().Format(time.RFC3339),
-			})
-		}
+		respondError(c, err)
 		return
 	}
 
@@ -641,13 +450,7 @@ func (h *AuthorizationCodeHandler) DeleteAuthorizationCode(c *gin.Context) {
 func (h *AuthorizationCodeHandler) GetAuthorizationChangeList(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
-		lang := middleware.GetLanguage(c)
-		status, errCode, message := i18n.NewI18nErrorResponse("900001", lang)
-		c.JSON(status, models.ErrorResponse{
-			Code:      errCode,
-			Message:   message,
-			Timestamp: time.Now().Format(time.RFC3339),
-		})
+		respondErrorWithCode(c, "900001")
 		return
 	}
 
@@ -666,23 +469,7 @@ func (h *AuthorizationCodeHandler) GetAuthorizationChangeList(c *gin.Context) {
 	data, err := h.authCodeService.GetAuthorizationChangeList(c.Request.Context(), id, &req)
 	if err != nil {
 		// 错误已经在Service层完全包装好了，直接使用
-		var i18nErr *i18n.I18nError
-		if errors.As(err, &i18nErr) {
-			c.JSON(i18nErr.HttpCode, models.ErrorResponse{
-				Code:      i18nErr.Code,
-				Message:   i18nErr.Message,
-				Timestamp: time.Now().Format(time.RFC3339),
-			})
-		} else {
-			// 兜底：理论上不应该到这里，因为Service层应该返回I18nError
-			lang := middleware.GetLanguage(c)
-			status, errCode, message := i18n.NewI18nErrorResponse("900004", lang)
-			c.JSON(status, models.ErrorResponse{
-				Code:      errCode,
-				Message:   message,
-				Timestamp: time.Now().Format(time.RFC3339),
-			})
-		}
+		respondError(c, err)
 		return
 	}
 

@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"errors"
 	"net/http"
 	"time"
 
@@ -39,13 +38,7 @@ func NewAuthHandler(authService service.AuthService) *AuthHandler {
 func (h *AuthHandler) Login(c *gin.Context) {
 	var req models.LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		lang := middleware.GetLanguage(c)
-		status, errCode, message := i18n.NewI18nErrorResponse("900001", lang)
-		c.JSON(status, models.ErrorResponse{
-			Code:      errCode,
-			Message:   message,
-			Timestamp: getCurrentTimestamp(),
-		})
+		respondErrorWithCode(c, "900001")
 		return
 	}
 
@@ -54,22 +47,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 
 	data, err := h.authService.Login(c.Request.Context(), &req, clientIP)
 	if err != nil {
-		lang := middleware.GetLanguage(c)
-		errorCode := "900004"
-		message := i18n.GetErrorMessage(errorCode, lang)
-
-		var i18nErr *i18n.I18nError
-		if errors.As(err, &i18nErr) {
-			errorCode = i18nErr.Code
-			message = i18nErr.Message
-		}
-
-		status, errCode, _ := i18n.NewI18nErrorResponse(errorCode, lang)
-		c.JSON(status, models.ErrorResponse{
-			Code:      errCode,
-			Message:   message,
-			Timestamp: getCurrentTimestamp(),
-		})
+		respondError(c, err)
 		return
 	}
 
@@ -119,13 +97,7 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 	// 从请求头获取Token
 	token := extractTokenFromHeader(c)
 	if token == "" {
-		lang := middleware.GetLanguage(c)
-		status, errCode, message := i18n.NewI18nErrorResponse("100004", lang)
-		c.JSON(status, models.ErrorResponse{
-			Code:      errCode,
-			Message:   message,
-			Timestamp: getCurrentTimestamp(),
-		})
+		respondErrorWithCode(c, "100004")
 		return
 	}
 
