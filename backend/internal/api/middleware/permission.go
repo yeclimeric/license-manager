@@ -100,7 +100,7 @@ func abortForbidden(c *gin.Context, i18nCode string) {
 	c.JSON(status, gin.H{
 		"code":      code,
 		"message":   message,
-		"timestamp": getCurrentTimestamp(),
+		"timestamp": getAuthTimestamp(),
 	})
 	c.Abort()
 }

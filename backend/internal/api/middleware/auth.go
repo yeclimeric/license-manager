@@ -3,8 +3,10 @@ package middleware
 import (
 	"net/http"
 	"strings"
+	"time"
 
 	pkgcontext "license-manager/pkg/context"
+	"license-manager/pkg/i18n"
 	"license-manager/pkg/utils"
 
 	"github.com/gin-gonic/gin"
@@ -15,6 +17,26 @@ const (
 	AuthorizationTypeBearer = "bearer"
 	AuthorizationPayloadKey = "authorization_payload"
 )
+
+// getAuthTimestamp 当前时间戳（RFC3339）
+func getAuthTimestamp() string {
+	return time.Now().Format(time.RFC3339)
+}
+
+// abortAuthFailure 认证失败统一响应：码取自 i18n 目录（三语齐备），消息随请求语言本地化。
+//
+// 旧实现自造 AUTH_001~004 从未进 i18n 目录，且 timestamp 硬编码常量，
+// 导致认证失败永远中文、时间戳不真实。
+func abortAuthFailure(c *gin.Context, httpStatus int, i18nCode string) {
+	lang := GetLanguage(c)
+	_, code, message := i18n.NewI18nErrorResponse(i18nCode, lang)
+	c.JSON(httpStatus, gin.H{
+		"code":      code,
+		"message":   message,
+		"timestamp": getAuthTimestamp(),
+	})
+	c.Abort()
+}
 
 // AuthMiddleware 认证中间件（支持自动延长）
 func AuthMiddleware() gin.HandlerFunc {
@@ -27,63 +49,32 @@ func AuthMiddleware() gin.HandlerFunc {
 		}
 		authorizationHeader := c.GetHeader(AuthorizationHeaderKey)
 		if len(authorizationHeader) == 0 {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"code":      http.StatusUnauthorized,
-				"error":     "AUTH_001",
-				"message":   "缺少认证令牌",
-				"timestamp": getCurrentTimestamp(),
-			})
-			c.Abort()
+			abortAuthFailure(c, http.StatusUnauthorized, "100004") // 认证信息缺失
 			return
 		}
 
 		fields := strings.Fields(authorizationHeader)
 		if len(fields) < 2 {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"code":      http.StatusUnauthorized,
-				"error":     "AUTH_002",
-				"message":   "认证令牌格式无效",
-				"timestamp": getCurrentTimestamp(),
-			})
-			c.Abort()
+			abortAuthFailure(c, http.StatusUnauthorized, "100002") // 认证格式无效
 			return
 		}
 
 		authorizationType := strings.ToLower(fields[0])
 		if authorizationType != AuthorizationTypeBearer {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"code":      http.StatusUnauthorized,
-				"error":     "AUTH_002",
-				"message":   "不支持的认证类型",
-				"timestamp": getCurrentTimestamp(),
-			})
-			c.Abort()
+			abortAuthFailure(c, http.StatusUnauthorized, "100002") // 不支持的认证类型
 			return
 		}
 
 		accessToken := fields[1]
 		claims, err := utils.ValidateToken(accessToken)
 		if err != nil {
-			var errorCode, message string
 			switch err {
 			case utils.ErrTokenExpired:
-				errorCode = "AUTH_003"
-				message = "令牌已过期"
-			case utils.ErrTokenMalformed:
-				errorCode = "AUTH_002"
-				message = "令牌格式错误"
+				abortAuthFailure(c, http.StatusUnauthorized, "100001") // 令牌已过期
 			default:
-				errorCode = "AUTH_002"
-				message = "令牌无效"
+				// 格式错误 / 无效 / 其他一律归入 100002
+				abortAuthFailure(c, http.StatusUnauthorized, "100002")
 			}
-
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"code":      http.StatusUnauthorized,
-				"error":     errorCode,
-				"message":   message,
-				"timestamp": getCurrentTimestamp(),
-			})
-			c.Abort()
 			return
 		}
 
@@ -160,32 +151,15 @@ func AdminOnlyMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		role, exists := c.Get("role")
 		if !exists {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"code":      http.StatusUnauthorized,
-				"error":     "AUTH_001",
-				"message":   "认证信息缺失",
-				"timestamp": getCurrentTimestamp(),
-			})
-			c.Abort()
+			abortAuthFailure(c, http.StatusUnauthorized, "100004") // 认证信息缺失
 			return
 		}
 
 		if role != "super_admin" {
-			c.JSON(http.StatusForbidden, gin.H{
-				"code":      http.StatusForbidden,
-				"error":     "AUTH_004",
-				"message":   "权限不足",
-				"timestamp": getCurrentTimestamp(),
-			})
-			c.Abort()
+			abortAuthFailure(c, http.StatusForbidden, "100005") // 权限不足
 			return
 		}
 
 		c.Next()
 	}
-}
-
-// getCurrentTimestamp 获取当前时间戳
-func getCurrentTimestamp() string {
-	return "2024-07-30T12:00:00Z" // 简化实现，实际应该使用time.Now().Format(time.RFC3339)
 }
