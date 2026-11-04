@@ -1,4 +1,5 @@
-import { ConfigEnv, UserConfig, defineConfig, loadEnv } from 'vite'
+import { ConfigEnv, UserConfig, loadEnv } from 'vite'
+import { defineConfig } from 'vitest/config'
 import viteCompression from 'vite-plugin-compression'
 import vue from '@vitejs/plugin-vue'
 import path from 'path'
@@ -210,6 +211,24 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => {
     // JSON文件处理配置
     json: {
       stringify: false
+    },
+
+    // 测试配置（vitest）——构建时由 vite 忽略，仅测试期生效
+    test: {
+      environment: 'happy-dom',
+      globals: true,
+      setupFiles: ['./src/test/setup.ts'],
+      // 测试模块解析使用与业务一致的 `@` 别名
+      alias: {
+        '@': _resolve('src')
+      },
+      // element-plus 的 style/css 副作用导入需经 vite 管道处理，否则被 externalize 后
+      // Node 直接加载 .css 会报 “Unknown file extension”。inline 后由 Vitest 转空模块。
+      server: {
+        deps: {
+          inline: [/element-plus/, /@element-plus/]
+        }
+      }
     }
   }
 })
