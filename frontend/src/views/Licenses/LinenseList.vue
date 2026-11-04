@@ -243,7 +243,7 @@ import {
 } from '@/api/license'
 import { formatDate } from '@/utils/date'
 import { getErrorMessage } from '@/utils/error'
-import { useInitialSkeleton } from '@/composables/useInitialSkeleton'
+import { useDataList } from '@/composables/useDataList'
 
 interface CustomerOption {
   id: string
@@ -258,28 +258,54 @@ const { t } = useI18n()
 const routeCustomerId = String(route.query.customerId || '')
 const routeCustomerName = String(route.query.customerName || '')
 const hasCustomerContext = Boolean(routeCustomerId)
-const filters = reactive({
-  customerId: routeCustomerId,
-  code: '',
-  status: '',
-  productOfferingId: '',
-  deploymentType: ''
-})
 const productOptions = ref<ProductOffering[]>([])
 const productLoading = ref(false)
 const deploymentTypeOptions = computed(() => [
   { value: 'standalone', label: t('pages.licenses.form.fields.deploymentTypes.standalone') },
   { value: 'cloud', label: t('pages.licenses.form.fields.deploymentTypes.cloud') }
 ])
-const pagination = reactive({ page: 1, pageSize: 10, total: 0 })
-const licenses = ref<AuthorizationCode[]>([])
 const customerOptions = ref<CustomerOption[]>([])
 const statusOptions = ref<RawEnumItem[]>([])
 const customerLoading = ref(false)
-const loading = ref(false)
-const { skeletonVisible, isUpdating, markInitialized } = useInitialSkeleton(loading)
-const loadError = ref('')
 const actionId = ref('')
+
+const {
+  items: licenses, total, page, pageSize, filters, loading, error,
+  skeletonVisible, isUpdating,
+  reload, query, remove
+} = useDataList<AuthorizationCode, { customerId: string; code: string; status: string; productOfferingId: string; deploymentType: string }>({
+  fetchPage: async ({ page, pageSize, filters }) => {
+    const params: LicenseQueryRequest = {
+      page,
+      page_size: pageSize,
+      sort: 'created_at',
+      order: 'desc'
+    }
+    if (filters.customerId) params.customer_id = filters.customerId
+    if (filters.code.trim()) params.code = filters.code.trim()
+    if (filters.status) params.status = filters.status as LicenseQueryRequest['status']
+    if (filters.productOfferingId) params.product_offering_id = filters.productOfferingId
+    if (filters.deploymentType) {
+      params.deployment_type = filters.deploymentType as LicenseQueryRequest['deployment_type']
+    }
+    const response = await getLicenses(params)
+    return { list: response.data?.list ?? [], total: response.data?.total ?? 0 }
+  },
+  // 客户上下文来自路由参数，作为该页筛选的初始值
+  initialFilters: { customerId: routeCustomerId, code: '', status: '', productOfferingId: '', deploymentType: '' },
+  pageSize: 10,
+  describeError: (e) => getErrorMessage(e, t('pages.licenses.list.message.loadError'))
+})
+
+const loadError = error
+const pagination = reactive({
+  get page() { return page.value },
+  set page(v: number) { page.value = v },
+  get pageSize() { return pageSize.value },
+  set pageSize(v: number) { pageSize.value = v },
+  get total() { return total.value },
+  set total(v: number) { total.value = v }
+})
 
 const selectedCustomerName = computed(() =>
   customerOptions.value.find(customer => customer.id === filters.customerId)?.name || routeCustomerName
@@ -341,9 +367,8 @@ const openDetail = (row: AuthorizationCode) => {
 }
 
 const queryLicenses = async () => {
-  pagination.page = 1
   await syncRouteCustomer()
-  await loadLicenses()
+  await query()
 }
 
 const resetFilters = async () => {
@@ -356,8 +381,8 @@ const resetFilters = async () => {
 }
 
 const changePageSize = () => {
-  pagination.page = 1
-  loadLicenses()
+  page.value = 1
+  void reload()
 }
 
 const loadProductOptions = async () => {
@@ -399,34 +424,7 @@ const loadStatuses = async () => {
   }
 }
 
-const loadLicenses = async () => {
-  loading.value = true
-  loadError.value = ''
-  try {
-    const params: LicenseQueryRequest = {
-      page: pagination.page,
-      page_size: pagination.pageSize,
-      sort: 'created_at',
-      order: 'desc'
-    }
-    if (filters.customerId) params.customer_id = filters.customerId
-    if (filters.code.trim()) params.code = filters.code.trim()
-    if (filters.status) params.status = filters.status as LicenseQueryRequest['status']
-    if (filters.productOfferingId) params.product_offering_id = filters.productOfferingId
-    if (filters.deploymentType) {
-      params.deployment_type = filters.deploymentType as LicenseQueryRequest['deployment_type']
-    }
-
-    const response = await getLicenses(params)
-    licenses.value = response.data.list
-    pagination.total = response.data.total
-  } catch (error) {
-    loadError.value = getErrorMessage(error, t('pages.licenses.list.message.loadError'))
-  } finally {
-    loading.value = false
-    markInitialized()
-  }
-}
+const loadLicenses = () => reload()
 
 const isDialogCancel = (error: unknown) => error === 'cancel' || error === 'close'
 
@@ -468,10 +466,8 @@ const removeLicense = async (row: AuthorizationCode) => {
       }
     )
     actionId.value = row.id
-    await deleteLicense(row.id)
+    await remove(() => deleteLicense(row.id))
     ElMessage.success(t('pages.licenses.list.message.deleteSuccess'))
-    if (licenses.value.length === 1 && pagination.page > 1) pagination.page -= 1
-    await loadLicenses()
   } catch (error) {
     if (!isDialogCancel(error)) {
       ElMessage.error(getErrorMessage(error, t('pages.licenses.list.message.deleteError')))

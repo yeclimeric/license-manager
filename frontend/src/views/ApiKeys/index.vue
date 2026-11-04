@@ -19,7 +19,7 @@
                 v-model="filters.keyword"
                 :placeholder="t('apiKeys.keyword')"
                 clearable
-                @keyup.enter="loadKeys"
+                @keyup.enter="query"
               />
               <el-select
                 v-model="filters.status"
@@ -31,7 +31,7 @@
                 <el-option value="expired" :label="t('apiKeys.status.expired')" />
               </el-select>
               <div class="filter-actions data-list-filter__actions">
-                <el-button plain type="primary" :loading="loading" @click="loadKeys">
+                <el-button plain type="primary" :loading="loading" @click="query">
                   {{ t('rbac.filter.query') }}
                 </el-button>
                 <el-button @click="resetFilters">{{ t('rbac.filter.reset') }}</el-button>
@@ -144,7 +144,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { onMounted, reactive, ref, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import { Plus } from '@element-plus/icons-vue'
@@ -157,15 +157,42 @@ import {
 import { getUsers, type UserItem } from '@/api/user'
 import { getErrorMessage } from '@/utils/error'
 import { formatDateTimeCompact } from '@/utils/date'
+import { useDataList } from '@/composables/useDataList'
 
 const { t } = useI18n()
 
-const keys = ref<ApiKeyItem[]>([])
 const userOptions = ref<UserItem[]>([])
-const loading = ref(false)
 
-const filters = reactive<{ keyword: string; status: string }>({ keyword: '', status: '' })
-const pagination = reactive({ page: 1, pageSize: 10, total: 0 })
+// 分页状态机统一交给 useDataList：fetch/去重/末页回退/骨架屏都藏在实现里。
+const {
+  items: keys, total, page, pageSize, filters, loading, error,
+  reload, query, reset, remove
+} = useDataList<ApiKeyItem, { keyword: string; status: string }>({
+  fetchPage: async ({ page, pageSize, filters }) => {
+    const res = await getApiKeys({
+      page,
+      page_size: pageSize,
+      keyword: filters.keyword || undefined,
+      status: (filters.status || undefined) as 'active' | 'inactive' | 'expired' | undefined
+    })
+    return { list: res.data?.list ?? [], total: res.data?.total ?? 0 }
+  },
+  initialFilters: { keyword: '', status: '' },
+  pageSize: 10,
+  describeError: (e) => getErrorMessage(e, t('apiKeys.message.loadFailed'))
+})
+
+// 模板仍用 pagination.xxx 绑定，这里做一层状态代理，避免逐处改 7 页模板。
+const pagination = reactive({
+  get page() { return page.value },
+  set page(v: number) { page.value = v },
+  get pageSize() { return pageSize.value },
+  set pageSize(v: number) { pageSize.value = v },
+  get total() { return total.value },
+  set total(v: number) { total.value = v }
+})
+
+watch(error, msg => { if (msg) ElMessage.error(msg) })
 
 const formVisible = ref(false)
 const currentKey = ref<ApiKeyItem | null>(null)
@@ -184,23 +211,7 @@ const statusTagType = (status: string) => {
 // 表格列沿用局部短名，实现统一走 utils/date（空值返回空串）
 const formatDate = (value: string): string => formatDateTimeCompact(value)
 
-const loadKeys = async () => {
-  loading.value = true
-  try {
-    const res = await getApiKeys({
-      page: pagination.page,
-      page_size: pagination.pageSize,
-      keyword: filters.keyword || undefined,
-      status: (filters.status || undefined) as 'active' | 'inactive' | 'expired' | undefined
-    })
-    keys.value = res.data?.list || []
-    pagination.total = res.data?.total ?? 0
-  } catch (error) {
-    ElMessage.error(getErrorMessage(error, t('apiKeys.message.loadFailed')))
-  } finally {
-    loading.value = false
-  }
-}
+const loadKeys = () => reload()
 
 const loadUsers = async () => {
   try {
@@ -211,16 +222,12 @@ const loadUsers = async () => {
   }
 }
 
-const resetFilters = () => {
-  filters.keyword = ''
-  filters.status = ''
-  pagination.page = 1
-  loadKeys()
-}
+const resetFilters = () => { void reset() }
 
+// v-model:page-size 已把新值写进 pageSize，只需复位页码并重新拉取
 const handleSizeChange = () => {
-  pagination.page = 1
-  loadKeys()
+  page.value = 1
+  void reload()
 }
 
 const openCreate = () => {
@@ -266,11 +273,8 @@ const removeKey = async (row: ApiKeyItem) => {
     return
   }
   try {
-    await deleteApiKey(row.id)
+    await remove(() => deleteApiKey(row.id))
     ElMessage.success(t('apiKeys.message.deleted'))
-    // 删除的是末页最后一条时回退一页，否则会停在空白页
-    if (keys.value.length === 1 && pagination.page > 1) pagination.page -= 1
-    await loadKeys()
   } catch (error) {
     ElMessage.error(getErrorMessage(error, t('apiKeys.message.loadFailed')))
   }

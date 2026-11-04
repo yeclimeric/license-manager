@@ -218,20 +218,45 @@ import {
 } from '@/api/auditLog'
 import { getErrorMessage } from '@/utils/error'
 import { formatDateTimeCompact } from '@/utils/date'
-import { useInitialSkeleton } from '@/composables/useInitialSkeleton'
+import { useDataList } from '@/composables/useDataList'
 
 const { t } = useI18n()
 
-const logs = ref<AuditLog[]>([])
 const stats = ref<AuditStatistics | null>(null)
-const loading = ref(false)
-const listError = ref('')
 const detailVisible = ref(false)
 const current = ref<AuditLog | null>(null)
-const { skeletonVisible, isUpdating, markInitialized } = useInitialSkeleton(loading)
 
-const filters = reactive({ resourceType: '', status: '', action: '' })
-const pagination = reactive({ page: 1, pageSize: 10, total: 0 })
+const {
+  items: logs, total, page, pageSize, filters, loading, error,
+  skeletonVisible, isUpdating,
+  reload, query, reset
+} = useDataList<AuditLog, { resourceType: string; status: string; action: string }>({
+  fetchPage: async ({ page, pageSize, filters }) => {
+    const res = await getAuditLogs({
+      page,
+      page_size: pageSize,
+      resource_type: filters.resourceType || undefined,
+      status: (filters.status || undefined) as AuditStatus | undefined,
+      action: filters.action.trim() || undefined,
+      sort_by: 'created_at',
+      sort_order: 'desc'
+    })
+    return { list: res.data?.list ?? [], total: res.data?.total ?? 0 }
+  },
+  initialFilters: { resourceType: '', status: '', action: '' },
+  pageSize: 10,
+  describeError: (e) => getErrorMessage(e, t('auditLogs.empty'))
+})
+
+const listError = error
+const pagination = reactive({
+  get page() { return page.value },
+  set page(v: number) { page.value = v },
+  get pageSize() { return pageSize.value },
+  set pageSize(v: number) { pageSize.value = v },
+  get total() { return total.value },
+  set total(v: number) { total.value = v }
+})
 
 // 资源类型选项：优先取统计数据里出现过的类型
 const resourceTypeOptions = computed(() => {
@@ -270,45 +295,15 @@ const loadStats = async () => {
   }
 }
 
-const loadLogs = async () => {
-  loading.value = true
-  listError.value = ''
-  try {
-    const res = await getAuditLogs({
-      page: pagination.page,
-      page_size: pagination.pageSize,
-      resource_type: filters.resourceType || undefined,
-      status: (filters.status || undefined) as AuditStatus | undefined,
-      action: filters.action.trim() || undefined,
-      sort_by: 'created_at',
-      sort_order: 'desc'
-    })
-    logs.value = res.data.list
-    pagination.total = res.data.total
-    markInitialized()
-  } catch (error) {
-    listError.value = getErrorMessage(error, t('auditLogs.empty'))
-  } finally {
-    loading.value = false
-  }
-}
+const loadLogs = () => reload()
 
-const handleQuery = () => {
-  pagination.page = 1
-  loadLogs()
-}
+const handleQuery = () => { void query() }
 
-const handleReset = () => {
-  filters.resourceType = ''
-  filters.status = ''
-  filters.action = ''
-  pagination.page = 1
-  loadLogs()
-}
+const handleReset = () => { void reset() }
 
 const handleSizeChange = () => {
-  pagination.page = 1
-  loadLogs()
+  page.value = 1
+  void reload()
 }
 
 const openDetail = (row: AuditLog) => {

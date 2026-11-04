@@ -167,7 +167,7 @@ import {
 } from '@/api/enum'
 import { formatDateShort } from '@/utils/date'
 import { getErrorMessage } from '@/utils/error'
-import { useInitialSkeleton } from '@/composables/useInitialSkeleton'
+import { useDataList } from '@/composables/useDataList'
 
 type ViewMode = 'list' | 'form' | 'detail'
 
@@ -176,14 +176,40 @@ const router = useRouter()
 const viewMode = ref<ViewMode>('list')
 const isEditMode = ref(false)
 const currentCustomerId = ref('')
-const customers = ref<Customer[]>([])
-const loading = ref(false)
-const { skeletonVisible, isUpdating, markInitialized } = useInitialSkeleton(loading)
-const listError = ref('')
 const enumError = ref('')
 const actionId = ref('')
-const filters = reactive({ customerType: '', customerLevel: '', status: '', keyword: '' })
-const pagination = reactive({ page: 1, pageSize: 10, total: 0 })
+
+const {
+  items: customers, total, page, pageSize, filters, loading, error,
+  skeletonVisible, isUpdating,
+  reload, query, reset, remove
+} = useDataList<Customer, { customerType: string; customerLevel: string; status: string; keyword: string }>({
+  fetchPage: async ({ page, pageSize, filters }) => {
+    const params: CustomerQueryRequest = {
+      page,
+      page_size: pageSize,
+      search: filters.keyword.trim() || undefined,
+      customer_type: (filters.customerType || undefined) as CustomerQueryRequest['customer_type'],
+      customer_level: filters.customerLevel || undefined,
+      status: (filters.status || undefined) as CustomerQueryRequest['status']
+    }
+    const response = await getCustomers(params)
+    return { list: response.data?.list ?? [], total: response.data?.total ?? 0 }
+  },
+  initialFilters: { customerType: '', customerLevel: '', status: '', keyword: '' },
+  pageSize: 10,
+  describeError: (e) => getErrorMessage(e, t('customers.message.loadError'))
+})
+
+const listError = error
+const pagination = reactive({
+  get page() { return page.value },
+  set page(v: number) { page.value = v },
+  get pageSize() { return pageSize.value },
+  set pageSize(v: number) { pageSize.value = v },
+  get total() { return total.value },
+  set total(v: number) { total.value = v }
+})
 const customerTypeOptions = ref<RawEnumItem[]>([])
 const customerLevelOptions = ref<RawEnumItem[]>([])
 const statusOptions = ref<RawEnumItem[]>([])
@@ -204,41 +230,13 @@ const loadEnums = async () => {
   }
 }
 
-const loadCustomers = async () => {
-  loading.value = true
-  listError.value = ''
-  const params: CustomerQueryRequest = {
-    page: pagination.page,
-    page_size: pagination.pageSize,
-    search: filters.keyword.trim() || undefined,
-    customer_type: (filters.customerType || undefined) as CustomerQueryRequest['customer_type'],
-    customer_level: filters.customerLevel || undefined,
-    status: (filters.status || undefined) as CustomerQueryRequest['status']
-  }
-  try {
-    const response = await getCustomers(params)
-    customers.value = response.data.list
-    pagination.total = response.data.total
-  } catch (error) {
-    listError.value = getErrorMessage(error, t('customers.message.loadError'))
-  } finally {
-    loading.value = false
-    markInitialized()
-  }
-}
+const loadCustomers = () => reload()
 
-const handleQuery = () => {
-  pagination.page = 1
-  loadCustomers()
-}
-const handleReset = () => {
-  Object.assign(filters, { customerType: '', customerLevel: '', status: '', keyword: '' })
-  pagination.page = 1
-  loadCustomers()
-}
+const handleQuery = () => { void query() }
+const handleReset = () => { void reset() }
 const handleSizeChange = () => {
-  pagination.page = 1
-  loadCustomers()
+  page.value = 1
+  void reload()
 }
 
 const openCreate = () => {
@@ -313,10 +311,12 @@ const removeCustomer = async (customer: Customer) => {
 
   actionId.value = customer.id
   try {
-    const response = await deleteCustomer(customer.id)
-    ElMessage.success(response.message)
-    if (customers.value.length === 1 && pagination.page > 1) pagination.page -= 1
-    await loadCustomers()
+    let successMessage = ''
+    await remove(async () => {
+      const response = await deleteCustomer(customer.id)
+      successMessage = response.message
+    })
+    ElMessage.success(successMessage)
   } catch (error) {
     ElMessage.error(getErrorMessage(error, t('customers.message.deleteError')))
   } finally {

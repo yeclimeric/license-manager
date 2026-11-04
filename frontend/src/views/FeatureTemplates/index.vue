@@ -217,7 +217,7 @@ import {
 } from '@/api/featureTemplate'
 import { formatDateShort } from '@/utils/date'
 import { getErrorMessage } from '@/utils/error'
-import { useInitialSkeleton } from '@/composables/useInitialSkeleton'
+import { useDataList } from '@/composables/useDataList'
 
 type ViewMode = 'list' | 'form'
 
@@ -227,15 +227,32 @@ const viewMode = ref<ViewMode>('list')
 const isEditMode = ref(false)
 const currentTemplateId = ref('')
 const categoryVisible = ref(false)
-const templates = ref<FeatureTemplate[]>([])
 const categories = ref<FeatureTemplateCategory[]>([])
-const loading = ref(false)
-const listError = ref('')
 const actionId = ref('')
-const { skeletonVisible, isUpdating, markInitialized } = useInitialSkeleton(loading)
 
-const filters = reactive({ category: '', status: '' as FeatureTemplateStatus | '', keyword: '' })
-const pagination = reactive({ page: 1, pageSize: 10, total: 0 })
+const {
+  items: templates, total, page, pageSize, filters, loading, error,
+  skeletonVisible, isUpdating,
+  reload, query, reset, remove
+} = useDataList<FeatureTemplate, { category: string; status: FeatureTemplateStatus | ''; keyword: string }>({
+  fetchPage: async ({ page, pageSize }) => {
+    const res = await getFeatureTemplates(buildQuery(page, pageSize))
+    return { list: res.data?.list ?? [], total: res.data?.total ?? 0 }
+  },
+  initialFilters: { category: '', status: '' as FeatureTemplateStatus | '', keyword: '' },
+  pageSize: 10,
+  describeError: (e) => getErrorMessage(e, t('featureTemplates.message.loadFailed'))
+})
+
+const listError = error
+const pagination = reactive({
+  get page() { return page.value },
+  set page(v: number) { page.value = v },
+  get pageSize() { return pageSize.value },
+  set pageSize(v: number) { pageSize.value = v },
+  get total() { return total.value },
+  set total(v: number) { total.value = v }
+})
 
 const statusOptions = computed(() => [
   { value: 'active', label: t('featureTemplates.filter.statusActive') },
@@ -252,9 +269,9 @@ const loadCategories = async () => {
   }
 }
 
-const buildQuery = (): FeatureTemplateQueryRequest => ({
-  page: pagination.page,
-  page_size: pagination.pageSize,
+const buildQuery = (page: number, pageSize: number): FeatureTemplateQueryRequest => ({
+  page,
+  page_size: pageSize,
   keyword: filters.keyword || undefined,
   category: filters.category || undefined,
   status: filters.status || undefined,
@@ -262,37 +279,13 @@ const buildQuery = (): FeatureTemplateQueryRequest => ({
   sort_order: 'desc'
 })
 
-const loadTemplates = async () => {
-  loading.value = true
-  listError.value = ''
-  try {
-    const res = await getFeatureTemplates(buildQuery())
-    templates.value = res.data.list
-    pagination.total = res.data.total
-    markInitialized()
-  } catch (error) {
-    listError.value = getErrorMessage(error, t('featureTemplates.message.loadFailed'))
-  } finally {
-    loading.value = false
-  }
-}
+const loadTemplates = () => reload()
 
-const handleQuery = () => {
-  pagination.page = 1
-  loadTemplates()
-}
-
-const handleReset = () => {
-  filters.category = ''
-  filters.status = ''
-  filters.keyword = ''
-  pagination.page = 1
-  loadTemplates()
-}
-
+const handleQuery = () => { void query() }
+const handleReset = () => { void reset() }
 const handleSizeChange = () => {
-  pagination.page = 1
-  loadTemplates()
+  page.value = 1
+  void reload()
 }
 
 const openCreate = () => {
@@ -370,12 +363,8 @@ const removeTemplate = async (row: FeatureTemplate) => {
 
   actionId.value = row.id
   try {
-    await deleteFeatureTemplate(row.id)
+    await remove(() => deleteFeatureTemplate(row.id))
     ElMessage.success(t('featureTemplates.message.deleted'))
-    if (templates.value.length === 1 && pagination.page > 1) {
-      pagination.page -= 1
-    }
-    loadTemplates()
   } catch (error) {
     ElMessage.error(getErrorMessage(error, t('featureTemplates.message.deleteFailed')))
   } finally {

@@ -152,7 +152,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { onMounted, reactive, ref, watch } from 'vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import { Plus } from '@element-plus/icons-vue'
@@ -168,18 +168,41 @@ import {
 import { getRoles } from '@/api/rbac'
 import { getErrorMessage } from '@/utils/error'
 import { formatDateTimeCompact } from '@/utils/date'
+import { useDataList } from '@/composables/useDataList'
 
 const { t } = useI18n()
 
-const users = ref<UserItem[]>([])
 const roleOptions = ref<UserRoleItem[]>([])
-const loading = ref(false)
 
-const filters = reactive<{ search: string; status: UserStatus | '' }>({
-  search: '',
-  status: ''
+const {
+  items: users, total, page, pageSize, filters, loading, error,
+  reload, reset, remove
+} = useDataList<UserItem, { search: string; status: UserStatus | '' }>({
+  fetchPage: async ({ page, pageSize, filters }) => {
+    const res = await getUsers({
+      page,
+      page_size: pageSize,
+      search: filters.search || undefined,
+      status: filters.status || undefined
+    })
+    return { list: res.data?.list ?? [], total: res.data?.total ?? 0 }
+  },
+  initialFilters: { search: '', status: '' },
+  pageSize: 10,
+  describeError: (e) => getErrorMessage(e, t('users.message.loadFailed'))
 })
-const pagination = reactive({ page: 1, pageSize: 10, total: 0 })
+
+// 模板仍用 pagination.xxx 绑定，做一层状态代理避免逐处改 7 页模板。
+const pagination = reactive({
+  get page() { return page.value },
+  set page(v: number) { page.value = v },
+  get pageSize() { return pageSize.value },
+  set pageSize(v: number) { pageSize.value = v },
+  get total() { return total.value },
+  set total(v: number) { total.value = v }
+})
+
+watch(error, msg => { if (msg) ElMessage.error(msg) })
 
 const formVisible = ref(false)
 const currentUser = ref<UserItem | null>(null)
@@ -200,23 +223,7 @@ const statusTagType = (status: UserStatus) => {
 // 表格列沿用局部短名，实现统一走 utils/date
 const formatDate = (value: string): string => formatDateTimeCompact(value)
 
-const loadUsers = async () => {
-  loading.value = true
-  try {
-    const res = await getUsers({
-      page: pagination.page,
-      page_size: pagination.pageSize,
-      search: filters.search || undefined,
-      status: filters.status || undefined
-    })
-    users.value = res.data?.list || []
-    pagination.total = res.data?.total ?? 0
-  } catch (error) {
-    ElMessage.error(getErrorMessage(error, t('users.message.loadFailed')))
-  } finally {
-    loading.value = false
-  }
-}
+const loadUsers = () => reload()
 
 const loadRoles = async () => {
   try {
@@ -227,16 +234,11 @@ const loadRoles = async () => {
   }
 }
 
-const resetFilters = () => {
-  filters.search = ''
-  filters.status = ''
-  pagination.page = 1
-  loadUsers()
-}
+const resetFilters = () => { void reset() }
 
 const handleSizeChange = () => {
-  pagination.page = 1
-  loadUsers()
+  page.value = 1
+  void reload()
 }
 
 const openCreate = () => {
@@ -296,11 +298,8 @@ const removeUser = async (row: UserItem) => {
     return
   }
   try {
-    await deleteUser(row.id)
+    await remove(() => deleteUser(row.id))
     ElMessage.success(t('users.message.userDeleted'))
-    // 删除的是末页最后一条时回退一页，否则会停在空白页
-    if (users.value.length === 1 && pagination.page > 1) pagination.page -= 1
-    await loadUsers()
   } catch (error) {
     ElMessage.error(getErrorMessage(error, t('users.message.loadFailed')))
   }

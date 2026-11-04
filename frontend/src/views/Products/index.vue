@@ -219,7 +219,7 @@ import {
 } from '@/api/productOffering'
 import { formatDateShort } from '@/utils/date'
 import { getErrorMessage } from '@/utils/error'
-import { useInitialSkeleton } from '@/composables/useInitialSkeleton'
+import { useDataList } from '@/composables/useDataList'
 
 type ViewMode = 'list' | 'form'
 
@@ -230,14 +230,31 @@ const isEditMode = ref(false)
 const currentProductId = ref('')
 const publicKeyVisible = ref(false)
 const publicKeyProductId = ref('')
-const products = ref<ProductOffering[]>([])
-const loading = ref(false)
-const listError = ref('')
 const actionId = ref('')
-const { skeletonVisible, isUpdating, markInitialized } = useInitialSkeleton(loading)
 
-const filters = reactive({ status: '' as ProductOfferingStatus | '', keyword: '' })
-const pagination = reactive({ page: 1, pageSize: 10, total: 0 })
+const {
+  items: products, total, page, pageSize, filters, loading, error,
+  skeletonVisible, isUpdating,
+  reload, query, reset, remove
+} = useDataList<ProductOffering, { status: ProductOfferingStatus | ''; keyword: string }>({
+  fetchPage: async ({ page, pageSize }) => {
+    const res = await getProductOfferings(buildQuery(page, pageSize))
+    return { list: res.data?.list ?? [], total: res.data?.total ?? 0 }
+  },
+  initialFilters: { status: '' as ProductOfferingStatus | '', keyword: '' },
+  pageSize: 10,
+  describeError: (e) => getErrorMessage(e, t('products.message.loadFailed'))
+})
+
+const listError = error
+const pagination = reactive({
+  get page() { return page.value },
+  set page(v: number) { page.value = v },
+  get pageSize() { return pageSize.value },
+  set pageSize(v: number) { pageSize.value = v },
+  get total() { return total.value },
+  set total(v: number) { total.value = v }
+})
 
 const statusOptions = computed(() => [
   { value: 'active', label: t('products.filter.statusActive') },
@@ -247,45 +264,22 @@ const statusOptions = computed(() => [
 // 名称列优先展示别名，为空回落编码
 const displayName = (row: ProductOffering) => row.alias || row.code
 
-const buildQuery = (): ProductOfferingQueryRequest => ({
-  page: pagination.page,
-  page_size: pagination.pageSize,
+const buildQuery = (page: number, pageSize: number): ProductOfferingQueryRequest => ({
+  page,
+  page_size: pageSize,
   keyword: filters.keyword || undefined,
   status: filters.status || undefined,
   sort_by: 'created_at',
   sort_order: 'desc'
 })
 
-const loadProducts = async () => {
-  loading.value = true
-  listError.value = ''
-  try {
-    const res = await getProductOfferings(buildQuery())
-    products.value = res.data.list
-    pagination.total = res.data.total
-    markInitialized()
-  } catch (error) {
-    listError.value = getErrorMessage(error, t('products.message.loadFailed'))
-  } finally {
-    loading.value = false
-  }
-}
+const loadProducts = () => reload()
 
-const handleQuery = () => {
-  pagination.page = 1
-  loadProducts()
-}
-
-const handleReset = () => {
-  filters.status = ''
-  filters.keyword = ''
-  pagination.page = 1
-  loadProducts()
-}
-
+const handleQuery = () => { void query() }
+const handleReset = () => { void reset() }
 const handleSizeChange = () => {
-  pagination.page = 1
-  loadProducts()
+  page.value = 1
+  void reload()
 }
 
 const openCreate = () => {
@@ -372,13 +366,8 @@ const removeProduct = async (row: ProductOffering) => {
 
   actionId.value = row.id
   try {
-    await deleteProductOffering(row.id)
+    await remove(() => deleteProductOffering(row.id))
     ElMessage.success(t('products.message.deleted'))
-    // 删除当前页最后一条时回退一页
-    if (products.value.length === 1 && pagination.page > 1) {
-      pagination.page -= 1
-    }
-    loadProducts()
   } catch (error) {
     ElMessage.error(getErrorMessage(error, t('products.message.deleteFailed')))
   } finally {
